@@ -10,20 +10,1290 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.1"
+    PostgrestVersion: "13.0.5"
   }
   public: {
     Tables: {
-      [_ in never]: never
+      admin: {
+        Row: {
+          created_at: string | null
+          email: string
+          id: string
+          password_hash: string
+        }
+        Insert: {
+          created_at?: string | null
+          email: string
+          id?: string
+          password_hash: string
+        }
+        Update: {
+          created_at?: string | null
+          email?: string
+          id?: string
+          password_hash?: string
+        }
+        Relationships: []
+      }
+      almanac_concepts: {
+        Row: {
+          article: string
+          concept_type: string | null
+          created_at: string | null
+          description: string
+          id: string
+          image_url: string | null
+          name: string
+          order_index: number | null
+          slug: string
+          updated_at: string | null
+        }
+        Insert: {
+          article: string
+          concept_type?: string | null
+          created_at?: string | null
+          description: string
+          id?: string
+          image_url?: string | null
+          name: string
+          order_index?: number | null
+          slug: string
+          updated_at?: string | null
+        }
+        Update: {
+          article?: string
+          concept_type?: string | null
+          created_at?: string | null
+          description?: string
+          id?: string
+          image_url?: string | null
+          name?: string
+          order_index?: number | null
+          slug?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      almanac_kingdoms: {
+        Row: {
+          article: string
+          created_at: string | null
+          description: string
+          founded_date: string | null
+          id: string
+          image_url: string | null
+          name: string
+          order_index: number | null
+          slug: string
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          article: string
+          created_at?: string | null
+          description: string
+          founded_date?: string | null
+          id?: string
+          image_url?: string | null
+          name: string
+          order_index?: number | null
+          slug: string
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          article?: string
+          created_at?: string | null
+          description?: string
+          founded_date?: string | null
+          id?: string
+          image_url?: string | null
+          name?: string
+          order_index?: number | null
+          slug?: string
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      almanac_locations: {
+        Row: {
+          article: string
+          created_at: string | null
+          description: string
+          id: string
+          image_url: string | null
+          kingdom: string | null
+          location_type: string | null
+          name: string
+          order_index: number | null
+          slug: string
+          updated_at: string | null
+        }
+        Insert: {
+          article: string
+          created_at?: string | null
+          description: string
+          id?: string
+          image_url?: string | null
+          kingdom?: string | null
+          location_type?: string | null
+          name: string
+          order_index?: number | null
+          slug: string
+          updated_at?: string | null
+        }
+        Update: {
+          article?: string
+          created_at?: string | null
+          description?: string
+          id?: string
+          image_url?: string | null
+          kingdom?: string | null
+          location_type?: string | null
+          name?: string
+          order_index?: number | null
+          slug?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      almanac_magic: {
+        Row: {
+          article: string
+          created_at: string | null
+          description: string
+          difficulty: string | null
+          id: string
+          image_url: string | null
+          magic_type: string | null
+          name: string
+          order_index: number | null
+          slug: string
+          updated_at: string | null
+        }
+        Insert: {
+          article: string
+          created_at?: string | null
+          description: string
+          difficulty?: string | null
+          id?: string
+          image_url?: string | null
+          magic_type?: string | null
+          name: string
+          order_index?: number | null
+          slug: string
+          updated_at?: string | null
+        }
+        Update: {
+          article?: string
+          created_at?: string | null
+          description?: string
+          difficulty?: string | null
+          id?: string
+          image_url?: string | null
+          magic_type?: string | null
+          name?: string
+          order_index?: number | null
+          slug?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      almanac_races: {
+        Row: {
+          article: string
+          created_at: string | null
+          description: string
+          homeland: string | null
+          id: string
+          image_url: string | null
+          name: string
+          order_index: number | null
+          population: string | null
+          slug: string
+          updated_at: string | null
+        }
+        Insert: {
+          article: string
+          created_at?: string | null
+          description: string
+          homeland?: string | null
+          id?: string
+          image_url?: string | null
+          name: string
+          order_index?: number | null
+          population?: string | null
+          slug: string
+          updated_at?: string | null
+        }
+        Update: {
+          article?: string
+          created_at?: string | null
+          description?: string
+          homeland?: string | null
+          id?: string
+          image_url?: string | null
+          name?: string
+          order_index?: number | null
+          population?: string | null
+          slug?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      almanac_relics: {
+        Row: {
+          article: string
+          created_at: string | null
+          description: string
+          id: string
+          image_url: string | null
+          name: string
+          order_index: number | null
+          power_level: string | null
+          slug: string
+          type: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          article: string
+          created_at?: string | null
+          description: string
+          id?: string
+          image_url?: string | null
+          name: string
+          order_index?: number | null
+          power_level?: string | null
+          slug: string
+          type?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          article?: string
+          created_at?: string | null
+          description?: string
+          id?: string
+          image_url?: string | null
+          name?: string
+          order_index?: number | null
+          power_level?: string | null
+          slug?: string
+          type?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      almanac_titles: {
+        Row: {
+          article: string
+          authority: string | null
+          created_at: string | null
+          description: string
+          id: string
+          image_url: string | null
+          name: string
+          order_index: number | null
+          rank: string | null
+          slug: string
+          updated_at: string | null
+        }
+        Insert: {
+          article: string
+          authority?: string | null
+          created_at?: string | null
+          description: string
+          id?: string
+          image_url?: string | null
+          name: string
+          order_index?: number | null
+          rank?: string | null
+          slug: string
+          updated_at?: string | null
+        }
+        Update: {
+          article?: string
+          authority?: string | null
+          created_at?: string | null
+          description?: string
+          id?: string
+          image_url?: string | null
+          name?: string
+          order_index?: number | null
+          rank?: string | null
+          slug?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      badge_types: {
+        Row: {
+          created_at: string
+          criteria: string
+          description: string
+          icon: string
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          criteria: string
+          description: string
+          icon: string
+          id?: string
+          name: string
+        }
+        Update: {
+          created_at?: string
+          criteria?: string
+          description?: string
+          icon?: string
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
+      book_versions: {
+        Row: {
+          available: boolean | null
+          book_id: string
+          created_at: string | null
+          id: string
+          price: number
+          version_type: string
+        }
+        Insert: {
+          available?: boolean | null
+          book_id: string
+          created_at?: string | null
+          id?: string
+          price: number
+          version_type: string
+        }
+        Update: {
+          available?: boolean | null
+          book_id?: string
+          created_at?: string | null
+          id?: string
+          price?: number
+          version_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "book_versions_book_id_fkey"
+            columns: ["book_id"]
+            isOneToOne: false
+            referencedRelation: "books"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      bookmarks: {
+        Row: {
+          book_id: string
+          created_at: string
+          id: string
+          label: string | null
+          page_number: number
+          user_id: string
+        }
+        Insert: {
+          book_id: string
+          created_at?: string
+          id?: string
+          label?: string | null
+          page_number: number
+          user_id: string
+        }
+        Update: {
+          book_id?: string
+          created_at?: string
+          id?: string
+          label?: string | null
+          page_number?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
+      books: {
+        Row: {
+          author: string
+          category: string
+          cover_image_url: string | null
+          created_at: string | null
+          description: string | null
+          ebook_pdf_url: string | null
+          id: string
+          isbn: string | null
+          language: string | null
+          pages: number | null
+          preview_pdf_url: string | null
+          published_date: string | null
+          rating: number | null
+          sales: number | null
+          status: string
+          stock: number | null
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          author: string
+          category: string
+          cover_image_url?: string | null
+          created_at?: string | null
+          description?: string | null
+          ebook_pdf_url?: string | null
+          id?: string
+          isbn?: string | null
+          language?: string | null
+          pages?: number | null
+          preview_pdf_url?: string | null
+          published_date?: string | null
+          rating?: number | null
+          sales?: number | null
+          status?: string
+          stock?: number | null
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          author?: string
+          category?: string
+          cover_image_url?: string | null
+          created_at?: string | null
+          description?: string | null
+          ebook_pdf_url?: string | null
+          id?: string
+          isbn?: string | null
+          language?: string | null
+          pages?: number | null
+          preview_pdf_url?: string | null
+          published_date?: string | null
+          rating?: number | null
+          sales?: number | null
+          status?: string
+          stock?: number | null
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      chronology_event_relationships: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          id: string
+          relationship_type: string
+          source_event_id: string
+          target_event_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          relationship_type: string
+          source_event_id: string
+          target_event_id: string
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          relationship_type?: string
+          source_event_id?: string
+          target_event_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chronology_event_relationships_source_event_id_fkey"
+            columns: ["source_event_id"]
+            isOneToOne: false
+            referencedRelation: "chronology_events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chronology_event_relationships_target_event_id_fkey"
+            columns: ["target_event_id"]
+            isOneToOne: false
+            referencedRelation: "chronology_events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chronology_events: {
+        Row: {
+          article: string
+          created_at: string
+          date: string
+          description: string
+          era: string
+          id: string
+          order_index: number
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          article: string
+          created_at?: string
+          date: string
+          description: string
+          era: string
+          id?: string
+          order_index: number
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          article?: string
+          created_at?: string
+          date?: string
+          description?: string
+          era?: string
+          id?: string
+          order_index?: number
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      customers: {
+        Row: {
+          address: string | null
+          city: string | null
+          country: string | null
+          created_at: string | null
+          email: string
+          full_name: string
+          id: string
+          phone: string | null
+          postal_code: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          address?: string | null
+          city?: string | null
+          country?: string | null
+          created_at?: string | null
+          email: string
+          full_name: string
+          id?: string
+          phone?: string | null
+          postal_code?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          address?: string | null
+          city?: string | null
+          country?: string | null
+          created_at?: string | null
+          email?: string
+          full_name?: string
+          id?: string
+          phone?: string | null
+          postal_code?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      forum_likes: {
+        Row: {
+          created_at: string
+          id: string
+          post_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          post_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          post_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "forum_likes_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "forum_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      forum_post_tags: {
+        Row: {
+          id: string
+          post_id: string
+          tag_id: string
+        }
+        Insert: {
+          id?: string
+          post_id: string
+          tag_id: string
+        }
+        Update: {
+          id?: string
+          post_id?: string
+          tag_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "forum_post_tags_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "forum_posts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "forum_post_tags_tag_id_fkey"
+            columns: ["tag_id"]
+            isOneToOne: false
+            referencedRelation: "post_tags"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      forum_posts: {
+        Row: {
+          author_id: string
+          category: string
+          content: string
+          created_at: string
+          id: string
+          is_sticky: boolean
+          likes_count: number
+          parent_post_id: string | null
+          replies_count: number
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          author_id: string
+          category: string
+          content: string
+          created_at?: string
+          id?: string
+          is_sticky?: boolean
+          likes_count?: number
+          parent_post_id?: string | null
+          replies_count?: number
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          author_id?: string
+          category?: string
+          content?: string
+          created_at?: string
+          id?: string
+          is_sticky?: boolean
+          likes_count?: number
+          parent_post_id?: string | null
+          replies_count?: number
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "forum_posts_author_id_profiles_fkey"
+            columns: ["author_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "forum_posts_parent_post_id_fkey"
+            columns: ["parent_post_id"]
+            isOneToOne: false
+            referencedRelation: "forum_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      forum_replies: {
+        Row: {
+          author_id: string
+          content: string
+          created_at: string
+          id: string
+          likes_count: number
+          parent_reply_id: string | null
+          post_id: string
+          updated_at: string
+        }
+        Insert: {
+          author_id: string
+          content: string
+          created_at?: string
+          id?: string
+          likes_count?: number
+          parent_reply_id?: string | null
+          post_id: string
+          updated_at?: string
+        }
+        Update: {
+          author_id?: string
+          content?: string
+          created_at?: string
+          id?: string
+          likes_count?: number
+          parent_reply_id?: string | null
+          post_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "forum_replies_author_id_profiles_fkey"
+            columns: ["author_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "forum_replies_parent_reply_id_fkey"
+            columns: ["parent_reply_id"]
+            isOneToOne: false
+            referencedRelation: "forum_replies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "forum_replies_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "forum_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      forum_reply_likes: {
+        Row: {
+          created_at: string
+          id: string
+          reply_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          reply_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          reply_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "forum_reply_likes_reply_id_fkey"
+            columns: ["reply_id"]
+            isOneToOne: false
+            referencedRelation: "forum_replies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lore_characters: {
+        Row: {
+          affiliation: string | null
+          article: string | null
+          created_at: string
+          description: string | null
+          era: string | null
+          id: string
+          image_url: string | null
+          name: string
+          order_index: number | null
+          role: string | null
+          slug: string | null
+          updated_at: string
+        }
+        Insert: {
+          affiliation?: string | null
+          article?: string | null
+          created_at?: string
+          description?: string | null
+          era?: string | null
+          id?: string
+          image_url?: string | null
+          name: string
+          order_index?: number | null
+          role?: string | null
+          slug?: string | null
+          updated_at?: string
+        }
+        Update: {
+          affiliation?: string | null
+          article?: string | null
+          created_at?: string
+          description?: string | null
+          era?: string | null
+          id?: string
+          image_url?: string | null
+          name?: string
+          order_index?: number | null
+          role?: string | null
+          slug?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      newsletter_subscribers: {
+        Row: {
+          email: string
+          id: string
+          is_active: boolean
+          subscribed_at: string
+          unsubscribed_at: string | null
+        }
+        Insert: {
+          email: string
+          id?: string
+          is_active?: boolean
+          subscribed_at?: string
+          unsubscribed_at?: string | null
+        }
+        Update: {
+          email?: string
+          id?: string
+          is_active?: boolean
+          subscribed_at?: string
+          unsubscribed_at?: string | null
+        }
+        Relationships: []
+      }
+      order_items: {
+        Row: {
+          book_id: string
+          created_at: string | null
+          id: string
+          order_id: string
+          price: number
+          quantity: number
+          version_type: string
+        }
+        Insert: {
+          book_id: string
+          created_at?: string | null
+          id?: string
+          order_id: string
+          price: number
+          quantity?: number
+          version_type: string
+        }
+        Update: {
+          book_id?: string
+          created_at?: string | null
+          id?: string
+          order_id?: string
+          price?: number
+          quantity?: number
+          version_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_items_book_id_fkey"
+            columns: ["book_id"]
+            isOneToOne: false
+            referencedRelation: "books"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_items_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      orders: {
+        Row: {
+          created_at: string | null
+          customer_id: string
+          id: string
+          order_number: string
+          status: string
+          subtotal: number
+          tax: number
+          total: number
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          customer_id: string
+          id?: string
+          order_number: string
+          status?: string
+          subtotal: number
+          tax: number
+          total: number
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          customer_id?: string
+          id?: string
+          order_number?: string
+          status?: string
+          subtotal?: number
+          tax?: number
+          total?: number
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orders_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      post_tags: {
+        Row: {
+          color: string
+          created_at: string
+          id: string
+          name: string
+          slug: string
+          usage_count: number
+        }
+        Insert: {
+          color?: string
+          created_at?: string
+          id?: string
+          name: string
+          slug: string
+          usage_count?: number
+        }
+        Update: {
+          color?: string
+          created_at?: string
+          id?: string
+          name?: string
+          slug?: string
+          usage_count?: number
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          full_name: string | null
+          id: string
+          last_active: string | null
+          total_forum_posts: number
+          total_forum_replies: number
+          updated_at: string
+          username: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          full_name?: string | null
+          id: string
+          last_active?: string | null
+          total_forum_posts?: number
+          total_forum_replies?: number
+          updated_at?: string
+          username: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          full_name?: string | null
+          id?: string
+          last_active?: string | null
+          total_forum_posts?: number
+          total_forum_replies?: number
+          updated_at?: string
+          username?: string
+        }
+        Relationships: []
+      }
+      purchases: {
+        Row: {
+          book_author: string
+          book_cover_url: string | null
+          book_id: string
+          book_title: string
+          book_version: string
+          id: string
+          price: number
+          purchased_at: string
+          user_id: string
+        }
+        Insert: {
+          book_author: string
+          book_cover_url?: string | null
+          book_id: string
+          book_title: string
+          book_version: string
+          id?: string
+          price: number
+          purchased_at?: string
+          user_id: string
+        }
+        Update: {
+          book_author?: string
+          book_cover_url?: string | null
+          book_id?: string
+          book_title?: string
+          book_version?: string
+          id?: string
+          price?: number
+          purchased_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      reading_progress: {
+        Row: {
+          book_id: string
+          completed: boolean
+          completed_at: string | null
+          created_at: string
+          current_page: number
+          id: string
+          last_read_at: string
+          progress_percentage: number
+          time_spent_seconds: number
+          total_pages: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          book_id: string
+          completed?: boolean
+          completed_at?: string | null
+          created_at?: string
+          current_page?: number
+          id?: string
+          last_read_at?: string
+          progress_percentage?: number
+          time_spent_seconds?: number
+          total_pages?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          book_id?: string
+          completed?: boolean
+          completed_at?: string | null
+          created_at?: string
+          current_page?: number
+          id?: string
+          last_read_at?: string
+          progress_percentage?: number
+          time_spent_seconds?: number
+          total_pages?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      reviews: {
+        Row: {
+          book_id: string
+          comment: string
+          created_at: string
+          id: string
+          rating: number
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          book_id: string
+          comment: string
+          created_at?: string
+          id?: string
+          rating: number
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          book_id?: string
+          comment?: string
+          created_at?: string
+          id?: string
+          rating?: number
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_badges: {
+        Row: {
+          badge_id: string
+          earned_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          badge_id: string
+          earned_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          badge_id?: string
+          earned_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_badges_badge_id_fkey"
+            columns: ["badge_id"]
+            isOneToOne: false
+            referencedRelation: "badge_types"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_reputation: {
+        Row: {
+          created_at: string
+          id: string
+          likes_received: number
+          posts_count: number
+          rank: string
+          replies_count: number
+          total_points: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          likes_received?: number
+          posts_count?: number
+          rank?: string
+          replies_count?: number
+          total_points?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          likes_received?: number
+          posts_count?: number
+          rank?: string
+          replies_count?: number
+          total_points?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
+      users: {
+        Row: {
+          created_at: string
+          email: string
+          full_name: string | null
+          id: string
+          password_hash: string
+          updated_at: string
+        }
+        Insert: {
+          created_at: string
+          email: string
+          full_name?: string | null
+          id: string
+          password_hash: string
+          updated_at: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          full_name?: string | null
+          id?: string
+          password_hash?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      wishlists: {
+        Row: {
+          book_id: string
+          created_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          book_id: string
+          created_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          book_id?: string
+          created_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wishlists_book_id_fkey"
+            columns: ["book_id"]
+            isOneToOne: false
+            referencedRelation: "books"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
+      verify_password: {
+        Args: { input_password: string; stored_hash: string }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "moderator" | "user"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +1420,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "moderator", "user"],
+    },
   },
 } as const
