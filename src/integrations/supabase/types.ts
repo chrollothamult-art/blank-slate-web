@@ -14,7 +14,57 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      almanac_characters: {
+        Row: {
+          age: string | null
+          article: string
+          created_at: string
+          description: string
+          id: string
+          image_url: string | null
+          lore: string | null
+          magic_classification: string | null
+          name: string
+          nationality: string | null
+          order_index: number
+          race: string | null
+          slug: string
+          updated_at: string
+        }
+        Insert: {
+          age?: string | null
+          article: string
+          created_at?: string
+          description: string
+          id?: string
+          image_url?: string | null
+          lore?: string | null
+          magic_classification?: string | null
+          name: string
+          nationality?: string | null
+          order_index?: number
+          race?: string | null
+          slug: string
+          updated_at?: string
+        }
+        Update: {
+          age?: string | null
+          article?: string
+          created_at?: string
+          description?: string
+          id?: string
+          image_url?: string | null
+          lore?: string | null
+          magic_classification?: string | null
+          name?: string
+          nationality?: string | null
+          order_index?: number
+          race?: string | null
+          slug?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
