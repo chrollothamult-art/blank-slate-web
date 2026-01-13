@@ -29,6 +29,17 @@ const categoryConfig = {
       { name: "status", label: "Status", type: "select", options: ["active", "fallen", "unknown"] },
     ],
   },
+  characters: {
+    table: "almanac_characters",
+    title: "Characters",
+    fields: [
+      { name: "age", label: "Age", type: "text" },
+      { name: "race", label: "Race", type: "text" },
+      { name: "nationality", label: "Nationality", type: "text" },
+      { name: "magic_classification", label: "Magic Classification", type: "text" },
+      { name: "lore", label: "Lore (Character Article)", type: "textarea" },
+    ],
+  },
   relics: {
     table: "almanac_relics",
     title: "Relics",
@@ -306,7 +317,7 @@ export const AlmanacManager = () => {
         setActiveCategory(v as keyof typeof categoryConfig);
         resetForm();
       }}>
-        <TabsList className="grid w-full grid-cols-7">
+        <TabsList className="grid w-full grid-cols-8">
           {Object.entries(categoryConfig).map(([key, config]) => (
             <TabsTrigger key={key} value={key}>{config.title}</TabsTrigger>
           ))}
@@ -372,6 +383,13 @@ export const AlmanacManager = () => {
                             <option key={opt} value={opt}>{opt}</option>
                           ))}
                         </select>
+                      ) : field.type === "textarea" ? (
+                        <Textarea
+                          value={formData[field.name] || ""}
+                          onChange={(e) => setFormData({ ...formData, [field.name]: e.target.value })}
+                          placeholder={field.label}
+                          rows={6}
+                        />
                       ) : (
                         <Input
                           value={formData[field.name] || ""}

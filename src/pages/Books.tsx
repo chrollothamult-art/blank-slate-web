@@ -16,6 +16,8 @@ import { WishlistButton } from "@/components/WishlistButton";
 import { BookSearchBar } from "@/components/BookSearchBar";
 import { BookFilters, ActiveFilters, FilterState } from "@/components/BookFilters";
 import { Footer } from "@/components/Footer";
+import { useCart } from "@/contexts/CartContext";
+import { useToast } from "@/hooks/use-toast";
 import bookCollection from "@/assets/book-collection.jpg";
 
 type SortOption = "newest" | "price-asc" | "price-desc" | "rating" | "title";
@@ -38,6 +40,8 @@ const defaultFilters: FilterState = {
 export const Books = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
+  const { addItem } = useCart();
+  const { toast } = useToast();
   
   const [books, setBooks] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -196,8 +200,40 @@ export const Books = () => {
     ));
   };
 
+  const handleQuickAdd = (e: React.MouseEvent, book: any) => {
+    e.stopPropagation();
+    
+    // Get the cheapest available version
+    const availableVersions = book.book_versions?.filter((v: any) => v.available) || [];
+    if (availableVersions.length === 0) {
+      toast({
+        title: "Not available",
+        description: "This book is currently out of stock",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const cheapestVersion = availableVersions.reduce((min: any, v: any) => 
+      parseFloat(v.price) < parseFloat(min.price) ? v : min
+    );
+
+    addItem({
+      id: book.id,
+      title: book.title,
+      cover: book.cover_image_url || bookCollection,
+      version: cheapestVersion.version_type,
+      price: parseFloat(cheapestVersion.price),
+      quantity: 1,
+    });
+
+    toast({
+      title: "Added to cart",
+      description: `${book.title} (${cheapestVersion.version_type}) added to your cart`,
+    });
+  };
+
   const handleBookClick = (book: any) => {
-    // Navigate to home with book selected (or could create a dedicated book detail page)
     navigate(`/?book=${book.id}`);
   };
 
@@ -337,10 +373,7 @@ export const Books = () => {
                             size="sm"
                             variant="secondary"
                             className="bg-background/90 backdrop-blur"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              // Add to cart logic would go here
-                            }}
+                            onClick={(e) => handleQuickAdd(e, book)}
                           >
                             <ShoppingCart className="h-4 w-4 mr-2" />
                             Quick Add

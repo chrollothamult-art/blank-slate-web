@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { useCart } from "@/contexts/CartContext";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import {
@@ -30,11 +31,11 @@ import { ThemeToggle } from "./ThemeToggle";
 
 export const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [cartCount, setCartCount] = useState(0);
   const [searchQuery, setSearchQuery] = useState("");
   const location = useLocation();
   const navigate = useNavigate();
   const { user, profile, signOut } = useAuth();
+  const { totalItems, setIsOpen: setCartOpen } = useCart();
 
   const navigation = [
     { name: "Books", href: "/books", icon: BookOpen },
@@ -144,14 +145,19 @@ export const Header = () => {
             )}
 
             {/* Shopping Cart */}
-            <Button variant="ghost" size="icon" className="relative">
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="relative"
+              onClick={() => setCartOpen(true)}
+            >
               <ShoppingCart className="h-5 w-5" />
-              {cartCount > 0 && (
+              {totalItems > 0 && (
                 <Badge 
                   variant="destructive" 
                   className="absolute -top-2 -right-2 h-5 w-5 rounded-full p-0 text-xs flex items-center justify-center"
                 >
-                  {cartCount}
+                  {totalItems}
                 </Badge>
               )}
             </Button>

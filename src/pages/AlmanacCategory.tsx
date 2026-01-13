@@ -18,6 +18,7 @@ interface AlmanacEntry {
 
 const categoryTableMap: Record<string, string> = {
   kingdoms: "almanac_kingdoms",
+  characters: "almanac_characters",
   relics: "almanac_relics",
   races: "almanac_races",
   titles: "almanac_titles",
