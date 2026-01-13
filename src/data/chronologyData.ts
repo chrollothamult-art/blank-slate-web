@@ -202,7 +202,7 @@ export const timelineEvents: TimelineEvent[] = [
 
 export const almanacCategories = [
   { id: "kingdoms", title: "Kingdoms", icon: "Castle" },
-  { id: "characters", title: "Characters", icon: "User" },
+  { id: "characters", title: "Characters", icon: "Users" },
   { id: "relics", title: "Relics", icon: "Sparkles" },
   { id: "races", title: "Races", icon: "Users" },
   { id: "titles", title: "Titles", icon: "Crown" },
