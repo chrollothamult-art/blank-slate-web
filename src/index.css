@@ -1,0 +1,178 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Professional Bookstore Design System */
+
+@layer base {
+  :root {
+    /* Core Colors - Professional Literary Theme */
+    --background: 32 20% 97%;
+    --foreground: 220 15% 15%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 220 15% 15%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 15% 15%;
+
+    /* Deep Navy Primary */
+    --primary: 220 40% 20%;
+    --primary-foreground: 32 20% 97%;
+
+    /* Warm Cream Secondary */
+    --secondary: 35 30% 94%;
+    --secondary-foreground: 220 40% 20%;
+
+    /* Literary Gold Accent */
+    --accent: 35 80% 55%;
+    --accent-foreground: 220 40% 20%;
+
+    /* Muted Text Colors */
+    --muted: 35 20% 90%;
+    --muted-foreground: 220 15% 50%;
+
+    /* Success/Error States */
+    --success: 142 76% 36%;
+    --success-foreground: 0 0% 100%;
+    
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    /* Borders and Inputs */
+    --border: 220 20% 85%;
+    --input: 220 20% 90%;
+    --ring: 35 80% 55%;
+
+    /* Professional Radius - No Curves */
+    --radius: 0rem;
+
+    /* Premium Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(220, 40%, 20%), hsl(220, 35%, 25%));
+    --gradient-accent: linear-gradient(135deg, hsl(35, 80%, 55%), hsl(35, 85%, 60%));
+    --gradient-subtle: linear-gradient(180deg, hsl(32, 20%, 97%), hsl(35, 25%, 95%));
+
+    /* Professional Shadows */
+    --shadow-book: 0 4px 20px rgba(0, 0, 0, 0.1);
+    --shadow-elevated: 0 8px 32px rgba(0, 0, 0, 0.12);
+    --shadow-preview: 0 25px 50px rgba(0, 0, 0, 0.25);
+
+    /* Animation Transitions */
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-book: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+
+    --sidebar-background: 0 0% 98%;
+
+    --sidebar-foreground: 240 5.3% 26.1%;
+
+    --sidebar-primary: 240 5.9% 10%;
+
+    --sidebar-primary-foreground: 0 0% 98%;
+
+    --sidebar-accent: 240 4.8% 95.9%;
+
+    --sidebar-accent-foreground: 240 5.9% 10%;
+
+    --sidebar-border: 220 13% 91%;
+
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  .dark {
+    --background: 220 40% 8%;
+    --foreground: 32 20% 95%;
+
+    --card: 220 35% 12%;
+    --card-foreground: 32 20% 95%;
+
+    --popover: 220 35% 12%;
+    --popover-foreground: 32 20% 95%;
+
+    --primary: 32 20% 95%;
+    --primary-foreground: 220 40% 20%;
+
+    --secondary: 220 30% 18%;
+    --secondary-foreground: 32 20% 95%;
+
+    --accent: 35 80% 55%;
+    --accent-foreground: 220 40% 10%;
+
+    --muted: 220 30% 18%;
+    --muted-foreground: 220 15% 65%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 220 30% 25%;
+    --input: 220 30% 25%;
+    --ring: 35 80% 55%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border transition-colors duration-200;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Inter', sans-serif;
+    font-feature-settings: "rlig" 1, "calt" 1;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Playfair Display', serif;
+  }
+}
+
+@layer components {
+  /* Professional Book Styles */
+  .book-shadow {
+    box-shadow: var(--shadow-book);
+  }
+
+  .book-elevated {
+    box-shadow: var(--shadow-elevated);
+  }
+
+  .book-preview-shadow {
+    box-shadow: var(--shadow-preview);
+  }
+
+  .transition-book {
+    transition: var(--transition-book);
+  }
+
+  .gradient-primary {
+    background: var(--gradient-primary);
+  }
+
+  .gradient-accent {
+    background: var(--gradient-accent);
+  }
+
+  .gradient-subtle {
+    background: var(--gradient-subtle);
+  }
+
+  /* Book Hover Effects */
+  .book-hover:hover {
+    transform: translateY(-4px) scale(1.02);
+  }
+
+  /* Professional Button Variants */
+  .btn-professional {
+    @apply bg-primary text-primary-foreground hover:bg-primary/90 px-8 py-3 font-medium transition-all duration-300;
+  }
+
+  .btn-accent {
+    @apply bg-accent text-accent-foreground hover:bg-accent/90 px-8 py-3 font-medium transition-all duration-300;
+  }
+
+  .btn-outline-professional {
+    @apply border-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground px-8 py-3 font-medium transition-all duration-300;
+  }
+}
