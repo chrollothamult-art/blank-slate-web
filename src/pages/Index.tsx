@@ -4,7 +4,6 @@ import { BookDisplay } from "@/components/BookDisplay";
 import { BookGallery } from "@/components/BookGallery";
 import { CartSidebar, CartItem } from "@/components/CartSidebar";
 import { Button } from "@/components/ui/button";
-import { ShoppingCart } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import bookCollection from "@/assets/book-collection.jpg";
 import { Footer } from "@/components/Footer";
@@ -116,22 +115,6 @@ const Index = () => {
         </Button>
       </div>
 
-      {/* Header with Cart Button */}
-      <div className="fixed top-20 md:top-4 right-2 md:right-4 z-50">
-        <Button 
-          variant="outline" 
-          size="icon"
-          className="bg-background/80 backdrop-blur h-9 w-9 md:h-10 md:w-10"
-          onClick={() => setIsCartOpen(true)}
-        >
-          <ShoppingCart className="h-4 w-4 md:h-5 md:w-5" />
-          {cartItems.length > 0 && (
-            <span className="absolute -top-2 -right-2 bg-accent text-accent-foreground text-xs rounded-full h-5 w-5 flex items-center justify-center">
-              {cartItems.reduce((sum, item) => sum + item.quantity, 0)}
-            </span>
-          )}
-        </Button>
-      </div>
 
       {/* Featured Book Section */}
       <section className="py-6 md:py-12 px-4 md:px-0">

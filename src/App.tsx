@@ -6,7 +6,9 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "next-themes";
 import { BooksProvider } from "@/contexts/BooksContext";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { CartProvider } from "@/contexts/CartContext";
 import { Header } from "./components/Header";
+import { GlobalCartSidebar } from "./components/GlobalCartSidebar";
 import Index from "./pages/Index";
 import { Forum } from "./pages/Forum";
 import { Admin } from "./pages/Admin";
@@ -29,12 +31,14 @@ const App = () => (
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange={false}>
       <TooltipProvider>
         <AuthProvider>
-          <BooksProvider>
-            <Toaster />
-            <Sonner />
+          <CartProvider>
+            <BooksProvider>
+              <Toaster />
+              <Sonner />
             <BrowserRouter>
               <div className="min-h-screen bg-background transition-colors duration-300">
                 <Header />
+                <GlobalCartSidebar />
                 <Routes>
                   <Route path="/" element={<Index />} />
                   <Route path="/forum" element={<Forum />} />
@@ -55,7 +59,8 @@ const App = () => (
               </div>
             </BrowserRouter>
           </BooksProvider>
-        </AuthProvider>
+        </CartProvider>
+      </AuthProvider>
       </TooltipProvider>
     </ThemeProvider>
   </QueryClientProvider>

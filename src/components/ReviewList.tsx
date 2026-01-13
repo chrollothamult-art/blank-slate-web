@@ -13,6 +13,7 @@ interface Review {
   title: string;
   comment: string;
   created_at: string;
+  displayName?: string;
 }
 
 interface ReviewListProps {
@@ -29,14 +30,34 @@ export const ReviewList = ({ bookId }: ReviewListProps) => {
 
   const fetchReviews = async () => {
     setLoading(true);
-    const { data, error } = await supabase
+    
+    // Fetch reviews
+    const { data: reviewsData, error } = await supabase
       .from("reviews")
       .select("*")
       .eq("book_id", bookId)
       .order("created_at", { ascending: false });
 
-    if (data) {
-      setReviews(data);
+    if (reviewsData && reviewsData.length > 0) {
+      // Fetch profiles for all user IDs
+      const userIds = reviewsData.map((r) => r.user_id);
+      const { data: profiles } = await supabase
+        .from("profiles")
+        .select("id, username, full_name")
+        .in("id", userIds);
+
+      const profilesMap = new Map(
+        profiles?.map((p) => [p.id, p.full_name || p.username || "Anonymous Reader"]) || []
+      );
+
+      const reviewsWithNames = reviewsData.map((review) => ({
+        ...review,
+        displayName: profilesMap.get(review.user_id) || "Anonymous Reader",
+      }));
+
+      setReviews(reviewsWithNames);
+    } else {
+      setReviews([]);
     }
     setLoading(false);
   };
@@ -86,13 +107,13 @@ export const ReviewList = ({ bookId }: ReviewListProps) => {
           <div className="flex items-start space-x-4">
             <Avatar>
               <AvatarFallback>
-                {review.user_id.charAt(0).toUpperCase()}
+                {(review.displayName || "A").charAt(0).toUpperCase()}
               </AvatarFallback>
             </Avatar>
             <div className="flex-1 space-y-2">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="font-semibold">Verified Buyer</p>
+                  <p className="font-semibold">{review.displayName}</p>
                   <p className="text-sm text-muted-foreground">
                     {format(new Date(review.created_at), "MMM dd, yyyy")}
                   </p>
