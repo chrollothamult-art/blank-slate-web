@@ -2,8 +2,8 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 
-const SUPABASE_URL = "https://pwbpbsyagyoytniidoah.supabase.co";
-const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB3YnBic3lhZ3lveXRuaWlkb2FoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE5MTA2ODcsImV4cCI6MjA2NzQ4NjY4N30.YXHJqlOUTxqUNyNog9W6tFWgYExrXEmbrBrEgbnF9Jw";
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";
@@ -13,12 +13,5 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABL
     storage: localStorage,
     persistSession: true,
     autoRefreshToken: true,
-   detectSessionInUrl: true,
-  }
-});
-
-supabase.auth.onAuthStateChange((event) => {
-  if (event === "TOKEN_REFRESHED") {
-    console.log("✅ Token refreshed successfully");
   }
 });
