@@ -7,7 +7,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useWishlist } from "@/hooks/useWishlist";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { Heart, Trash2, BookOpen } from "lucide-react";
+import { Heart, ShoppingCart, Trash2, BookOpen } from "lucide-react";
+import { WishlistButton } from "@/components/WishlistButton";
 import defaultCover from "@/assets/book-cover-default.jpg";
 
 interface Book {

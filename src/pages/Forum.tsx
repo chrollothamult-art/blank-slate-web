@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
+import { Skeleton } from "@/components/ui/skeleton";
 import { 
   MessageSquare, 
   Users, 
@@ -24,6 +25,15 @@ import {
   Trash2,
   MoreVertical
 } from "lucide-react";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+  PaginationEllipsis,
+} from "@/components/ui/pagination";
 
 interface ForumPost {
   id: string;
@@ -49,6 +59,8 @@ const categories = [
   "General"
 ];
 
+const ITEMS_PER_PAGE = 10;
+
 export const Forum = () => {
   const { user, profile } = useAuth();
   const navigate = useNavigate();
@@ -58,6 +70,7 @@ export const Forum = () => {
   const [showNewPost, setShowNewPost] = useState(false);
   const [posts, setPosts] = useState<ForumPost[]>([]);
   const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
   const [stats, setStats] = useState({
     totalPosts: 0,
     totalMembers: 0,
@@ -220,13 +233,80 @@ export const Forum = () => {
     }
   };
 
-  const filteredPosts = posts.filter((post) => {
-    const matchesCategory = selectedCategory === "All" || post.category === selectedCategory;
-    const matchesSearch =
-      post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      post.content.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesCategory && matchesSearch;
-  });
+  const filteredPosts = useMemo(() => {
+    return posts.filter((post) => {
+      const matchesCategory = selectedCategory === "All" || post.category === selectedCategory;
+      const matchesSearch =
+        post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        post.content.toLowerCase().includes(searchQuery.toLowerCase());
+      return matchesCategory && matchesSearch;
+    });
+  }, [posts, selectedCategory, searchQuery]);
+
+  // Pagination logic
+  const totalPages = Math.ceil(filteredPosts.length / ITEMS_PER_PAGE);
+  const paginatedPosts = useMemo(() => {
+    const start = (currentPage - 1) * ITEMS_PER_PAGE;
+    return filteredPosts.slice(start, start + ITEMS_PER_PAGE);
+  }, [filteredPosts, currentPage]);
+
+  // Reset to page 1 when filters/search change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedCategory, searchQuery]);
+
+  const renderPagination = () => {
+    if (totalPages <= 1) return null;
+
+    const pages: (number | "ellipsis")[] = [];
+    if (totalPages <= 5) {
+      for (let i = 1; i <= totalPages; i++) pages.push(i);
+    } else {
+      pages.push(1);
+      if (currentPage > 3) pages.push("ellipsis");
+      for (let i = Math.max(2, currentPage - 1); i <= Math.min(totalPages - 1, currentPage + 1); i++) {
+        pages.push(i);
+      }
+      if (currentPage < totalPages - 2) pages.push("ellipsis");
+      pages.push(totalPages);
+    }
+
+    return (
+      <Pagination className="mt-6">
+        <PaginationContent>
+          <PaginationItem>
+            <PaginationPrevious
+              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+              className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+            />
+          </PaginationItem>
+          {pages.map((page, idx) =>
+            page === "ellipsis" ? (
+              <PaginationItem key={`ellipsis-${idx}`}>
+                <PaginationEllipsis />
+              </PaginationItem>
+            ) : (
+              <PaginationItem key={page}>
+                <PaginationLink
+                  onClick={() => setCurrentPage(page)}
+                  isActive={currentPage === page}
+                  className="cursor-pointer"
+                >
+                  {page}
+                </PaginationLink>
+              </PaginationItem>
+            )
+          )}
+          <PaginationItem>
+            <PaginationNext
+              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+              className={currentPage === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
+            />
+          </PaginationItem>
+        </PaginationContent>
+      </Pagination>
+    );
+  };
 
   const handleLikePost = async (postId: string, currentlyLiked: boolean) => {
     if (!user) {
@@ -547,12 +627,34 @@ export const Forum = () => {
             </Card>
           </div>
 
-          {/* Posts List */}
           <div className="lg:w-3/4 space-y-4">
             {loading ? (
-              <Card className="p-6">
-                <p className="text-center text-muted-foreground">Loading posts...</p>
-              </Card>
+              Array.from({ length: 5 }).map((_, i) => (
+                <Card key={i} className="p-6">
+                  <div className="flex items-start space-x-4">
+                    <Skeleton className="w-10 h-10 rounded-full" />
+                    <div className="flex-1 space-y-3">
+                      <div className="flex gap-2">
+                        <Skeleton className="h-5 w-16" />
+                        <Skeleton className="h-5 w-24" />
+                      </div>
+                      <Skeleton className="h-6 w-3/4" />
+                      <Skeleton className="h-4 w-full" />
+                      <Skeleton className="h-4 w-2/3" />
+                      <div className="flex justify-between pt-2">
+                        <div className="flex gap-4">
+                          <Skeleton className="h-4 w-20" />
+                          <Skeleton className="h-4 w-24" />
+                        </div>
+                        <div className="flex gap-4">
+                          <Skeleton className="h-4 w-12" />
+                          <Skeleton className="h-4 w-12" />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </Card>
+              ))
             ) : filteredPosts.length === 0 ? (
               <Card className="p-6">
                 <p className="text-center text-muted-foreground">
@@ -560,7 +662,8 @@ export const Forum = () => {
                 </p>
               </Card>
             ) : (
-              filteredPosts.map((post) => (
+              <>
+              {paginatedPosts.map((post) => (
                 <Card key={post.id} className="p-6 hover:shadow-md transition-shadow">
                   <div className="flex items-start space-x-4">
                     <Avatar className="w-10 h-10 bg-accent/10 flex items-center justify-center">
@@ -642,7 +745,9 @@ export const Forum = () => {
                     </div>
                   </div>
                 </Card>
-              ))
+              ))}
+              {renderPagination()}
+              </>
             )}
           </div>
         </div>

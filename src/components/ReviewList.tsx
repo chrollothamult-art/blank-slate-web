@@ -13,7 +13,10 @@ interface Review {
   title: string;
   comment: string;
   created_at: string;
-  displayName?: string;
+  profiles?: {
+    username: string | null;
+    avatar_url: string | null;
+  } | null;
 }
 
 interface ReviewListProps {
@@ -31,33 +34,28 @@ export const ReviewList = ({ bookId }: ReviewListProps) => {
   const fetchReviews = async () => {
     setLoading(true);
     
-    // Fetch reviews
-    const { data: reviewsData, error } = await supabase
+    // First fetch reviews
+    const { data: reviewsData, error: reviewsError } = await supabase
       .from("reviews")
       .select("*")
       .eq("book_id", bookId)
       .order("created_at", { ascending: false });
 
-    if (reviewsData && reviewsData.length > 0) {
-      // Fetch profiles for all user IDs
+    if (reviewsData) {
+      // Then fetch profiles for each review
       const userIds = reviewsData.map((r) => r.user_id);
-      const { data: profiles } = await supabase
+      const { data: profilesData } = await supabase
         .from("profiles")
-        .select("id, username, full_name")
+        .select("id, username, avatar_url")
         .in("id", userIds);
 
-      const profilesMap = new Map(
-        profiles?.map((p) => [p.id, p.full_name || p.username || "Anonymous Reader"]) || []
-      );
-
-      const reviewsWithNames = reviewsData.map((review) => ({
+      // Merge profiles into reviews
+      const reviewsWithProfiles = reviewsData.map((review) => ({
         ...review,
-        displayName: profilesMap.get(review.user_id) || "Anonymous Reader",
+        profiles: profilesData?.find((p) => p.id === review.user_id) || null,
       }));
 
-      setReviews(reviewsWithNames);
-    } else {
-      setReviews([]);
+      setReviews(reviewsWithProfiles);
     }
     setLoading(false);
   };
@@ -107,13 +105,13 @@ export const ReviewList = ({ bookId }: ReviewListProps) => {
           <div className="flex items-start space-x-4">
             <Avatar>
               <AvatarFallback>
-                {(review.displayName || "A").charAt(0).toUpperCase()}
+                {(review.profiles?.username || "U").charAt(0).toUpperCase()}
               </AvatarFallback>
             </Avatar>
             <div className="flex-1 space-y-2">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="font-semibold">{review.displayName}</p>
+                  <p className="font-semibold">{review.profiles?.username || "Anonymous"}</p>
                   <p className="text-sm text-muted-foreground">
                     {format(new Date(review.created_at), "MMM dd, yyyy")}
                   </p>

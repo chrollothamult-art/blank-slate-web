@@ -11,7 +11,9 @@ import {
   Users,
   TrendingUp,
   LogOut,
-  Mail
+  Mail,
+  Network,
+  User
 } from "lucide-react";
 import { ChronologyManager } from "@/components/ChronologyManager";
 import { BookManager } from "@/components/admin/BookManager";
@@ -20,6 +22,8 @@ import { OrdersManager } from "@/components/admin/OrdersManager";
 import { CustomersManager } from "@/components/admin/CustomersManager";
 import { AnalyticsManager } from "@/components/admin/AnalyticsManager";
 import { NewsletterManager } from "@/components/admin/NewsletterManager";
+import { CharacterRelationshipManager } from "@/components/admin/CharacterRelationshipManager";
+import { CharactersManager } from "@/components/admin/CharactersManager";
 
 export const Admin = () => {
   const { books } = useBooks();
@@ -148,10 +152,18 @@ export const Admin = () => {
       {/* Main Content */}
       <div className="container mx-auto px-4 py-8">
         <Tabs defaultValue="books" className="space-y-8">
-          <TabsList className="grid w-full grid-cols-7">
+          <TabsList className="grid w-full grid-cols-9">
             <TabsTrigger value="books">Books</TabsTrigger>
             <TabsTrigger value="chronology">Chronology</TabsTrigger>
             <TabsTrigger value="almanac">Almanac</TabsTrigger>
+            <TabsTrigger value="characters">
+              <User className="h-4 w-4 mr-1" />
+              Characters
+            </TabsTrigger>
+            <TabsTrigger value="relationships">
+              <Network className="h-4 w-4 mr-1" />
+              Links
+            </TabsTrigger>
             <TabsTrigger value="orders">Orders</TabsTrigger>
             <TabsTrigger value="customers">Customers</TabsTrigger>
             <TabsTrigger value="newsletter">Newsletter</TabsTrigger>
@@ -168,6 +180,14 @@ export const Admin = () => {
 
           <TabsContent value="chronology" className="space-y-6">
             <ChronologyManager />
+          </TabsContent>
+
+          <TabsContent value="characters" className="space-y-6">
+            <CharactersManager />
+          </TabsContent>
+
+          <TabsContent value="relationships" className="space-y-6">
+            <CharacterRelationshipManager />
           </TabsContent>
 
           <TabsContent value="orders" className="space-y-6">

@@ -8,7 +8,6 @@ import { BooksProvider } from "@/contexts/BooksContext";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { CartProvider } from "@/contexts/CartContext";
 import { Header } from "./components/Header";
-import { GlobalCartSidebar } from "./components/GlobalCartSidebar";
 import Index from "./pages/Index";
 import { Forum } from "./pages/Forum";
 import { Admin } from "./pages/Admin";
@@ -17,10 +16,12 @@ import { Auth } from "./pages/Auth";
 import { MyBooks } from "./pages/MyBooks";
 import { Checkout } from "./pages/Checkout";
 import { Settings } from "./pages/Settings";
+import ProfilePage from "./pages/Profile";
 import EventDetail from "./pages/EventDetail";
 import AlmanacCategory from "./pages/AlmanacCategory";
 import Wishlist from "./pages/Wishlist";
 import Books from "./pages/Books";
+import RelationshipsMap from "./pages/RelationshipsMap";
 import { ChronologyTimeline } from "./components/ChronologyTimeline";
 import NotFound from "./pages/NotFound";
 
@@ -35,12 +36,13 @@ const App = () => (
             <BooksProvider>
               <Toaster />
               <Sonner />
-            <BrowserRouter>
-              <div className="min-h-screen bg-background transition-colors duration-300">
-                <Header />
-                <GlobalCartSidebar />
-                <Routes>
+              <BrowserRouter>
+                <div className="min-h-screen bg-background transition-colors duration-300">
+                  <Header />
+                  <Routes>
                   <Route path="/" element={<Index />} />
+                  <Route path="/profile" element={<ProfilePage />} />
+                  <Route path="/profile/:userId" element={<ProfilePage />} />
                   <Route path="/forum" element={<Forum />} />
                   <Route path="/admin" element={<Admin />} />
                   <Route path="/admin-auth" element={<AdminAuth />} />
@@ -53,14 +55,15 @@ const App = () => (
                   <Route path="/chronology" element={<ChronologyTimeline />} />
                   <Route path="/chronology/:eventId" element={<EventDetail />} />
                   <Route path="/almanac/:categoryId" element={<AlmanacCategory />} />
+                  <Route path="/relationships" element={<RelationshipsMap />} />
                   {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </div>
             </BrowserRouter>
           </BooksProvider>
-        </CartProvider>
-      </AuthProvider>
+          </CartProvider>
+        </AuthProvider>
       </TooltipProvider>
     </ThemeProvider>
   </QueryClientProvider>

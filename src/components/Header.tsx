@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { useCart } from "@/contexts/CartContext";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import {
@@ -13,6 +12,10 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/contexts/AuthContext";
+import { useCart } from "@/contexts/CartContext";
+import { CartSidebar } from "@/components/CartSidebar";
+import { StreakBadge } from "@/components/StreakBadge";
+import { NotificationBell } from "@/components/NotificationBell";
 import { 
   Search, 
   ShoppingCart, 
@@ -24,7 +27,9 @@ import {
   Settings as SettingsIcon,
   LogOut,
   Library,
-  Heart
+  Heart,
+  Trophy,
+  UserCircle
 } from "lucide-react";
 import thouartLogo from "@/assets/thouart-logo.png";
 import { ThemeToggle } from "./ThemeToggle";
@@ -35,7 +40,7 @@ export const Header = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, profile, signOut } = useAuth();
-  const { totalItems, setIsOpen: setCartOpen } = useCart();
+  const { totalItems, openCart, isOpen, closeCart, items, updateQuantity, removeFromCart } = useCart();
 
   const navigation = [
     { name: "Books", href: "/books", icon: BookOpen },
@@ -101,6 +106,12 @@ export const Header = () => {
 
           {/* Right Side Actions */}
           <div className="flex items-center space-x-2">
+            {/* Reading Streak Badge */}
+            <StreakBadge size="sm" />
+            
+            {/* Notifications */}
+            {user && <NotificationBell />}
+            
             {/* Theme Toggle */}
             <ThemeToggle />
             {/* User Account */}
@@ -119,6 +130,10 @@ export const Header = () => {
                     </div>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => navigate("/profile")}>
+                    <UserCircle className="mr-2 h-4 w-4" />
+                    <span>My Profile</span>
+                  </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => navigate("/my-books")}>
                     <Library className="mr-2 h-4 w-4" />
                     <span>My Books</span>
@@ -130,6 +145,10 @@ export const Header = () => {
                   <DropdownMenuItem onClick={() => navigate("/settings")}>
                     <SettingsIcon className="mr-2 h-4 w-4" />
                     <span>Settings</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate("/settings#achievements")}>
+                    <Trophy className="mr-2 h-4 w-4" />
+                    <span>Achievements</span>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleSignOut}>
@@ -145,12 +164,7 @@ export const Header = () => {
             )}
 
             {/* Shopping Cart */}
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              className="relative"
-              onClick={() => setCartOpen(true)}
-            >
+            <Button variant="ghost" size="icon" className="relative" onClick={openCart}>
               <ShoppingCart className="h-5 w-5" />
               {totalItems > 0 && (
                 <Badge 
@@ -161,6 +175,15 @@ export const Header = () => {
                 </Badge>
               )}
             </Button>
+
+            {/* Cart Sidebar */}
+            <CartSidebar
+              isOpen={isOpen}
+              onClose={closeCart}
+              items={items}
+              onUpdateQuantity={updateQuantity}
+              onRemoveItem={removeFromCart}
+            />
 
             {/* Mobile Menu Toggle */}
             <Button

@@ -9,7 +9,7 @@ interface EventRelationship {
   id: string;
   source_event_id: string;
   target_event_id: string;
-  relationship_type: string;
+  relationship_type: "causes" | "caused_by" | "related_to" | "precedes" | "follows";
   description?: string;
   source_event?: {
     title: string;
@@ -85,42 +85,37 @@ export const EventRelationshipMap = ({
     try {
       setLoading(true);
 
-      // Fetch relationships
       const { data: outgoing } = await supabase
         .from("chronology_event_relationships")
-        .select("id, source_event_id, target_event_id, relationship_type, description")
+        .select(`
+          id,
+          source_event_id,
+          target_event_id,
+          relationship_type,
+          description,
+          source_event:chronology_events!chronology_event_relationships_source_event_id_fkey(title, date),
+          target_event:chronology_events!chronology_event_relationships_target_event_id_fkey(title, date)
+        `)
         .eq("source_event_id", eventId);
 
       const { data: incoming } = await supabase
         .from("chronology_event_relationships")
-        .select("id, source_event_id, target_event_id, relationship_type, description")
+        .select(`
+          id,
+          source_event_id,
+          target_event_id,
+          relationship_type,
+          description,
+          source_event:chronology_events!chronology_event_relationships_source_event_id_fkey(title, date),
+          target_event:chronology_events!chronology_event_relationships_target_event_id_fkey(title, date)
+        `)
         .eq("target_event_id", eventId);
 
-      const allRelationshipsRaw = [...(outgoing || []), ...(incoming || [])];
-
-      // Get all unique event IDs to fetch
-      const eventIds = new Set<string>();
-      allRelationshipsRaw.forEach((rel) => {
-        eventIds.add(rel.source_event_id);
-        eventIds.add(rel.target_event_id);
-      });
-
-      // Fetch all related events
-      const { data: events } = await supabase
-        .from("chronology_events")
-        .select("id, title, date")
-        .in("id", Array.from(eventIds));
-
-      const eventsMap = new Map(events?.map((e) => [e.id, e]) || []);
-
-      // Map relationships with event data
-      const enrichedRelationships: EventRelationship[] = allRelationshipsRaw.map((rel) => ({
+      const allRelationships = [...(outgoing || []), ...(incoming || [])].map((rel) => ({
         ...rel,
-        source_event: eventsMap.get(rel.source_event_id),
-        target_event: eventsMap.get(rel.target_event_id),
+        relationship_type: rel.relationship_type as EventRelationship["relationship_type"],
       }));
-
-      setRelationships(enrichedRelationships);
+      setRelationships(allRelationships);
     } catch (error) {
       console.error("Failed to fetch relationships:", error);
     } finally {

@@ -2,17 +2,16 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { BookDisplay } from "@/components/BookDisplay";
 import { BookGallery } from "@/components/BookGallery";
-import { CartSidebar, CartItem } from "@/components/CartSidebar";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import bookCollection from "@/assets/book-collection.jpg";
 import { Footer } from "@/components/Footer";
+import { useCart } from "@/contexts/CartContext";
 
 const Index = () => {
   const navigate = useNavigate();
   const [selectedBook, setSelectedBook] = useState<any>(undefined);
-  const [cartItems, setCartItems] = useState<CartItem[]>([]);
-  const [isCartOpen, setIsCartOpen] = useState(false);
+  const { addToCart } = useCart();
 
   useEffect(() => {
     fetchMostRecentBook();
@@ -67,38 +66,8 @@ const Index = () => {
     }
   };
 
-  const handleAddToCart = (item: CartItem) => {
-    setCartItems(prev => {
-      const existingItemIndex = prev.findIndex(
-        cartItem => cartItem.id === item.id && cartItem.version === item.version
-      );
-      
-      if (existingItemIndex >= 0) {
-        const updated = [...prev];
-        updated[existingItemIndex].quantity += item.quantity;
-        return updated;
-      } else {
-        return [...prev, { ...item, id: `${item.id}-${item.version}` }];
-      }
-    });
-    setIsCartOpen(true);
-  };
-
-  const handleUpdateQuantity = (id: string, quantity: number) => {
-    if (quantity <= 0) {
-      handleRemoveItem(id);
-      return;
-    }
-    
-    setCartItems(prev => 
-      prev.map(item => 
-        item.id === id ? { ...item, quantity } : item
-      )
-    );
-  };
-
-  const handleRemoveItem = (id: string) => {
-    setCartItems(prev => prev.filter(item => item.id !== id));
+  const handleAddToCart = (item: { id: string; title: string; author: string; price: number; version: "ebook" | "paperback" | "hardcover"; cover?: string }) => {
+    addToCart(item);
   };
 
   return (
@@ -115,7 +84,6 @@ const Index = () => {
         </Button>
       </div>
 
-
       {/* Featured Book Section */}
       <section className="py-6 md:py-12 px-4 md:px-0">
         <div className="container mx-auto">
@@ -128,15 +96,6 @@ const Index = () => {
 
       {/* Footer */}
       <Footer />
-
-      {/* Cart Sidebar */}
-      <CartSidebar 
-        isOpen={isCartOpen}
-        onClose={() => setIsCartOpen(false)}
-        items={cartItems}
-        onUpdateQuantity={handleUpdateQuantity}
-        onRemoveItem={handleRemoveItem}
-      />
     </div>
   );
 };

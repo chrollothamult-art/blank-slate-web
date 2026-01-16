@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/select";
 import { Star, ShoppingCart, BookOpen } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { Skeleton } from "@/components/ui/skeleton";
 import { WishlistButton } from "@/components/WishlistButton";
 import { BookSearchBar } from "@/components/BookSearchBar";
 import { BookFilters, ActiveFilters, FilterState } from "@/components/BookFilters";
@@ -19,6 +20,15 @@ import { Footer } from "@/components/Footer";
 import { useCart } from "@/contexts/CartContext";
 import { useToast } from "@/hooks/use-toast";
 import bookCollection from "@/assets/book-collection.jpg";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+  PaginationEllipsis,
+} from "@/components/ui/pagination";
 
 type SortOption = "newest" | "price-asc" | "price-desc" | "rating" | "title";
 
@@ -37,10 +47,12 @@ const defaultFilters: FilterState = {
   formats: [],
 };
 
+const ITEMS_PER_PAGE = 12;
+
 export const Books = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
-  const { addItem } = useCart();
+  const { addToCart } = useCart();
   const { toast } = useToast();
   
   const [books, setBooks] = useState<any[]>([]);
@@ -48,6 +60,7 @@ export const Books = () => {
   const [sortBy, setSortBy] = useState<SortOption>("newest");
   const [filters, setFilters] = useState<FilterState>(defaultFilters);
   const [searchQuery, setSearchQuery] = useState(searchParams.get("search") || "");
+  const [currentPage, setCurrentPage] = useState(1);
 
   // Fetch books from database
   useEffect(() => {
@@ -180,9 +193,75 @@ export const Books = () => {
     return result;
   }, [books, searchQuery, filters, sortBy]);
 
+  // Pagination logic
+  const totalPages = Math.ceil(filteredBooks.length / ITEMS_PER_PAGE);
+  const paginatedBooks = useMemo(() => {
+    const start = (currentPage - 1) * ITEMS_PER_PAGE;
+    return filteredBooks.slice(start, start + ITEMS_PER_PAGE);
+  }, [filteredBooks, currentPage]);
+
+  // Reset to page 1 when filters/search change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, filters, sortBy]);
+
+  const renderPagination = () => {
+    if (totalPages <= 1) return null;
+
+    const pages: (number | "ellipsis")[] = [];
+    if (totalPages <= 5) {
+      for (let i = 1; i <= totalPages; i++) pages.push(i);
+    } else {
+      pages.push(1);
+      if (currentPage > 3) pages.push("ellipsis");
+      for (let i = Math.max(2, currentPage - 1); i <= Math.min(totalPages - 1, currentPage + 1); i++) {
+        pages.push(i);
+      }
+      if (currentPage < totalPages - 2) pages.push("ellipsis");
+      pages.push(totalPages);
+    }
+
+    return (
+      <Pagination className="mt-8">
+        <PaginationContent>
+          <PaginationItem>
+            <PaginationPrevious
+              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+              className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+            />
+          </PaginationItem>
+          {pages.map((page, idx) =>
+            page === "ellipsis" ? (
+              <PaginationItem key={`ellipsis-${idx}`}>
+                <PaginationEllipsis />
+              </PaginationItem>
+            ) : (
+              <PaginationItem key={page}>
+                <PaginationLink
+                  onClick={() => setCurrentPage(page)}
+                  isActive={currentPage === page}
+                  className="cursor-pointer"
+                >
+                  {page}
+                </PaginationLink>
+              </PaginationItem>
+            )
+          )}
+          <PaginationItem>
+            <PaginationNext
+              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+              className={currentPage === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
+            />
+          </PaginationItem>
+        </PaginationContent>
+      </Pagination>
+    );
+  };
+
   const handleClearFilters = () => {
     setFilters(defaultFilters);
     setSearchQuery("");
+    setCurrentPage(1);
   };
 
   const renderStars = (rating: number) => {
@@ -200,41 +279,48 @@ export const Books = () => {
     ));
   };
 
-  const handleQuickAdd = (e: React.MouseEvent, book: any) => {
-    e.stopPropagation();
-    
+  const handleBookClick = (book: any) => {
+    navigate(`/?book=${book.id}`);
+  };
+
+  const handleQuickAdd = (book: any) => {
+    if (!book.book_versions || book.book_versions.length === 0) {
+      toast({
+        title: "Unavailable",
+        description: "This book has no available versions",
+        variant: "destructive",
+      });
+      return;
+    }
+
     // Get the cheapest available version
-    const availableVersions = book.book_versions?.filter((v: any) => v.available) || [];
+    const availableVersions = book.book_versions.filter((v: any) => v.available);
     if (availableVersions.length === 0) {
       toast({
-        title: "Not available",
+        title: "Unavailable",
         description: "This book is currently out of stock",
         variant: "destructive",
       });
       return;
     }
 
-    const cheapestVersion = availableVersions.reduce((min: any, v: any) => 
+    const cheapestVersion = availableVersions.reduce((min: any, v: any) =>
       parseFloat(v.price) < parseFloat(min.price) ? v : min
     );
 
-    addItem({
+    addToCart({
       id: book.id,
       title: book.title,
-      cover: book.cover_image_url || bookCollection,
-      version: cheapestVersion.version_type,
+      author: book.author,
       price: parseFloat(cheapestVersion.price),
-      quantity: 1,
+      version: cheapestVersion.version_type,
+      cover: book.cover_image_url,
     });
 
     toast({
       title: "Added to cart",
       description: `${book.title} (${cheapestVersion.version_type}) added to your cart`,
     });
-  };
-
-  const handleBookClick = (book: any) => {
-    navigate(`/?book=${book.id}`);
   };
 
   return (
@@ -278,15 +364,6 @@ export const Books = () => {
             {/* Toolbar */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
               <div className="flex items-center gap-4">
-                {/* Mobile filter trigger is inside BookFilters */}
-                <div className="lg:hidden">
-                  <BookFilters
-                    filters={filters}
-                    onFiltersChange={setFilters}
-                    onClearAll={handleClearFilters}
-                    activeFilterCount={activeFilterCount}
-                  />
-                </div>
                 <span className="text-sm text-muted-foreground">
                   {filteredBooks.length} book{filteredBooks.length !== 1 ? "s" : ""} found
                 </span>
@@ -319,11 +396,22 @@ export const Books = () => {
             {loading && (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 {Array.from({ length: 8 }).map((_, i) => (
-                  <Card key={i} className="p-4 animate-pulse">
-                    <div className="w-full aspect-[2/3] bg-muted mb-4" />
-                    <div className="h-4 bg-muted w-1/3 mb-2" />
-                    <div className="h-5 bg-muted w-full mb-2" />
-                    <div className="h-4 bg-muted w-2/3" />
+                  <Card key={i} className="overflow-hidden">
+                    <div className="p-4">
+                      <Skeleton className="w-full aspect-[2/3] mb-4" />
+                      <Skeleton className="h-5 w-16 mb-3" />
+                      <Skeleton className="h-6 w-full mb-2" />
+                      <Skeleton className="h-4 w-24 mb-3" />
+                      <div className="flex gap-1 mb-3">
+                        {Array.from({ length: 5 }).map((_, j) => (
+                          <Skeleton key={j} className="h-3 w-3" />
+                        ))}
+                      </div>
+                      <div className="flex justify-between pt-2">
+                        <Skeleton className="h-6 w-16" />
+                        <Skeleton className="h-4 w-14" />
+                      </div>
+                    </div>
                   </Card>
                 ))}
               </div>
@@ -347,8 +435,9 @@ export const Books = () => {
 
             {/* Books Grid */}
             {!loading && filteredBooks.length > 0 && (
+              <>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {filteredBooks.map((book) => (
+                {paginatedBooks.map((book) => (
                   <Card
                     key={book.id}
                     className="cursor-pointer transition-all duration-300 hover:shadow-lg hover:-translate-y-2 bg-card overflow-hidden"
@@ -373,7 +462,10 @@ export const Books = () => {
                             size="sm"
                             variant="secondary"
                             className="bg-background/90 backdrop-blur"
-                            onClick={(e) => handleQuickAdd(e, book)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleQuickAdd(book);
+                            }}
                           >
                             <ShoppingCart className="h-4 w-4 mr-2" />
                             Quick Add
@@ -430,6 +522,8 @@ export const Books = () => {
                   </Card>
                 ))}
               </div>
+              {renderPagination()}
+              </>
             )}
           </div>
         </div>

@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { BookOpen, FileText, Clock, CheckCircle } from "lucide-react";
 import { ReadingProgress, formatReadingTime } from "@/hooks/useReadingProgress";
+import { ShareProgressButton } from "@/components/ShareProgressButton";
 import { formatDistanceToNow } from "date-fns";
 
 interface Purchase {
@@ -95,15 +96,26 @@ export const BookProgressCard = ({ purchase, progress, onRead }: BookProgressCar
           
           {/* Reading stats for ebooks */}
           {isEbook && progress && (
-            <div className="flex items-center gap-4 pt-2 border-t">
-              <div className="flex items-center gap-1">
-                <Clock className="h-3 w-3" />
-                <span>{formatReadingTime(progress.time_spent_seconds)}</span>
+            <div className="space-y-2 pt-2 border-t">
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-1">
+                  <Clock className="h-3 w-3" />
+                  <span>{formatReadingTime(progress.time_spent_seconds)}</span>
+                </div>
+                {progress.last_read_at && (
+                  <span className="text-xs">
+                    Last read {formatDistanceToNow(new Date(progress.last_read_at), { addSuffix: true })}
+                  </span>
+                )}
               </div>
-              {progress.last_read_at && (
-                <span className="text-xs">
-                  Last read {formatDistanceToNow(new Date(progress.last_read_at), { addSuffix: true })}
-                </span>
+              {/* Share progress button */}
+              {(progress.progress_percentage >= 25 || progress.completed) && (
+                <ShareProgressButton
+                  progress={progress}
+                  bookTitle={purchase.book_title}
+                  variant="ghost"
+                  size="sm"
+                />
               )}
             </div>
           )}

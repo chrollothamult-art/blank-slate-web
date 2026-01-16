@@ -6,6 +6,7 @@ import { ArrowLeft, Calendar, Clock } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { EventRelationshipMap } from "@/components/EventRelationshipMap";
+import { Footer } from "@/components/Footer";
 
 interface Event {
   id: string;
@@ -56,26 +57,32 @@ export const EventDetail = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#e8dcc8] flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-xl" style={{ color: '#2c1810' }}>Loading...</p>
+      <div className="min-h-screen flex flex-col bg-[hsl(var(--parchment-bg))]">
+        <div className="flex-1 flex items-center justify-center">
+          <div className="text-center">
+            <p className="text-xl text-[hsl(var(--parchment-brown))]">Loading...</p>
+          </div>
         </div>
+        <Footer />
       </div>
     );
   }
 
   if (!event) {
     return (
-      <div className="min-h-screen bg-[#e8dcc8] flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-4xl font-heading font-bold mb-4" style={{ color: '#2c1810' }}>
-            Event Not Found
-          </h1>
-          <Button onClick={() => navigate('/chronology')}>
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Chronology
-          </Button>
+      <div className="min-h-screen flex flex-col bg-[hsl(var(--parchment-bg))]">
+        <div className="flex-1 flex items-center justify-center">
+          <div className="text-center">
+            <h1 className="text-4xl font-heading font-bold mb-4 text-[hsl(var(--parchment-brown))]">
+              Event Not Found
+            </h1>
+            <Button onClick={() => navigate('/chronology')}>
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Back to Chronology
+            </Button>
+          </div>
         </div>
+        <Footer />
       </div>
     );
   }
@@ -83,61 +90,60 @@ export const EventDetail = () => {
   const currentIndex = allEvents.findIndex((e) => e.id === eventId);
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: '#e8dcc8' }}>
-      <div className="container mx-auto px-4 py-8 max-w-4xl">
+    <div className="min-h-screen flex flex-col bg-[hsl(var(--parchment-bg))]">
+      <div className="flex-1 container mx-auto px-4 py-8 max-w-4xl">
         <Button 
           variant="ghost" 
           onClick={() => navigate("/chronology")}
-          className="mb-6"
-          style={{ color: '#2c1810' }}
+          className="mb-6 text-[hsl(var(--parchment-brown))] hover:bg-[hsl(var(--parchment-card))]"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
           Back to Timeline
         </Button>
 
-        <Card style={{ backgroundColor: '#f5f0e8', borderColor: '#d4a574' }} className="shadow-xl">
+        <Card className="shadow-xl bg-[hsl(var(--parchment-card))] border-[hsl(var(--parchment-border))]">
           <CardHeader className="space-y-4">
-            <div className="flex items-center gap-2 text-sm" style={{ color: '#8a7a6a' }}>
+            <div className="flex items-center gap-2 text-sm text-[hsl(var(--parchment-light-muted))]">
               <Calendar className="h-4 w-4" />
               <span className="font-mono">{event.date}</span>
-              <Separator orientation="vertical" className="h-4" style={{ backgroundColor: '#d4a574' }} />
+              <Separator orientation="vertical" className="h-4 bg-[hsl(var(--parchment-border))]" />
               <Clock className="h-4 w-4" />
               <span>{getEraName(event.era)}</span>
             </div>
             
-            <CardTitle className="text-4xl font-heading" style={{ color: '#2c1810' }}>
+            <CardTitle className="text-4xl font-heading text-[hsl(var(--parchment-brown))]">
               {event.title}
             </CardTitle>
             
-            <p className="text-lg italic border-l-4 pl-4" style={{ color: '#5a4a3a', borderColor: '#c85a3e' }}>
+            <p className="text-lg italic border-l-4 pl-4 text-[hsl(var(--parchment-muted))] border-[hsl(var(--parchment-gold))]">
               {event.description}
             </p>
           </CardHeader>
 
           <CardContent className="space-y-6">
-            <Separator style={{ backgroundColor: '#d4a574' }} />
+            <Separator className="bg-[hsl(var(--parchment-border))]" />
             
             <div className="prose max-w-none">
-              <h2 className="text-2xl font-heading mb-4" style={{ color: '#2c1810' }}>Chronicle</h2>
-              <p className="leading-relaxed whitespace-pre-line" style={{ color: '#2c1810' }}>
+              <h2 className="text-2xl font-heading mb-4 text-[hsl(var(--parchment-brown))]">Chronicle</h2>
+              <p className="leading-relaxed whitespace-pre-line text-[hsl(var(--parchment-brown))]">
                 {event.article}
               </p>
             </div>
 
-            <Separator style={{ backgroundColor: '#d4a574' }} />
+            <Separator className="bg-[hsl(var(--parchment-border))]" />
 
-            <div className="p-4 rounded-lg" style={{ backgroundColor: '#e8dcc8' }}>
-              <h3 className="text-sm font-semibold mb-2" style={{ color: '#8a7a6a' }}>
+            <div className="p-4 rounded-lg bg-[hsl(var(--parchment-bg))]">
+              <h3 className="text-sm font-semibold mb-2 text-[hsl(var(--parchment-light-muted))]">
                 Historical Context
               </h3>
-              <p className="text-sm" style={{ color: '#5a4a3a' }}>
+              <p className="text-sm text-[hsl(var(--parchment-muted))]">
                 This event occurred during the era known as {getEraName(event.era)},
                 a period that shaped the course of world history and left lasting impacts
                 on civilization, magic, and the very fabric of reality itself.
               </p>
             </div>
 
-            <Separator style={{ backgroundColor: '#d4a574' }} />
+            <Separator className="bg-[hsl(var(--parchment-border))]" />
 
             <EventRelationshipMap eventId={eventId || ""} eventTitle={event.title} />
 
@@ -171,6 +177,7 @@ export const EventDetail = () => {
           </CardContent>
         </Card>
       </div>
+      <Footer />
     </div>
   );
 };
