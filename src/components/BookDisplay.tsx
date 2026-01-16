@@ -130,19 +130,19 @@ export const BookDisplay = ({ book, onAddToCart }: BookDisplayProps) => {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 md:p-6 space-y-6 md:space-y-8">
+    <div className="max-w-6xl mx-auto px-4 md:px-6 space-y-4 md:space-y-6">
       {/* Book Display Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8">
+      <div className="flex flex-col md:flex-row gap-6 md:gap-10 items-start">
       {/* Book Cover */}
-      <div className="flex justify-center lg:justify-end">
+      <div className="flex-shrink-0 mx-auto md:mx-0">
         <div className="relative group">
           <img
             src={book.cover || bookCoverDefault}
             alt={book.title}
-            className="w-48 md:w-64 h-auto book-shadow transition-book book-hover cursor-pointer"
+            className="w-56 md:w-72 h-auto book-shadow transition-book book-hover cursor-pointer rounded-sm"
             onClick={() => setShowPreview(true)}
           />
-          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-all duration-300 flex items-center justify-center opacity-0 group-hover:opacity-100">
+          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-all duration-300 flex items-center justify-center opacity-0 group-hover:opacity-100 rounded-sm">
             <Button
               variant="secondary"
               size="sm"
@@ -157,7 +157,7 @@ export const BookDisplay = ({ book, onAddToCart }: BookDisplayProps) => {
       </div>
 
       {/* Book Information */}
-      <div className="space-y-4 md:space-y-6">
+      <div className="flex-1 space-y-3 md:space-y-4">
         {/* Title and Author */}
         <div>
           <Badge variant="secondary" className="mb-2 text-xs md:text-sm">

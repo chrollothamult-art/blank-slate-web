@@ -85,7 +85,7 @@ const Index = () => {
       </div>
 
       {/* Featured Book Section */}
-      <section className="py-6 md:py-12 px-4 md:px-0">
+      <section className="pt-4 pb-6 md:pt-6 md:pb-8 px-4 md:px-0">
         <div className="container mx-auto">
           <BookDisplay book={selectedBook} onAddToCart={handleAddToCart} />
         </div>
