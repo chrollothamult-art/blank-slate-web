@@ -5,10 +5,10 @@ import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import SocialButton from "@/components/ui/social-button";
 import { 
   Star, 
   Heart, 
-  Share2, 
   Eye,
   ShoppingCart,
   Plus,
@@ -272,9 +272,10 @@ export const BookDisplay = ({ book, onAddToCart }: BookDisplayProps) => {
             <Heart className={`h-4 w-4 md:h-5 md:w-5 ${isFavorite ? "fill-current" : ""}`} />
           </Button>
           
-          <Button variant="outline" size="icon" className="h-9 w-9 md:h-10 md:w-10">
-            <Share2 className="h-4 w-4 md:h-5 md:w-5" />
-          </Button>
+          <SocialButton 
+            shareTitle={`${book.title} by ${book.author}`}
+            shareDescription={book.description}
+          />
         </div>
 
         {/* Book Details */}
