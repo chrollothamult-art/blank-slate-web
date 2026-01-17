@@ -23,7 +23,7 @@ import {
   Filter,
   Edit,
   Trash2,
-  MoreVertical
+  ArrowLeft
 } from "lucide-react";
 import {
   Pagination,
@@ -34,6 +34,8 @@ import {
   PaginationPrevious,
   PaginationEllipsis,
 } from "@/components/ui/pagination";
+import { ForumReplySection } from "@/components/community/ForumReplySection";
+import { useForumReplies } from "@/hooks/useForumReplies";
 
 interface ForumPost {
   id: string;
@@ -82,16 +84,16 @@ export const Forum = () => {
     category: "Book Discussion",
     content: "",
   });
-  const [showReplyModal, setShowReplyModal] = useState(false);
   const [selectedPost, setSelectedPost] = useState<ForumPost | null>(null);
-  const [replyContent, setReplyContent] = useState("");
-  const [replies, setReplies] = useState<any[]>([]);
   const [editingPost, setEditingPost] = useState<ForumPost | null>(null);
   const [editPostData, setEditPostData] = useState({
     title: "",
     category: "",
     content: "",
   });
+
+  // Use the threaded replies hook
+  const { replies, loading: repliesLoading, refetch: refetchReplies } = useForumReplies(selectedPost?.id || null);
 
   useEffect(() => {
     fetchPosts();
@@ -350,76 +352,17 @@ export const Forum = () => {
     }
   };
 
-  const handleOpenReply = async (post: ForumPost) => {
-    if (!user) {
-      toast({
-        title: "Authentication required",
-        description: "Please sign in to reply",
-        variant: "destructive",
-      });
-      navigate("/auth");
-      return;
-    }
-
+  const handleOpenReply = (post: ForumPost) => {
     setSelectedPost(post);
-    setShowReplyModal(true);
-
-    // Fetch replies for this post
-    try {
-      const { data, error } = await supabase
-        .from("forum_replies")
-        .select(`
-          id,
-          content,
-          created_at,
-          author_id,
-          profiles (username)
-        `)
-        .eq("post_id", post.id)
-        .order("created_at", { ascending: true });
-
-      if (error) throw error;
-      setReplies(data || []);
-    } catch (error) {
-      console.error("Error fetching replies:", error);
-    }
   };
 
-  const handleCreateReply = async () => {
-    if (!user || !selectedPost || !replyContent.trim()) {
-      toast({
-        title: "Missing information",
-        description: "Please enter a reply",
-        variant: "destructive",
-      });
-      return;
-    }
+  const handleCloseReply = () => {
+    setSelectedPost(null);
+  };
 
-    try {
-      const { error } = await supabase.from("forum_replies").insert({
-        post_id: selectedPost.id,
-        author_id: user.id,
-        content: replyContent,
-      });
-
-      if (error) throw error;
-
-      toast({
-        title: "Success",
-        description: "Your reply has been posted",
-      });
-
-      setReplyContent("");
-      setShowReplyModal(false);
-      fetchPosts();
-    } catch (error: any) {
-      console.error("Error creating reply:", error);
-      toast({
-        title: "Error",
-        description: "Failed to post reply",
-        variant: "destructive",
-      });
-    }
+  const handleRefreshReplies = () => {
+    refetchReplies();
+    fetchPosts(); // Also refresh posts to update reply counts
   };
 
   const handleEditPost = (post: ForumPost) => {
@@ -753,86 +696,68 @@ export const Forum = () => {
         </div>
       </div>
 
-      {/* Reply Modal */}
-      {showReplyModal && selectedPost && (
+      {/* Reply Modal with Threaded Replies */}
+      {selectedPost && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-          <Card className="w-full max-w-2xl mx-4 max-h-[80vh] overflow-y-auto">
-            <div className="p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-playfair font-bold">
-                  {selectedPost.title}
-                </h2>
-                <Button variant="ghost" size="icon" onClick={() => setShowReplyModal(false)}>
+          <Card className="w-full max-w-3xl mx-4 max-h-[90vh] overflow-hidden flex flex-col">
+            <div className="p-6 border-b shrink-0">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <Button variant="ghost" size="icon" onClick={handleCloseReply}>
+                    <ArrowLeft className="h-5 w-5" />
+                  </Button>
+                  <h2 className="text-xl md:text-2xl font-playfair font-bold line-clamp-1">
+                    {selectedPost.title}
+                  </h2>
+                </div>
+                <Button variant="ghost" size="icon" onClick={handleCloseReply}>
                   ×
                 </Button>
               </div>
+            </div>
 
+            <div className="flex-1 overflow-y-auto p-6 space-y-6">
               {/* Original Post */}
-              <Card className="p-4 mb-6 bg-muted/30">
+              <Card className="p-4 bg-muted/30">
                 <div className="flex items-start space-x-3 mb-3">
-                  <Avatar className="w-8 h-8 bg-accent/10 flex items-center justify-center">
-                    <span className="text-xs font-medium text-accent">
+                  <Avatar className="w-10 h-10 bg-accent/10 flex items-center justify-center">
+                    <span className="text-sm font-medium text-accent">
                       {selectedPost.author_username.charAt(0).toUpperCase()}
                     </span>
                   </Avatar>
-                  <div>
-                    <p className="font-medium">{selectedPost.author_username}</p>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <p className="font-medium">{selectedPost.author_username}</p>
+                      <Badge variant="outline" className="text-xs">
+                        {selectedPost.category}
+                      </Badge>
+                    </div>
                     <p className="text-xs text-muted-foreground">{formatDate(selectedPost.created_at)}</p>
                   </div>
                 </div>
-                <p className="text-sm">{selectedPost.content}</p>
+                <p className="text-sm whitespace-pre-wrap">{selectedPost.content}</p>
+                
+                <div className="flex items-center gap-4 mt-4 pt-4 border-t text-sm text-muted-foreground">
+                  <span className="flex items-center gap-1">
+                    <ThumbsUp className="h-4 w-4" />
+                    {selectedPost.likes_count} likes
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <MessageCircle className="h-4 w-4" />
+                    {selectedPost.replies_count} replies
+                  </span>
+                </div>
               </Card>
 
-              {/* Replies List */}
-              <div className="space-y-4 mb-6">
-                <h3 className="font-semibold">
-                  Replies ({replies.length})
-                </h3>
-                {replies.length === 0 ? (
-                  <p className="text-sm text-muted-foreground text-center py-4">
-                    No replies yet. Be the first to reply!
-                  </p>
-                ) : (
-                  replies.map((reply: any) => (
-                    <Card key={reply.id} className="p-4">
-                      <div className="flex items-start space-x-3 mb-2">
-                        <Avatar className="w-8 h-8 bg-accent/10 flex items-center justify-center">
-                          <span className="text-xs font-medium text-accent">
-                            {reply.profiles?.username?.charAt(0).toUpperCase()}
-                          </span>
-                        </Avatar>
-                        <div>
-                          <p className="font-medium text-sm">{reply.profiles?.username || "Unknown"}</p>
-                          <p className="text-xs text-muted-foreground">{formatDate(reply.created_at)}</p>
-                        </div>
-                      </div>
-                      <p className="text-sm ml-11">{reply.content}</p>
-                    </Card>
-                  ))
-                )}
-              </div>
+              <Separator />
 
-              {/* Reply Form */}
-              <div className="space-y-4">
-                <Separator />
-                <div>
-                  <label className="block text-sm font-medium mb-2">Your Reply</label>
-                  <Textarea
-                    placeholder="Share your thoughts..."
-                    rows={4}
-                    value={replyContent}
-                    onChange={(e) => setReplyContent(e.target.value)}
-                  />
-                </div>
-                <div className="flex justify-end space-x-3">
-                  <Button variant="outline" onClick={() => setShowReplyModal(false)}>
-                    Cancel
-                  </Button>
-                  <Button className="btn-professional" onClick={handleCreateReply}>
-                    Post Reply
-                  </Button>
-                </div>
-              </div>
+              {/* Threaded Replies Section */}
+              <ForumReplySection
+                postId={selectedPost.id}
+                replies={replies}
+                loading={repliesLoading}
+                onRefresh={handleRefreshReplies}
+              />
             </div>
           </Card>
         </div>

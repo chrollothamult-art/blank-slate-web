@@ -33,7 +33,7 @@ interface Character {
 interface ChronologyEvent {
   id: string;
   title: string;
-  year: number;
+  date: string;
   era: string;
 }
 
@@ -160,8 +160,8 @@ export const CharacterRelationshipManager = () => {
   const fetchEvents = async () => {
     const { data, error } = await (supabase as any)
       .from("chronology_events")
-      .select("id, title, year, era")
-      .order("year");
+      .select("id, title, date, era")
+      .order("order_index");
 
     if (!error && data) {
       setEvents(data as ChronologyEvent[]);
@@ -704,7 +704,7 @@ export const CharacterRelationshipManager = () => {
                       <SelectContent className="z-50 bg-background border border-border shadow-lg max-h-[300px] overflow-y-auto">
                         {events.map((e) => (
                           <SelectItem key={e.id} value={e.id}>
-                            {e.title} ({e.year} {e.era})
+                            {e.title} ({e.date})
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -773,7 +773,7 @@ export const CharacterRelationshipManager = () => {
                           <p className="font-medium">{link.event?.title || "Unknown"}</p>
                           {link.event && (
                             <p className="text-xs text-muted-foreground">
-                              {link.event.year} {link.event.era}
+                              {link.event.date}
                             </p>
                           )}
                         </div>

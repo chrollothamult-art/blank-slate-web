@@ -3,33 +3,19 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCart } from "@/contexts/CartContext";
 import { CartSidebar } from "@/components/CartSidebar";
 import { StreakBadge } from "@/components/StreakBadge";
 import { NotificationBell } from "@/components/NotificationBell";
+import ProfileDropdown from "@/components/ProfileDropdown";
 import { 
   Search, 
   ShoppingCart, 
-  User, 
   Menu, 
   X,
   BookOpen,
   MessageSquare,
-  Settings as SettingsIcon,
-  LogOut,
-  Library,
-  Heart,
-  Trophy,
-  UserCircle
 } from "lucide-react";
 import thouartLogo from "@/assets/thouart-logo.png";
 import { ThemeToggle } from "./ThemeToggle";
@@ -39,18 +25,13 @@ export const Header = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, profile, signOut } = useAuth();
+  const { user } = useAuth();
   const { totalItems, openCart, isOpen, closeCart, items, updateQuantity, removeFromCart } = useCart();
 
   const navigation = [
     { name: "Books", href: "/books", icon: BookOpen },
-    { name: "Forum", href: "/forum", icon: MessageSquare },
+    { name: "Community", href: "/community", icon: MessageSquare },
   ];
-
-  const handleSignOut = async () => {
-    await signOut();
-    navigate("/");
-  };
 
   const isActive = (path: string) => location.pathname === path;
 
@@ -116,47 +97,7 @@ export const Header = () => {
             <ThemeToggle />
             {/* User Account */}
             {user ? (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="relative">
-                    <User className="h-5 w-5" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56">
-                  <DropdownMenuLabel>
-                    <div className="flex flex-col space-y-1">
-                      <p className="text-sm font-medium leading-none">{profile?.username}</p>
-                      <p className="text-xs leading-none text-muted-foreground">{user.email}</p>
-                    </div>
-                  </DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={() => navigate("/profile")}>
-                    <UserCircle className="mr-2 h-4 w-4" />
-                    <span>My Profile</span>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => navigate("/my-books")}>
-                    <Library className="mr-2 h-4 w-4" />
-                    <span>My Books</span>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => navigate("/wishlist")}>
-                    <Heart className="mr-2 h-4 w-4" />
-                    <span>Wishlist</span>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => navigate("/settings")}>
-                    <SettingsIcon className="mr-2 h-4 w-4" />
-                    <span>Settings</span>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => navigate("/settings#achievements")}>
-                    <Trophy className="mr-2 h-4 w-4" />
-                    <span>Achievements</span>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={handleSignOut}>
-                    <LogOut className="mr-2 h-4 w-4" />
-                    <span>Log out</span>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+              <ProfileDropdown />
             ) : (
               <Button variant="ghost" size="sm" onClick={() => navigate("/auth")}>
                 Sign In

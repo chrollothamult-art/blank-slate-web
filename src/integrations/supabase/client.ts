@@ -13,12 +13,5 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABL
     storage: localStorage,
     persistSession: true,
     autoRefreshToken: true,
-   detectSessionInUrl: true,
-  }
-});
-
-supabase.auth.onAuthStateChange((event) => {
-  if (event === "TOKEN_REFRESHED") {
-    console.log("✅ Token refreshed successfully");
   }
 });

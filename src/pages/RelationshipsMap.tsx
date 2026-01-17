@@ -8,68 +8,50 @@ const RelationshipsMap = () => {
   return (
     <main className="min-h-screen bg-[hsl(var(--parchment-bg))]">
       <div className="container mx-auto px-4 py-8">
-        {/* Animated Header */}
-        <div className="mb-8 animate-fade-in">
-          <h1 className="font-heading text-4xl font-bold text-[hsl(var(--parchment-brown))] mb-2 animate-[fade-in_0.5s_ease-out]">
+        <div className="mb-8">
+          <h1 className="font-heading text-4xl font-bold text-[hsl(var(--parchment-brown))] mb-2">
             Relationships Map
           </h1>
-          <p className="text-[hsl(var(--parchment-muted))] animate-[fade-in_0.6s_ease-out_0.1s_both]">
+          <p className="text-[hsl(var(--parchment-muted))]">
             Explore the connections between characters and events in the Thouart universe
           </p>
         </div>
 
         <Tabs defaultValue="characters" className="w-full">
-          {/* Animated Tab List */}
-          <TabsList className="mb-6 bg-[hsl(var(--parchment-card))] border border-[hsl(var(--parchment-border))] animate-[fade-in_0.5s_ease-out_0.2s_both]">
+          <TabsList className="mb-6 bg-[hsl(var(--parchment-card))] border border-[hsl(var(--parchment-border))]">
             <TabsTrigger 
               value="characters" 
-              className="data-[state=active]:bg-[hsl(var(--parchment-gold))] data-[state=active]:text-[hsl(var(--parchment-brown))] transition-all duration-300 hover:scale-105 data-[state=active]:shadow-md"
+              className="data-[state=active]:bg-[hsl(var(--parchment-gold))] data-[state=active]:text-[hsl(var(--parchment-brown))]"
             >
-              <Users className="h-4 w-4 mr-2 transition-transform duration-300 group-hover:rotate-12" />
+              <Users className="h-4 w-4 mr-2" />
               Character Relationships
             </TabsTrigger>
             <TabsTrigger 
               value="family"
-              className="data-[state=active]:bg-[hsl(var(--parchment-gold))] data-[state=active]:text-[hsl(var(--parchment-brown))] transition-all duration-300 hover:scale-105 data-[state=active]:shadow-md"
+              className="data-[state=active]:bg-[hsl(var(--parchment-gold))] data-[state=active]:text-[hsl(var(--parchment-brown))]"
             >
-              <GitBranch className="h-4 w-4 mr-2 transition-transform duration-300 group-hover:rotate-12" />
+              <GitBranch className="h-4 w-4 mr-2" />
               Family Tree
             </TabsTrigger>
             <TabsTrigger 
               value="events"
-              className="data-[state=active]:bg-[hsl(var(--parchment-gold))] data-[state=active]:text-[hsl(var(--parchment-brown))] transition-all duration-300 hover:scale-105 data-[state=active]:shadow-md"
+              className="data-[state=active]:bg-[hsl(var(--parchment-gold))] data-[state=active]:text-[hsl(var(--parchment-brown))]"
             >
-              <Calendar className="h-4 w-4 mr-2 transition-transform duration-300 group-hover:rotate-12" />
+              <Calendar className="h-4 w-4 mr-2" />
               Event Connections
             </TabsTrigger>
           </TabsList>
 
-          {/* Animated Tab Content */}
-          <TabsContent 
-            value="characters" 
-            className="animate-[fade-in_0.4s_ease-out] data-[state=inactive]:animate-[fade-out_0.2s_ease-out]"
-          >
-            <div className="animate-scale-in">
-              <CharacterRelationshipMap />
-            </div>
+          <TabsContent value="characters">
+            <CharacterRelationshipMap />
           </TabsContent>
 
-          <TabsContent 
-            value="family"
-            className="animate-[fade-in_0.4s_ease-out] data-[state=inactive]:animate-[fade-out_0.2s_ease-out]"
-          >
-            <div className="animate-scale-in">
-              <FamilyTreeMap />
-            </div>
+          <TabsContent value="family">
+            <FamilyTreeMap />
           </TabsContent>
 
-          <TabsContent 
-            value="events"
-            className="animate-[fade-in_0.4s_ease-out] data-[state=inactive]:animate-[fade-out_0.2s_ease-out]"
-          >
-            <div className="animate-scale-in">
-              <AllEventsRelationshipMap />
-            </div>
+          <TabsContent value="events">
+            <AllEventsRelationshipMap />
           </TabsContent>
         </Tabs>
       </div>

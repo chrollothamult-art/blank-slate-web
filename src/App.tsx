@@ -2,14 +2,13 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { ThemeProvider } from "next-themes";
 import { BooksProvider } from "@/contexts/BooksContext";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { CartProvider } from "@/contexts/CartContext";
 import { Header } from "./components/Header";
 import Index from "./pages/Index";
-import { Forum } from "./pages/Forum";
 import { Admin } from "./pages/Admin";
 import { AdminAuth } from "./pages/AdminAuth";
 import { Auth } from "./pages/Auth";
@@ -23,6 +22,8 @@ import Wishlist from "./pages/Wishlist";
 import Books from "./pages/Books";
 import RelationshipsMap from "./pages/RelationshipsMap";
 import { ChronologyTimeline } from "./components/ChronologyTimeline";
+import Community from "./pages/Community";
+import SubmissionDetail from "./pages/SubmissionDetail";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -43,7 +44,7 @@ const App = () => (
                   <Route path="/" element={<Index />} />
                   <Route path="/profile" element={<ProfilePage />} />
                   <Route path="/profile/:userId" element={<ProfilePage />} />
-                  <Route path="/forum" element={<Forum />} />
+                  <Route path="/forum" element={<Navigate to="/community" replace />} />
                   <Route path="/admin" element={<Admin />} />
                   <Route path="/admin-auth" element={<AdminAuth />} />
                   <Route path="/auth" element={<Auth />} />
@@ -56,6 +57,8 @@ const App = () => (
                   <Route path="/chronology/:eventId" element={<EventDetail />} />
                   <Route path="/almanac/:categoryId" element={<AlmanacCategory />} />
                   <Route path="/relationships" element={<RelationshipsMap />} />
+                  <Route path="/community" element={<Community />} />
+                  <Route path="/community/:id" element={<SubmissionDetail />} />
                   {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                   <Route path="*" element={<NotFound />} />
                 </Routes>

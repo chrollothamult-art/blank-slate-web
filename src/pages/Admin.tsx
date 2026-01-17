@@ -13,7 +13,8 @@ import {
   LogOut,
   Mail,
   Network,
-  User
+  User,
+  FileText
 } from "lucide-react";
 import { ChronologyManager } from "@/components/ChronologyManager";
 import { BookManager } from "@/components/admin/BookManager";
@@ -24,6 +25,7 @@ import { AnalyticsManager } from "@/components/admin/AnalyticsManager";
 import { NewsletterManager } from "@/components/admin/NewsletterManager";
 import { CharacterRelationshipManager } from "@/components/admin/CharacterRelationshipManager";
 import { CharactersManager } from "@/components/admin/CharactersManager";
+import { SubmissionsManager } from "@/components/admin/SubmissionsManager";
 
 export const Admin = () => {
   const { books } = useBooks();
@@ -152,7 +154,7 @@ export const Admin = () => {
       {/* Main Content */}
       <div className="container mx-auto px-4 py-8">
         <Tabs defaultValue="books" className="space-y-8">
-          <TabsList className="grid w-full grid-cols-9">
+          <TabsList className="grid w-full grid-cols-10">
             <TabsTrigger value="books">Books</TabsTrigger>
             <TabsTrigger value="chronology">Chronology</TabsTrigger>
             <TabsTrigger value="almanac">Almanac</TabsTrigger>
@@ -163,6 +165,10 @@ export const Admin = () => {
             <TabsTrigger value="relationships">
               <Network className="h-4 w-4 mr-1" />
               Links
+            </TabsTrigger>
+            <TabsTrigger value="submissions">
+              <FileText className="h-4 w-4 mr-1" />
+              Submissions
             </TabsTrigger>
             <TabsTrigger value="orders">Orders</TabsTrigger>
             <TabsTrigger value="customers">Customers</TabsTrigger>
@@ -188,6 +194,10 @@ export const Admin = () => {
 
           <TabsContent value="relationships" className="space-y-6">
             <CharacterRelationshipManager />
+          </TabsContent>
+
+          <TabsContent value="submissions" className="space-y-6">
+            <SubmissionsManager />
           </TabsContent>
 
           <TabsContent value="orders" className="space-y-6">

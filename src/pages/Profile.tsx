@@ -9,6 +9,9 @@ import { useBooks } from "@/contexts/BooksContext";
 import { Footer } from "@/components/Footer";
 import { FollowButton } from "@/components/FollowButton";
 import { AchievementsDisplay } from "@/components/AchievementsDisplay";
+import { ActivityFeed } from "@/components/ActivityFeed";
+import { UserSubmissionsList } from "@/components/profile/UserSubmissionsList";
+import { FollowersList } from "@/components/profile/FollowersList";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -31,6 +34,7 @@ import {
   Flame,
   Settings,
   Edit,
+  Palette,
 } from "lucide-react";
 import { formatReadingTime } from "@/hooks/useReadingProgress";
 import { formatDistanceToNow } from "date-fns";
@@ -221,57 +225,81 @@ const ProfilePage = () => {
 
             {/* Tabbed Content */}
             <Tabs defaultValue="activity" className="space-y-4">
-              <TabsList className="grid w-full grid-cols-4">
+              <TabsList className="grid w-full grid-cols-6">
                 <TabsTrigger value="activity">Activity</TabsTrigger>
+                <TabsTrigger value="submissions">Submissions</TabsTrigger>
+                <TabsTrigger value="followers">Followers</TabsTrigger>
                 <TabsTrigger value="achievements">Achievements</TabsTrigger>
                 <TabsTrigger value="favorites">Favorites</TabsTrigger>
                 <TabsTrigger value="reviews">Reviews</TabsTrigger>
               </TabsList>
 
               <TabsContent value="activity">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <BookOpen className="h-5 w-5" />
-                      Recent Activity
-                    </CardTitle>
-                    <CardDescription>
-                      {isOwnProfile ? "Your" : `${profile.username}'s`} recent reading activity
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <ScrollArea className="h-[400px] pr-4">
-                      {activities.length === 0 ? (
-                        <div className="text-center py-8 text-muted-foreground">
-                          <BookOpen className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                          <p className="font-medium">No activity yet</p>
-                          <p className="text-sm mt-1">Start reading to build your activity history!</p>
-                        </div>
-                      ) : (
-                        <div className="space-y-4">
-                          {activities.map((activity) => (
-                            <div
-                              key={activity.id}
-                              className="flex items-start gap-3 p-3 rounded-lg bg-muted/50"
-                            >
-                              <div className="mt-1">
-                                {getActivityIcon(activity.activity_type)}
+                {isOwnProfile ? (
+                  <ActivityFeed />
+                ) : (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <BookOpen className="h-5 w-5" />
+                        Recent Activity
+                      </CardTitle>
+                      <CardDescription>
+                        {profile.username}'s recent reading activity
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <ScrollArea className="h-[400px] pr-4">
+                        {activities.length === 0 ? (
+                          <div className="text-center py-8 text-muted-foreground">
+                            <BookOpen className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                            <p className="font-medium">No activity yet</p>
+                            <p className="text-sm mt-1">This user hasn't been active yet</p>
+                          </div>
+                        ) : (
+                          <div className="space-y-4">
+                            {activities.map((activity) => (
+                              <div
+                                key={activity.id}
+                                className="flex items-start gap-3 p-3 rounded-lg bg-muted/50"
+                              >
+                                <div className="mt-1">
+                                  {getActivityIcon(activity.activity_type)}
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-sm font-medium">
+                                    {getActivityText(activity)}
+                                  </p>
+                                  <p className="text-xs text-muted-foreground mt-1">
+                                    {formatDistanceToNow(new Date(activity.created_at), { addSuffix: true })}
+                                  </p>
+                                </div>
                               </div>
-                              <div className="flex-1 min-w-0">
-                                <p className="text-sm font-medium">
-                                  {getActivityText(activity)}
-                                </p>
-                                <p className="text-xs text-muted-foreground mt-1">
-                                  {formatDistanceToNow(new Date(activity.created_at), { addSuffix: true })}
-                                </p>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </ScrollArea>
-                  </CardContent>
-                </Card>
+                            ))}
+                          </div>
+                        )}
+                      </ScrollArea>
+                    </CardContent>
+                  </Card>
+                )}
+              </TabsContent>
+
+              <TabsContent value="submissions">
+                <UserSubmissionsList
+                  userId={profile.id}
+                  isOwnProfile={isOwnProfile}
+                  username={profile.username}
+                />
+              </TabsContent>
+
+              <TabsContent value="followers">
+                <FollowersList
+                  userId={profile.id}
+                  isOwnProfile={isOwnProfile}
+                  username={profile.username}
+                  followersCount={stats.followersCount}
+                  followingCount={stats.followingCount}
+                />
               </TabsContent>
 
               <TabsContent value="achievements">
