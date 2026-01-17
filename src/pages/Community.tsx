@@ -5,8 +5,8 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
+import SmoothTab, { TabItem } from '@/components/ui/smooth-tab';
 import { Avatar } from '@/components/ui/avatar';
 import {
   Search,
@@ -453,38 +453,36 @@ export const Community = () => {
       {/* Main Content */}
       <div className="container mx-auto px-4 py-8">
         {/* Main Tabs - Gallery vs Discussions */}
-        <Tabs value={mainTab} onValueChange={(v) => setMainTab(v as 'gallery' | 'discussions')} className="mb-8">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
-            <TabsList className="grid w-full md:w-auto grid-cols-2">
-              <TabsTrigger value="gallery" className="gap-2">
-                <Palette className="w-4 h-4" />
-                Gallery
-              </TabsTrigger>
-              <TabsTrigger value="discussions" className="gap-2">
-                <MessageSquare className="w-4 h-4" />
-                Discussions
-              </TabsTrigger>
-            </TabsList>
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+          <SmoothTab
+            items={[
+              { id: 'gallery', title: 'Gallery', icon: Palette },
+              { id: 'discussions', title: 'Discussions', icon: MessageSquare },
+            ]}
+            defaultTabId={mainTab}
+            onChange={(tabId) => setMainTab(tabId as 'gallery' | 'discussions')}
+          />
 
-            {mainTab === 'gallery' && (
-              <Button
-                onClick={() => user ? setShowSubmitForm(true) : navigate('/auth')}
-                className="gap-2"
-              >
-                <Plus className="w-4 h-4" />
-                Submit Creation
-              </Button>
-            )}
-            {mainTab === 'discussions' && (
-              <Button onClick={handleNewPost} className="gap-2">
-                <Plus className="w-4 h-4" />
-                New Discussion
-              </Button>
-            )}
-          </div>
+          {mainTab === 'gallery' && (
+            <Button
+              onClick={() => user ? setShowSubmitForm(true) : navigate('/auth')}
+              className="gap-2"
+            >
+              <Plus className="w-4 h-4" />
+              Submit Creation
+            </Button>
+          )}
+          {mainTab === 'discussions' && (
+            <Button onClick={handleNewPost} className="gap-2">
+              <Plus className="w-4 h-4" />
+              New Discussion
+            </Button>
+          )}
+        </div>
 
-          {/* Gallery Tab */}
-          <TabsContent value="gallery" className="space-y-6">
+        {/* Gallery Tab Content */}
+        {mainTab === 'gallery' && (
+          <div className="space-y-6">
             <FeaturedSubmissions />
 
             {/* Gallery Filters */}
@@ -499,19 +497,15 @@ export const Community = () => {
                     className="pl-10"
                   />
                 </div>
-                <Tabs
-                  value={activeFilter}
-                  onValueChange={(v) => setActiveFilter(v as ContentType | 'all')}
-                >
-                  <TabsList>
-                    {filterOptions.map((option) => (
-                      <TabsTrigger key={option.value} value={option.value} className="gap-1">
-                        <option.icon className="w-4 h-4" />
-                        <span className="hidden sm:inline">{option.label}</span>
-                      </TabsTrigger>
-                    ))}
-                  </TabsList>
-                </Tabs>
+                <SmoothTab
+                  items={filterOptions.map((option) => ({
+                    id: option.value,
+                    title: option.label,
+                    icon: option.icon,
+                  }))}
+                  defaultTabId={activeFilter}
+                  onChange={(v) => setActiveFilter(v as ContentType | 'all')}
+                />
               </div>
 
               <div className="flex items-center gap-2">
@@ -573,10 +567,12 @@ export const Community = () => {
                 ))}
               </div>
             )}
-          </TabsContent>
+          </div>
+        )}
 
-          {/* Discussions Tab */}
-          <TabsContent value="discussions" className="space-y-6">
+        {/* Discussions Tab Content */}
+        {mainTab === 'discussions' && (
+          <div className="space-y-6">
             {/* New Discussion Form */}
             {showNewPost && (
               <Card className="p-6">
@@ -761,8 +757,8 @@ export const Community = () => {
                 )}
               </div>
             </div>
-          </TabsContent>
-        </Tabs>
+          </div>
+        )}
       </div>
 
       {/* Submit Form Modal */}
