@@ -1,6 +1,7 @@
 import { Mail } from "lucide-react";
 import { FaTwitter, FaTelegram } from "react-icons/fa";
 import { NewsletterForm } from "./NewsletterForm";
+import SocialButton from "./ui/social-button";
 
 export const Footer = () => {
   return (
@@ -16,33 +17,40 @@ export const Footer = () => {
             <NewsletterForm />
           </div>
 
-          {/* Social Links */}
-          <div className="flex items-center gap-6">
-            <a
-              href="https://x.com/Thouartdarkens"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-muted-foreground hover:text-primary transition-colors"
-              aria-label="Twitter"
-            >
-              <FaTwitter className="h-5 w-5" />
-            </a>
-            <a
-              href="https://t.me/Thouartframer"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-muted-foreground hover:text-primary transition-colors"
-              aria-label="Telegram"
-            >
-              <FaTelegram className="h-5 w-5" />
-            </a>
-            <a
-              href="mailto:thouartdarkens@gmail.com"
-              className="text-muted-foreground hover:text-primary transition-colors"
-              aria-label="Email"
-            >
-              <Mail className="h-5 w-5" />
-            </a>
+          {/* Share & Social Links */}
+          <div className="flex flex-col items-center gap-4">
+            <SocialButton 
+              shareTitle="Discover amazing books at ThouArt!"
+              shareDescription="Professional online bookstore featuring curated books and community discussions."
+            />
+            
+            <div className="flex items-center gap-6">
+              <a
+                href="https://x.com/Thouartdarkens"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-muted-foreground hover:text-primary transition-colors"
+                aria-label="Twitter"
+              >
+                <FaTwitter className="h-5 w-5" />
+              </a>
+              <a
+                href="https://t.me/Thouartframer"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-muted-foreground hover:text-primary transition-colors"
+                aria-label="Telegram"
+              >
+                <FaTelegram className="h-5 w-5" />
+              </a>
+              <a
+                href="mailto:thouartdarkens@gmail.com"
+                className="text-muted-foreground hover:text-primary transition-colors"
+                aria-label="Email"
+              >
+                <Mail className="h-5 w-5" />
+              </a>
+            </div>
           </div>
 
           {/* Copyright */}
