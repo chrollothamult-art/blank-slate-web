@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { almanacCategories } from "@/data/chronologyData";
 import { Button } from "@/components/ui/button";
@@ -272,7 +273,7 @@ const AlmanacCategory = () => {
                   <img
                     src={selectedEntry.image_url}
                     alt={selectedEntry.name}
-                    className="w-full h-96 object-cover rounded-lg shadow-lg"
+                    className="w-full h-96 object-cover rounded-2xl shadow-lg"
                   />
                 </div>
               ) : null}
@@ -382,48 +383,67 @@ const AlmanacCategory = () => {
           </Card>
         ) : (
           <>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <motion.div 
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+            initial="hidden"
+            animate="visible"
+            variants={{
+              hidden: { opacity: 0 },
+              visible: {
+                opacity: 1,
+                transition: { staggerChildren: 0.08 },
+              },
+            }}
+          >
             {paginatedEntries.map((entry) => (
-              <Card
+              <motion.div
                 key={entry.id}
-                className="cursor-pointer transition-all duration-200 hover:shadow-xl hover:-translate-y-1 bg-[hsl(var(--parchment-card))] border-[hsl(var(--parchment-border))]"
-                onClick={() => setSelectedEntry(entry)}
+                variants={{
+                  hidden: { opacity: 0, y: 20, scale: 0.95 },
+                  visible: { opacity: 1, y: 0, scale: 1 },
+                }}
+                transition={{ duration: 0.4, ease: "easeOut" }}
               >
-                {entry.image_url && (
-                  <div className="w-full h-80 overflow-hidden">
-                    <img
-                      src={entry.image_url}
-                      alt={entry.name}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                )}
-                <CardHeader>
-                  <CardTitle className="text-xl text-[hsl(var(--parchment-brown))]">
-                    {entry.name}
-                  </CardTitle>
-                  <CardDescription className="line-clamp-3 text-[hsl(var(--parchment-muted))]">
-                    {entry.description}
-                  </CardDescription>
-                  {/* Show character role/era badges in list */}
-                  {isCharacterCategory && (entry.role || entry.era) && (
-                    <div className="flex flex-wrap gap-1 mt-2">
-                      {entry.role && (
-                        <span className="px-2 py-0.5 rounded text-xs bg-[hsl(var(--parchment-border))] text-[hsl(var(--parchment-brown))]">
-                          {entry.role}
-                        </span>
-                      )}
-                      {entry.era && (
-                        <span className="px-2 py-0.5 rounded text-xs bg-[hsl(var(--parchment-gold))] text-white">
-                          {entry.era}
-                        </span>
-                      )}
+                <Card
+                  className="cursor-pointer transition-all duration-200 hover:shadow-xl hover:-translate-y-1 bg-[hsl(var(--parchment-card))] border-[hsl(var(--parchment-border))]"
+                  onClick={() => setSelectedEntry(entry)}
+                >
+                  {entry.image_url && (
+                    <div className="w-full h-80 overflow-hidden rounded-t-2xl">
+                      <img
+                        src={entry.image_url}
+                        alt={entry.name}
+                        className="w-full h-full object-cover"
+                      />
                     </div>
                   )}
-                </CardHeader>
-              </Card>
+                  <CardHeader>
+                    <CardTitle className="text-xl text-[hsl(var(--parchment-brown))]">
+                      {entry.name}
+                    </CardTitle>
+                    <CardDescription className="line-clamp-3 text-[hsl(var(--parchment-muted))]">
+                      {entry.description}
+                    </CardDescription>
+                    {/* Show character role/era badges in list */}
+                    {isCharacterCategory && (entry.role || entry.era) && (
+                      <div className="flex flex-wrap gap-1 mt-2">
+                        {entry.role && (
+                          <span className="px-2 py-0.5 rounded text-xs bg-[hsl(var(--parchment-border))] text-[hsl(var(--parchment-brown))]">
+                            {entry.role}
+                          </span>
+                        )}
+                        {entry.era && (
+                          <span className="px-2 py-0.5 rounded text-xs bg-[hsl(var(--parchment-gold))] text-white">
+                            {entry.era}
+                          </span>
+                        )}
+                      </div>
+                    )}
+                  </CardHeader>
+                </Card>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
           {renderPagination()}
           </>
         )}

@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -26,12 +27,15 @@ import {
   Edit,
   Trash2,
   Save,
+  BookOpen,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSubmissions } from '@/hooks/useSubmissions';
 import { SubmissionCard } from '@/components/community/SubmissionCard';
 import { SubmissionForm } from '@/components/community/SubmissionForm';
 import { FeaturedSubmissions } from '@/components/community/FeaturedSubmissions';
+import { BookClubSection } from '@/components/community/BookClubSection';
+import { StaggeredSkeletonGrid } from '@/components/StaggeredSkeleton';
 import { Footer } from '@/components/Footer';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -75,9 +79,8 @@ const forumCategories = [
 const ITEMS_PER_PAGE = 10;
 
 const filterOptions: { value: ContentType | 'all'; label: string; icon: typeof Palette }[] = [
-  { value: 'all', label: 'All', icon: Sparkles },
+  { value: 'all', label: 'All Creations', icon: Sparkles },
   { value: 'art', label: 'Fan Art', icon: Palette },
-  { value: 'review', label: 'Reviews', icon: Star },
 ];
 
 export const Community = () => {
@@ -85,8 +88,8 @@ export const Community = () => {
   const { user, profile } = useAuth();
   const { toast } = useToast();
   
-  // Main tab state - gallery or discussions
-  const [mainTab, setMainTab] = useState<'gallery' | 'discussions'>('gallery');
+  // Main tab state - gallery, discussions, or clubs
+  const [mainTab, setMainTab] = useState<'gallery' | 'discussions' | 'clubs'>('gallery');
   
   // Gallery state
   const [activeFilter, setActiveFilter] = useState<ContentType | 'all'>('all');
@@ -453,9 +456,9 @@ export const Community = () => {
       {/* Main Content */}
       <div className="container mx-auto px-4 py-8">
         {/* Main Tabs - Gallery vs Discussions */}
-        <Tabs value={mainTab} onValueChange={(v) => setMainTab(v as 'gallery' | 'discussions')} className="mb-8">
+        <Tabs value={mainTab} onValueChange={(v) => setMainTab(v as 'gallery' | 'discussions' | 'clubs')} className="mb-8">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
-            <TabsList className="grid w-full md:w-auto grid-cols-2">
+            <TabsList className="grid w-full md:w-auto grid-cols-3">
               <TabsTrigger value="gallery" className="gap-2">
                 <Palette className="w-4 h-4" />
                 Gallery
@@ -463,6 +466,10 @@ export const Community = () => {
               <TabsTrigger value="discussions" className="gap-2">
                 <MessageSquare className="w-4 h-4" />
                 Discussions
+              </TabsTrigger>
+              <TabsTrigger value="clubs" className="gap-2">
+                <BookOpen className="w-4 h-4" />
+                Book Clubs
               </TabsTrigger>
             </TabsList>
 
@@ -538,15 +545,7 @@ export const Community = () => {
 
             {/* Gallery Grid */}
             {loading ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {Array.from({ length: 8 }).map((_, i) => (
-                  <div key={i} className="space-y-3">
-                    <Skeleton className="aspect-[4/3] w-full rounded-lg" />
-                    <Skeleton className="h-4 w-3/4" />
-                    <Skeleton className="h-4 w-1/2" />
-                  </div>
-                ))}
-              </div>
+              <StaggeredSkeletonGrid count={8} columns={4} aspectRatio="video" />
             ) : sortedSubmissions.length === 0 ? (
               <div className="text-center py-16">
                 <ImageIcon className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
@@ -562,16 +561,35 @@ export const Community = () => {
                 )}
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {sortedSubmissions.map((submission) => (
-                  <SubmissionCard
+              <motion.div 
+                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
+                initial="hidden"
+                animate="visible"
+                variants={{
+                  hidden: { opacity: 0 },
+                  visible: {
+                    opacity: 1,
+                    transition: { staggerChildren: 0.08 },
+                  },
+                }}
+              >
+                {sortedSubmissions.map((submission, index) => (
+                  <motion.div
                     key={submission.id}
-                    submission={submission}
-                    onLike={toggleLike}
-                    onDelete={user?.id === submission.user_id ? deleteSubmission : undefined}
-                  />
+                    variants={{
+                      hidden: { opacity: 0, y: 20, scale: 0.95 },
+                      visible: { opacity: 1, y: 0, scale: 1 },
+                    }}
+                    transition={{ duration: 0.4, ease: "easeOut" }}
+                  >
+                    <SubmissionCard
+                      submission={submission}
+                      onLike={toggleLike}
+                      onDelete={user?.id === submission.user_id ? deleteSubmission : undefined}
+                    />
+                  </motion.div>
                 ))}
-              </div>
+              </motion.div>
             )}
           </TabsContent>
 
@@ -761,6 +779,11 @@ export const Community = () => {
                 )}
               </div>
             </div>
+          </TabsContent>
+
+          {/* Book Clubs Tab */}
+          <TabsContent value="clubs">
+            <BookClubSection />
           </TabsContent>
         </Tabs>
       </div>

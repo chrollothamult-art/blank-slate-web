@@ -6,11 +6,20 @@ import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+  DropdownMenuLabel,
+} from "@/components/ui/dropdown-menu";
 import {
   X,
   ZoomIn,
@@ -24,15 +33,70 @@ import {
   Bookmark,
   BookmarkCheck,
   Trash2,
+  Palette,
+  Sun,
+  Moon,
+  Coffee,
+  Highlighter,
+  StickyNote,
 } from "lucide-react";
 import { useReadingProgress } from "@/hooks/useReadingProgress";
 import { useBookmarks } from "@/hooks/useBookmarks";
+import { useHighlightsNotes } from "@/hooks/useHighlightsNotes";
+import { HighlightsNotesPanel } from "@/components/reader/HighlightsNotesPanel";
+import { TextSelectionHighlighter } from "@/components/reader/TextSelectionHighlighter";
 
 import "react-pdf/dist/Page/AnnotationLayer.css";
 import "react-pdf/dist/Page/TextLayer.css";
 
 // Configure PDF.js worker
 pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
+
+type ReadingTheme = "light" | "dark" | "sepia" | "custom";
+
+interface ThemeConfig {
+  name: string;
+  icon: React.ReactNode;
+  bgClass: string;
+  contentBg: string;
+  headerBg: string;
+  textClass: string;
+}
+
+const themeConfigs: Record<ReadingTheme, ThemeConfig> = {
+  light: {
+    name: "Light",
+    icon: <Sun className="h-4 w-4" />,
+    bgClass: "bg-white",
+    contentBg: "bg-gray-100",
+    headerBg: "bg-white border-gray-200",
+    textClass: "text-gray-900",
+  },
+  dark: {
+    name: "Dark",
+    icon: <Moon className="h-4 w-4" />,
+    bgClass: "bg-gray-900",
+    contentBg: "bg-gray-800",
+    headerBg: "bg-gray-900 border-gray-700",
+    textClass: "text-gray-100",
+  },
+  sepia: {
+    name: "Sepia",
+    icon: <Coffee className="h-4 w-4" />,
+    bgClass: "bg-[#f4ecd8]",
+    contentBg: "bg-[#ede4d0]",
+    headerBg: "bg-[#f4ecd8] border-[#d4c4a0]",
+    textClass: "text-[#5b4636]",
+  },
+  custom: {
+    name: "Custom",
+    icon: <Palette className="h-4 w-4" />,
+    bgClass: "bg-[#e8f0e8]",
+    contentBg: "bg-[#d8e8d8]",
+    headerBg: "bg-[#e8f0e8] border-[#b8d0b8]",
+    textClass: "text-[#2a3a2a]",
+  },
+};
 
 interface EbookReaderProps {
   pdfUrl: string;
@@ -56,6 +120,7 @@ export const EbookReader = ({
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [pdfError, setPdfError] = useState<string | null>(null);
+  const [readingTheme, setReadingTheme] = useState<ReadingTheme>("light");
   
   const containerRef = useRef<HTMLDivElement>(null);
   const pageRefs = useRef<Map<number, HTMLDivElement>>(new Map());
@@ -64,7 +129,20 @@ export const EbookReader = ({
 
   const { progress, updateProgress, loading: progressLoading } = useReadingProgress(bookId);
   const { bookmarks, addBookmark, removeBookmark, isPageBookmarked, getBookmarkForPage } = useBookmarks(bookId);
+  const { 
+    highlights, 
+    notes, 
+    addHighlight, 
+    updateHighlightColor, 
+    deleteHighlight, 
+    addNote, 
+    updateNote, 
+    deleteNote 
+  } = useHighlightsNotes(bookId);
   const [showBookmarks, setShowBookmarks] = useState(false);
+  const [showNotesPanel, setShowNotesPanel] = useState(false);
+
+  const currentTheme = themeConfigs[readingTheme];
 
   // Initialize from saved progress
   useEffect(() => {
@@ -243,10 +321,10 @@ export const EbookReader = ({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent 
         ref={containerRef}
-        className="max-w-[95vw] w-[95vw] h-[95vh] max-h-[95vh] p-0 flex flex-col bg-background"
+        className={`max-w-[95vw] w-[95vw] h-[95vh] max-h-[95vh] p-0 flex flex-col ${currentTheme.bgClass} transition-colors duration-300`}
       >
         {/* Header */}
-        <header className="flex items-center justify-between px-4 py-3 border-b bg-card shrink-0">
+        <header className={`flex items-center justify-between px-4 py-3 border-b shrink-0 ${currentTheme.headerBg} ${currentTheme.textClass} transition-colors duration-300`}>
           <div className="flex items-center gap-3">
             <BookOpen className="h-5 w-5 text-primary" />
             <h2 className="font-semibold text-lg truncate max-w-[200px] sm:max-w-[400px]">
@@ -328,8 +406,73 @@ export const EbookReader = ({
               </PopoverContent>
             </Popover>
 
+            {/* Highlights & Notes Panel */}
+            <Sheet open={showNotesPanel} onOpenChange={setShowNotesPanel}>
+              <SheetTrigger asChild>
+                <Button variant="ghost" size="sm" className="gap-1">
+                  <Highlighter className="h-4 w-4" />
+                  <span className="hidden sm:inline">Notes</span>
+                  {(highlights.length + notes.length) > 0 && (
+                    <span className="text-xs bg-primary text-primary-foreground rounded-full px-1.5 py-0.5 ml-1">
+                      {highlights.length + notes.length}
+                    </span>
+                  )}
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="right" className="w-[350px] sm:w-[400px]">
+                <SheetHeader>
+                  <SheetTitle className="flex items-center gap-2">
+                    <Highlighter className="h-5 w-5" />
+                    Highlights & Notes
+                  </SheetTitle>
+                </SheetHeader>
+                <div className="mt-4">
+                  <HighlightsNotesPanel
+                    highlights={highlights}
+                    notes={notes}
+                    currentPage={currentPage}
+                    onGoToPage={(page) => {
+                      scrollToPage(page);
+                      setShowNotesPanel(false);
+                    }}
+                    onUpdateHighlightColor={updateHighlightColor}
+                    onDeleteHighlight={deleteHighlight}
+                    onAddNote={addNote}
+                    onUpdateNote={updateNote}
+                    onDeleteNote={deleteNote}
+                  />
+                </div>
+              </SheetContent>
+            </Sheet>
+
+            {/* Theme selector */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="sm" className="gap-2">
+                  {currentTheme.icon}
+                  <span className="hidden sm:inline">{currentTheme.name}</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuLabel>Reading Theme</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                {(Object.entries(themeConfigs) as [ReadingTheme, ThemeConfig][]).map(
+                  ([key, theme]) => (
+                    <DropdownMenuItem
+                      key={key}
+                      onClick={() => setReadingTheme(key)}
+                      className={`gap-2 ${readingTheme === key ? "bg-accent" : ""}`}
+                    >
+                      {theme.icon}
+                      {theme.name}
+                    </DropdownMenuItem>
+                  )
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
+
             {/* Zoom controls - desktop */}
-            <div className="hidden md:flex items-center gap-2 px-3 py-1 bg-muted rounded-lg">
+            <div className="hidden md:flex items-center gap-2 px-3 py-1 bg-muted/50 rounded-lg">
               <Button
                 variant="ghost"
                 size="icon"
@@ -379,13 +522,13 @@ export const EbookReader = ({
           {/* PDF viewer with vertical scroll */}
           <main 
             ref={scrollContainerRef}
-            className="flex-1 overflow-auto bg-muted/10"
+            className={`flex-1 overflow-auto ${currentTheme.contentBg} transition-colors duration-300`}
           >
             {isLoading && (
               <div className="flex items-center justify-center h-full">
-                <div className="text-center space-y-4">
-                  <RotateCw className="h-8 w-8 animate-spin mx-auto text-muted-foreground" />
-                  <p className="text-muted-foreground">Loading book...</p>
+                <div className={`text-center space-y-4 ${currentTheme.textClass}`}>
+                  <RotateCw className="h-8 w-8 animate-spin mx-auto opacity-60" />
+                  <p className="opacity-60">Loading book...</p>
                 </div>
               </div>
             )}
@@ -419,7 +562,13 @@ export const EbookReader = ({
                     <Page
                       pageNumber={index + 1}
                       scale={scale}
-                      className="shadow-lg bg-white"
+                      className={`shadow-lg ${
+                        readingTheme === "dark" 
+                          ? "invert hue-rotate-180" 
+                          : readingTheme === "sepia" 
+                            ? "sepia-[0.3]" 
+                            : ""
+                      }`}
                       loading={
                         <Skeleton className="w-[600px] h-[800px]" />
                       }
@@ -428,11 +577,23 @@ export const EbookReader = ({
                 ))}
               </Document>
             </div>
+
+            {/* Text Selection Highlighter */}
+            <TextSelectionHighlighter
+              containerRef={scrollContainerRef as React.RefObject<HTMLElement>}
+              currentPage={currentPage}
+              onHighlight={(text, page, color, startOffset, endOffset) => {
+                addHighlight(page, text, startOffset, endOffset, color);
+              }}
+              onAddNote={(page, content) => {
+                addNote(page, content);
+              }}
+            />
           </main>
         </div>
 
         {/* Footer */}
-        <footer className="flex items-center justify-between px-4 py-3 border-t bg-card shrink-0">
+        <footer className={`flex items-center justify-between px-4 py-3 border-t shrink-0 ${currentTheme.headerBg} ${currentTheme.textClass} transition-colors duration-300`}>
           <Button
             variant="outline"
             size="sm"

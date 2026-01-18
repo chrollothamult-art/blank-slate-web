@@ -44,7 +44,7 @@ export const Header = () => {
     }
   };
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <header className="sticky top-0 z-50 w-full border-b border-border/50 bg-background/95 backdrop-blur-xl supports-[backdrop-filter]:bg-background/60">
       <div className="container mx-auto px-4">
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
@@ -56,13 +56,15 @@ export const Header = () => {
           </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-8">
+          <nav className="hidden md:flex items-center space-x-2">
             {navigation.map((item) => (
               <Link
                 key={item.name}
                 to={item.href}
-                className={`flex items-center space-x-2 text-sm font-medium transition-colors hover:text-accent ${
-                  isActive(item.href) ? "text-accent" : "text-muted-foreground"
+                className={`flex items-center space-x-2 px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 ${
+                  isActive(item.href) 
+                    ? "text-primary bg-primary/10" 
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
                 }`}
               >
                 <item.icon className="h-4 w-4" />
@@ -140,7 +142,7 @@ export const Header = () => {
 
         {/* Mobile Navigation */}
         {isMenuOpen && (
-          <div className="md:hidden border-t bg-background py-4">
+          <div className="md:hidden border-t border-border/50 bg-background py-4 rounded-b-2xl">
             <div className="flex flex-col space-y-4">
               {/* Mobile Search */}
               <form onSubmit={handleSearch} className="relative">
@@ -160,8 +162,10 @@ export const Header = () => {
                   <Link
                     key={item.name}
                     to={item.href}
-                    className={`flex items-center space-x-2 px-3 py-2 text-sm font-medium transition-colors hover:text-accent hover:bg-muted/50 ${
-                      isActive(item.href) ? "text-accent bg-muted/50" : "text-muted-foreground"
+                    className={`flex items-center space-x-2 px-4 py-3 text-sm font-medium transition-all rounded-xl ${
+                      isActive(item.href) 
+                        ? "text-primary bg-primary/10" 
+                        : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
                     }`}
                     onClick={() => setIsMenuOpen(false)}
                   >

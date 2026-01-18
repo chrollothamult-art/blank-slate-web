@@ -86,26 +86,26 @@ export const SubmissionCard = ({
   };
 
   return (
-    <Card className="group overflow-hidden border-border/50 hover:border-primary/30 transition-all duration-300 hover:shadow-lg">
+    <Card className="group overflow-hidden rounded-2xl border-border/40 hover:border-primary/30 transition-all duration-300 hover:shadow-xl hover:shadow-primary/5 hover:scale-[1.02] bg-card/80 backdrop-blur-sm">
       {/* Image Section */}
       {submission.image_url && (
         <Link to={`/community/${submission.id}`} className="block">
-          <div className="relative aspect-[4/3] overflow-hidden bg-muted">
+          <div className="relative aspect-[4/3] overflow-hidden bg-muted/50 rounded-t-2xl">
             <img
               src={submission.image_url}
               alt={submission.title}
-              className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-            <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between opacity-0 group-hover:opacity-100 transition-opacity">
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+            <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between opacity-0 group-hover:opacity-100 transition-opacity duration-300">
               <Badge
                 variant="outline"
-                className={cn('border backdrop-blur-sm', contentTypeColors[submission.content_type])}
+                className={cn('border backdrop-blur-md rounded-full px-3', contentTypeColors[submission.content_type])}
               >
                 <Icon className="w-3 h-3 mr-1" />
                 {submission.content_type}
               </Badge>
-              <Button size="sm" variant="secondary" className="gap-1">
+              <Button size="sm" variant="secondary" className="gap-1 rounded-full shadow-lg">
                 <Eye className="w-3 h-3" />
                 View
               </Button>
@@ -114,19 +114,19 @@ export const SubmissionCard = ({
         </Link>
       )}
 
-      <CardContent className={cn('p-4', !submission.image_url && 'pt-4')}>
+      <CardContent className={cn('p-5', !submission.image_url && 'pt-5')}>
         {/* Header with Type Badge (shown when no image) */}
         {!submission.image_url && (
           <div className="flex items-center gap-2 mb-3">
             <Badge
               variant="outline"
-              className={cn('border', contentTypeColors[submission.content_type])}
+              className={cn('border rounded-full px-3', contentTypeColors[submission.content_type])}
             >
               <Icon className="w-3 h-3 mr-1" />
               {submission.content_type}
             </Badge>
             {showStatus && (
-              <Badge variant="outline" className={cn('border', statusColors[submission.status])}>
+              <Badge variant="outline" className={cn('border rounded-full px-3', statusColors[submission.status])}>
                 {submission.status}
               </Badge>
             )}
@@ -149,18 +149,18 @@ export const SubmissionCard = ({
 
         {/* Tags */}
         {submission.tags.length > 0 && (
-          <div className="flex flex-wrap gap-1 mb-3">
+          <div className="flex flex-wrap gap-1.5 mb-4">
             {submission.tags.slice(0, 3).map((tag) => (
               <Badge
                 key={tag.id}
                 variant="secondary"
-                className="text-xs px-2 py-0.5"
+                className="text-xs px-2.5 py-1 rounded-full font-normal"
               >
                 {tag.tag_name}
               </Badge>
             ))}
             {submission.tags.length > 3 && (
-              <Badge variant="secondary" className="text-xs px-2 py-0.5">
+              <Badge variant="secondary" className="text-xs px-2.5 py-1 rounded-full font-normal">
                 +{submission.tags.length - 3}
               </Badge>
             )}
@@ -168,32 +168,32 @@ export const SubmissionCard = ({
         )}
 
         {/* Author & Time */}
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <Avatar className="w-6 h-6">
+        <div className="flex items-center gap-2 text-sm text-muted-foreground pt-3 border-t border-border/50">
+          <Avatar className="w-6 h-6 ring-2 ring-background">
             <AvatarImage src={submission.author?.avatar_url || undefined} />
-            <AvatarFallback className="text-xs">
+            <AvatarFallback className="text-xs bg-primary/10 text-primary">
               {submission.author?.username?.[0]?.toUpperCase() || '?'}
             </AvatarFallback>
           </Avatar>
           <span className="font-medium text-foreground">
             {submission.author?.username || 'Anonymous'}
           </span>
-          <span className="flex items-center gap-1">
+          <span className="flex items-center gap-1 ml-auto">
             <Clock className="w-3 h-3" />
             {format(new Date(submission.created_at), 'MMM d, yyyy')}
           </span>
         </div>
       </CardContent>
 
-      <CardFooter className="p-4 pt-0 flex items-center justify-between">
-        <div className="flex items-center gap-3">
+      <CardFooter className="px-5 pb-5 pt-0 flex items-center justify-between">
+        <div className="flex items-center gap-2">
           {/* Like Button */}
           <Button
             variant="ghost"
             size="sm"
             className={cn(
-              'gap-1.5 px-2',
-              submission.user_has_liked && 'text-red-500'
+              'gap-1.5 px-3 rounded-full hover:bg-red-500/10',
+              submission.user_has_liked && 'text-red-500 bg-red-500/10'
             )}
             onClick={() => onLike(submission.id)}
           >
@@ -205,7 +205,7 @@ export const SubmissionCard = ({
 
           {/* Comments */}
           <Link to={`/community/${submission.id}`}>
-            <Button variant="ghost" size="sm" className="gap-1.5 px-2">
+            <Button variant="ghost" size="sm" className="gap-1.5 px-3 rounded-full hover:bg-primary/10">
               <MessageCircle className="w-4 h-4" />
               <span>{submission.comments_count}</span>
             </Button>
@@ -215,7 +215,7 @@ export const SubmissionCard = ({
           <Button
             variant="ghost"
             size="sm"
-            className="px-2"
+            className="px-3 rounded-full hover:bg-primary/10"
             onClick={handleShare}
             disabled={isSharing}
           >
@@ -227,13 +227,13 @@ export const SubmissionCard = ({
         {isOwner && onDelete && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="sm" className="px-2">
+              <Button variant="ghost" size="sm" className="px-2 rounded-full hover:bg-muted">
                 <MoreHorizontal className="w-4 h-4" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
+            <DropdownMenuContent align="end" className="rounded-xl">
               <DropdownMenuItem
-                className="text-destructive"
+                className="text-destructive rounded-lg"
                 onClick={() => onDelete(submission.id)}
               >
                 <Trash2 className="w-4 h-4 mr-2" />

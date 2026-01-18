@@ -36,6 +36,9 @@ import {
 } from "@/components/ui/pagination";
 import { ForumReplySection } from "@/components/community/ForumReplySection";
 import { useForumReplies } from "@/hooks/useForumReplies";
+import { PollCreator } from "@/components/forum/PollCreator";
+import { PollDisplay } from "@/components/forum/PollDisplay";
+import { useForumPolls } from "@/hooks/useForumPolls";
 
 interface ForumPost {
   id: string;
@@ -92,8 +95,24 @@ export const Forum = () => {
     content: "",
   });
 
+  // Poll data for new posts
+  const [pollData, setPollData] = useState<{
+    enabled: boolean;
+    question: string;
+    options: string[];
+    endsAt?: Date;
+  }>({
+    enabled: false,
+    question: '',
+    options: [],
+    endsAt: undefined,
+  });
+
   // Use the threaded replies hook
   const { replies, loading: repliesLoading, refetch: refetchReplies } = useForumReplies(selectedPost?.id || null);
+  
+  // Use the poll hook for the selected post
+  const { poll: selectedPostPoll, vote: voteOnPoll, createPoll } = useForumPolls(selectedPost?.id || null, user?.id || null);
 
   useEffect(() => {
     fetchPosts();
@@ -207,14 +226,20 @@ export const Forum = () => {
     }
 
     try {
-      const { error } = await supabase.from("forum_posts").insert({
+      // Create the post first
+      const { data: postData, error } = await supabase.from("forum_posts").insert({
         title: newPostData.title,
         content: newPostData.content,
         category: newPostData.category,
         author_id: user.id,
-      });
+      }).select().single();
 
       if (error) throw error;
+
+      // If poll is enabled, create it
+      if (pollData.enabled && pollData.question && pollData.options.length >= 2) {
+        await createPoll(postData.id, pollData.question, pollData.options, pollData.endsAt);
+      }
 
       toast({
         title: "Success",
@@ -223,6 +248,7 @@ export const Forum = () => {
 
       setShowNewPost(false);
       setNewPostData({ title: "", category: "Book Discussion", content: "" });
+      setPollData({ enabled: false, question: '', options: [], endsAt: undefined });
       fetchPosts();
       fetchStats();
     } catch (error: any) {
@@ -737,6 +763,17 @@ export const Forum = () => {
                 </div>
                 <p className="text-sm whitespace-pre-wrap">{selectedPost.content}</p>
                 
+                {/* Poll Display */}
+                {selectedPostPoll && (
+                  <div className="mt-4">
+                    <PollDisplay
+                      poll={selectedPostPoll}
+                      onVote={voteOnPoll}
+                      canVote={!!user}
+                    />
+                  </div>
+                )}
+                
                 <div className="flex items-center gap-4 mt-4 pt-4 border-t text-sm text-muted-foreground">
                   <span className="flex items-center gap-1">
                     <ThumbsUp className="h-4 w-4" />
@@ -875,13 +912,16 @@ export const Forum = () => {
                   <label className="block text-sm font-medium mb-2">Content</label>
                   <Textarea
                     placeholder="Share your thoughts, ask questions, or start a discussion..."
-                    rows={8}
+                    rows={6}
                     value={newPostData.content}
                     onChange={(e) =>
                       setNewPostData({ ...newPostData, content: e.target.value })
                     }
                   />
                 </div>
+
+                {/* Poll Creator */}
+                <PollCreator onPollDataChange={(data) => setPollData(data)} />
 
                 <div className="flex justify-end space-x-3">
                   <Button variant="outline" onClick={() => setShowNewPost(false)}>

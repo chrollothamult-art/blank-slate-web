@@ -1,4 +1,4 @@
-import { CharacterRelationshipMap } from "@/components/CharacterRelationshipMap";
+import { DynamicRelationshipMap } from "@/components/DynamicRelationshipMap";
 import { AllEventsRelationshipMap } from "@/components/AllEventsRelationshipMap";
 import { FamilyTreeMap } from "@/components/FamilyTreeMap";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -43,7 +43,7 @@ const RelationshipsMap = () => {
           </TabsList>
 
           <TabsContent value="characters">
-            <CharacterRelationshipMap />
+            <DynamicRelationshipMap />
           </TabsContent>
 
           <TabsContent value="family">

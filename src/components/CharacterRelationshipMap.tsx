@@ -220,12 +220,16 @@ export const CharacterRelationshipMap = () => {
         {/* SVG Graph */}
         <div className="relative overflow-hidden rounded-lg bg-[hsl(var(--parchment-bg))] border border-[hsl(var(--parchment-border))]">
           <svg
-            width="100%"
+            width="800"
             height="600"
             viewBox="0 0 800 600"
+            preserveAspectRatio="xMidYMid meet"
+            className="w-full h-auto"
             style={{
               transform: `scale(${zoom}) translate(${pan.x}px, ${pan.y}px)`,
               transformOrigin: "center center",
+              shapeRendering: "geometricPrecision",
+              textRendering: "optimizeLegibility",
             }}
           >
             {/* Relationship lines */}
