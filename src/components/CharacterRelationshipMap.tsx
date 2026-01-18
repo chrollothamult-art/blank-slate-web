@@ -185,31 +185,32 @@ export const CharacterRelationshipMap = () => {
 
   return (
     <Card className="bg-[hsl(var(--parchment-card))] border-[hsl(var(--parchment-border))]">
-      <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle className="flex items-center gap-2 text-[hsl(var(--parchment-brown))]">
-          <Users className="h-5 w-5" />
-          Character Relationships
+      <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-3 sm:p-6">
+        <CardTitle className="flex items-center gap-2 text-base sm:text-lg text-[hsl(var(--parchment-brown))]">
+          <Users className="h-4 w-4 sm:h-5 sm:w-5" />
+          <span className="hidden sm:inline">Character Relationships</span>
+          <span className="sm:hidden">Relationships</span>
         </CardTitle>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="icon" onClick={handleZoomOut}>
-            <ZoomOut className="h-4 w-4" />
+        <div className="flex items-center gap-1 sm:gap-2">
+          <Button variant="outline" size="icon" className="h-8 w-8 sm:h-10 sm:w-10" onClick={handleZoomOut}>
+            <ZoomOut className="h-3 w-3 sm:h-4 sm:w-4" />
           </Button>
-          <Button variant="outline" size="icon" onClick={handleZoomIn}>
-            <ZoomIn className="h-4 w-4" />
+          <Button variant="outline" size="icon" className="h-8 w-8 sm:h-10 sm:w-10" onClick={handleZoomIn}>
+            <ZoomIn className="h-3 w-3 sm:h-4 sm:w-4" />
           </Button>
-          <Button variant="outline" size="icon" onClick={handleReset}>
-            <RotateCcw className="h-4 w-4" />
+          <Button variant="outline" size="icon" className="h-8 w-8 sm:h-10 sm:w-10" onClick={handleReset}>
+            <RotateCcw className="h-3 w-3 sm:h-4 sm:w-4" />
           </Button>
         </div>
       </CardHeader>
-      <CardContent>
-        {/* Legend */}
-        <div className="flex flex-wrap gap-2 mb-4">
-          {Object.entries(relationshipColors).filter(([key]) => key !== 'default').map(([type, color]) => (
+      <CardContent className="p-3 sm:p-6 pt-0">
+        {/* Legend - scrollable on mobile */}
+        <div className="flex overflow-x-auto pb-2 mb-3 sm:mb-4 gap-1.5 sm:gap-2 -mx-3 px-3 sm:mx-0 sm:px-0 sm:flex-wrap">
+          {Object.entries(relationshipColors).filter(([key]) => key !== 'default').slice(0, 8).map(([type, color]) => (
             <Badge
               key={type}
               variant="outline"
-              className="capitalize"
+              className="capitalize text-[10px] sm:text-xs whitespace-nowrap flex-shrink-0"
               style={{ borderColor: color, color: color }}
             >
               {type}
