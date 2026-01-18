@@ -284,23 +284,23 @@ export const CharacterRelationshipMap = () => {
                   <circle
                     cx={pos.x}
                     cy={pos.y}
-                    r={isSelected ? 35 : 30}
-                    fill={isSelected ? "hsl(var(--parchment-gold))" : "hsl(var(--parchment-card))"}
-                    stroke={isSelected ? "hsl(var(--parchment-brown))" : "hsl(var(--parchment-border))"}
+                    r={isSelected ? 22 : 18}
+                    fill={isSelected ? "hsl(var(--parchment-brown))" : "hsl(220, 25%, 35%)"}
+                    stroke={isSelected ? "hsl(var(--parchment-gold))" : "hsl(220, 20%, 25%)"}
                     strokeWidth={isSelected ? 3 : 2}
                     className="transition-all duration-200"
                   />
                   {/* Character image or initial */}
                   {char.image_url ? (
                     <clipPath id={`clip-${char.id}`}>
-                      <circle cx={pos.x} cy={pos.y} r={isSelected ? 32 : 27} />
+                      <circle cx={pos.x} cy={pos.y} r={isSelected ? 19 : 15} />
                     </clipPath>
                   ) : (
                     <text
                       x={pos.x}
                       y={pos.y}
-                      fill="hsl(var(--parchment-brown))"
-                      fontSize="16"
+                      fill="hsl(0, 0%, 95%)"
+                      fontSize="12"
                       fontWeight="bold"
                       textAnchor="middle"
                       dominantBaseline="central"
@@ -311,14 +311,14 @@ export const CharacterRelationshipMap = () => {
                   {/* Character name */}
                   <text
                     x={pos.x}
-                    y={pos.y + 45}
+                    y={pos.y + 28}
                     fill="hsl(var(--parchment-brown))"
-                    fontSize="12"
+                    fontSize="10"
                     fontWeight={isSelected ? "bold" : "normal"}
                     textAnchor="middle"
                     className="pointer-events-none"
                   >
-                    {char.name.length > 15 ? char.name.slice(0, 15) + "..." : char.name}
+                    {char.name.length > 12 ? char.name.slice(0, 12) + "..." : char.name}
                   </text>
                 </g>
               );
