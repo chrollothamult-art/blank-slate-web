@@ -327,31 +327,31 @@ export const Books = () => {
     <div className="min-h-screen bg-background">
       {/* Header Section */}
       <div className="bg-gradient-subtle border-b">
-        <div className="container mx-auto px-4 py-8">
+        <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-8">
           <div className="max-w-2xl">
-            <h1 className="text-3xl md:text-4xl font-playfair font-bold text-primary mb-2">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-playfair font-bold text-primary mb-1 sm:mb-2">
               Browse Books
             </h1>
-            <p className="text-muted-foreground">
+            <p className="text-sm sm:text-base text-muted-foreground">
               Discover our collection of historical fiction and fantasy novels
             </p>
           </div>
 
           {/* Search Bar */}
-          <div className="mt-6 max-w-xl">
+          <div className="mt-4 sm:mt-6 max-w-xl">
             <BookSearchBar
               value={searchQuery}
               onChange={setSearchQuery}
-              placeholder="Search by title, author, or category..."
+              placeholder="Search books..."
             />
           </div>
         </div>
       </div>
 
       {/* Main Content */}
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex gap-8">
-          {/* Filters Sidebar */}
+      <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-8">
+        <div className="flex flex-col lg:flex-row gap-4 lg:gap-8">
+          {/* Filters - Mobile shows as button, Desktop as sidebar */}
           <BookFilters
             filters={filters}
             onFiltersChange={setFilters}
@@ -362,15 +362,16 @@ export const Books = () => {
           {/* Books Grid */}
           <div className="flex-1">
             {/* Toolbar */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-              <div className="flex items-center gap-4">
-                <span className="text-sm text-muted-foreground">
-                  {filteredBooks.length} book{filteredBooks.length !== 1 ? "s" : ""} found
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 mb-4 sm:mb-6">
+              <div className="flex items-center gap-2 sm:gap-4">
+                {/* Mobile filter button is rendered by BookFilters */}
+                <span className="text-xs sm:text-sm text-muted-foreground">
+                  {filteredBooks.length} book{filteredBooks.length !== 1 ? "s" : ""}
                 </span>
               </div>
 
               <Select value={sortBy} onValueChange={(v) => setSortBy(v as SortOption)}>
-                <SelectTrigger className="w-48">
+                <SelectTrigger className="w-full sm:w-48">
                   <SelectValue placeholder="Sort by" />
                 </SelectTrigger>
                 <SelectContent>
@@ -384,7 +385,7 @@ export const Books = () => {
             </div>
 
             {/* Active Filters */}
-            <div className="mb-6">
+            <div className="mb-4 sm:mb-6">
               <ActiveFilters
                 filters={filters}
                 onFiltersChange={setFilters}
@@ -394,22 +395,22 @@ export const Books = () => {
 
             {/* Loading State */}
             {loading && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-6">
                 {Array.from({ length: 8 }).map((_, i) => (
                   <Card key={i} className="overflow-hidden">
-                    <div className="p-4">
-                      <Skeleton className="w-full aspect-[2/3] mb-4" />
-                      <Skeleton className="h-5 w-16 mb-3" />
-                      <Skeleton className="h-6 w-full mb-2" />
-                      <Skeleton className="h-4 w-24 mb-3" />
-                      <div className="flex gap-1 mb-3">
+                    <div className="p-2 sm:p-4">
+                      <Skeleton className="w-full aspect-[2/3] mb-2 sm:mb-4" />
+                      <Skeleton className="h-4 sm:h-5 w-12 sm:w-16 mb-2 sm:mb-3" />
+                      <Skeleton className="h-5 sm:h-6 w-full mb-1 sm:mb-2" />
+                      <Skeleton className="h-3 sm:h-4 w-16 sm:w-24 mb-2 sm:mb-3" />
+                      <div className="flex gap-0.5 sm:gap-1 mb-2 sm:mb-3">
                         {Array.from({ length: 5 }).map((_, j) => (
-                          <Skeleton key={j} className="h-3 w-3" />
+                          <Skeleton key={j} className="h-2 w-2 sm:h-3 sm:w-3" />
                         ))}
                       </div>
-                      <div className="flex justify-between pt-2">
-                        <Skeleton className="h-6 w-16" />
-                        <Skeleton className="h-4 w-14" />
+                      <div className="flex justify-between pt-1 sm:pt-2">
+                        <Skeleton className="h-5 sm:h-6 w-12 sm:w-16" />
+                        <Skeleton className="h-3 sm:h-4 w-10 sm:w-14" />
                       </div>
                     </div>
                   </Card>
@@ -419,15 +420,15 @@ export const Books = () => {
 
             {/* Empty State */}
             {!loading && filteredBooks.length === 0 && (
-              <div className="text-center py-16">
-                <BookOpen className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
-                <h3 className="text-xl font-playfair font-semibold mb-2">
+              <div className="text-center py-8 sm:py-16">
+                <BookOpen className="h-12 w-12 sm:h-16 sm:w-16 mx-auto text-muted-foreground mb-3 sm:mb-4" />
+                <h3 className="text-lg sm:text-xl font-playfair font-semibold mb-2">
                   No books found
                 </h3>
-                <p className="text-muted-foreground mb-4">
+                <p className="text-sm sm:text-base text-muted-foreground mb-3 sm:mb-4">
                   Try adjusting your search or filters
                 </p>
-                <Button variant="outline" onClick={handleClearFilters}>
+                <Button variant="outline" size="sm" onClick={handleClearFilters}>
                   Clear all filters
                 </Button>
               </div>
@@ -436,16 +437,16 @@ export const Books = () => {
             {/* Books Grid */}
             {!loading && filteredBooks.length > 0 && (
               <>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-6">
                 {paginatedBooks.map((book) => (
                   <Card
                     key={book.id}
-                    className="cursor-pointer transition-all duration-300 hover:shadow-lg hover:-translate-y-2 bg-card overflow-hidden"
+                    className="cursor-pointer transition-all duration-300 hover:shadow-lg hover:-translate-y-1 sm:hover:-translate-y-2 bg-card overflow-hidden"
                     onClick={() => handleBookClick(book)}
                   >
-                    <div className="p-4">
+                    <div className="p-2 sm:p-4">
                       {/* Book Cover */}
-                      <div className="relative mb-4 group">
+                      <div className="relative mb-2 sm:mb-4 group">
                         <div className="w-full aspect-[2/3] bg-muted overflow-hidden book-shadow">
                           <img
                             src={book.cover_image_url || bookCollection}
@@ -454,10 +455,10 @@ export const Books = () => {
                           />
                         </div>
                         {/* Wishlist Button */}
-                        <div className="absolute top-2 right-2 z-10">
+                        <div className="absolute top-1 right-1 sm:top-2 sm:right-2 z-10">
                           <WishlistButton bookId={book.id} />
                         </div>
-                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300 flex items-center justify-center opacity-0 group-hover:opacity-100">
+                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300 hidden sm:flex items-center justify-center opacity-0 group-hover:opacity-100">
                           <Button
                             size="sm"
                             variant="secondary"
@@ -474,34 +475,34 @@ export const Books = () => {
                       </div>
 
                       {/* Book Info */}
-                      <div className="space-y-2">
-                        <Badge variant="secondary" className="text-xs">
+                      <div className="space-y-1 sm:space-y-2">
+                        <Badge variant="secondary" className="text-[10px] sm:text-xs">
                           {book.category}
                         </Badge>
 
-                        <h3 className="font-playfair font-semibold text-lg leading-tight line-clamp-2">
+                        <h3 className="font-playfair font-semibold text-sm sm:text-lg leading-tight line-clamp-2">
                           {book.title}
                         </h3>
 
-                        <p className="text-sm text-muted-foreground">
+                        <p className="text-xs sm:text-sm text-muted-foreground line-clamp-1">
                           by {book.author}
                         </p>
 
                         {/* Rating */}
-                        <div className="flex items-center space-x-2">
+                        <div className="flex items-center space-x-1 sm:space-x-2">
                           <div className="flex space-x-0.5">
                             {renderStars(book.rating || 4.0)}
                           </div>
-                          <span className="text-sm font-medium">
+                          <span className="text-xs sm:text-sm font-medium">
                             {(book.rating || 4.0).toFixed(1)}
                           </span>
                         </div>
 
                         {/* Price */}
-                        <div className="flex items-center justify-between pt-2">
+                        <div className="flex items-center justify-between pt-1 sm:pt-2">
                           {book.book_versions && book.book_versions.length > 0 && (
                             <>
-                              <span className="text-lg font-bold text-accent">
+                              <span className="text-sm sm:text-lg font-bold text-accent">
                                 $
                                 {Math.min(
                                   ...book.book_versions.map((v: any) =>
@@ -510,7 +511,7 @@ export const Books = () => {
                                 ).toFixed(2)}
                               </span>
                               {book.book_versions.length > 1 && (
-                                <span className="text-xs text-muted-foreground">
+                                <span className="text-[10px] sm:text-xs text-muted-foreground hidden sm:block">
                                   {book.book_versions.length} formats
                                 </span>
                               )}
