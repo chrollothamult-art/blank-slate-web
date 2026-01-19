@@ -22,8 +22,8 @@ export const BookGallery = ({ onBookSelect, selectedBookId }: BookGalleryProps) 
   }, [selectedBookId]);
 
   const fetchBooks = async () => {
-    const { data, error } = await supabase
-      .from("books")
+    const { data, error } = await (supabase
+      .from("books" as any)
       .select(`
         *,
         book_versions (
@@ -35,12 +35,12 @@ export const BookGallery = ({ onBookSelect, selectedBookId }: BookGalleryProps) 
       `)
       .eq("status", "active")
       .gt("stock", 0)
-      .order("updated_at", { ascending: false });
+      .order("updated_at", { ascending: false })) as any;
 
     if (data) {
       // Filter out the currently selected book
       const filteredBooks = selectedBookId 
-        ? data.filter(book => book.id !== selectedBookId)
+        ? data.filter((book: any) => book.id !== selectedBookId)
         : data;
       setActiveBooks(filteredBooks);
     }

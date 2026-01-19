@@ -25,9 +25,9 @@ export const NewsletterForm = () => {
     setIsLoading(true);
 
     try {
-      const { error } = await supabase
-        .from("newsletter_subscribers")
-        .insert({ email: email.toLowerCase().trim() });
+      const { error } = await (supabase
+        .from("newsletter_subscribers" as any)
+        .insert({ email: email.toLowerCase().trim() })) as any;
 
       if (error) {
         if (error.code === "23505") {

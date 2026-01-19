@@ -193,4 +193,15 @@
   .btn-outline-professional {
     @apply border-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground px-8 py-3 font-medium transition-all duration-300;
   }
+
+  /* SVG Connection Line Animations */
+  @keyframes dash {
+    to {
+      stroke-dashoffset: -24;
+    }
+  }
+
+  .animate-dash {
+    animation: dash 1s linear infinite;
+  }
 }

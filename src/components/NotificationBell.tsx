@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useForumNotifications, ForumNotification } from "@/hooks/useForumNotifications";
 import { useAuth } from "@/contexts/AuthContext";
@@ -29,6 +29,7 @@ import {
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { cn } from "@/lib/utils";
+import { usePushNotifications, formatNotificationMessage } from "@/hooks/usePushNotifications";
 
 interface SubmissionNotification {
   id: string;
@@ -83,6 +84,9 @@ export const NotificationBell = () => {
     deleteNotification: deleteForumNotification,
   } = useForumNotifications();
   
+  const { showNotification, canShowNotifications } = usePushNotifications();
+  const lastNotificationIdRef = useRef<string | null>(null);
+  
   const [submissionNotifications, setSubmissionNotifications] = useState<SubmissionNotification[]>([]);
   const [submissionLoading, setSubmissionLoading] = useState(true);
   const [isOpen, setIsOpen] = useState(false);
@@ -95,12 +99,12 @@ export const NotificationBell = () => {
     if (!user) return;
 
     try {
-      const { data, error } = await supabase
-        .from('submission_notifications')
+      const { data, error } = await (supabase
+        .from('submission_notifications' as any)
         .select('*')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false })
-        .limit(20);
+        .limit(20)) as any;
 
       if (error) throw error;
       setSubmissionNotifications((data as SubmissionNotification[]) || []);
@@ -127,7 +131,17 @@ export const NotificationBell = () => {
             filter: `user_id=eq.${user.id}`,
           },
           (payload) => {
-            setSubmissionNotifications(prev => [payload.new as SubmissionNotification, ...prev]);
+            const newNotif = payload.new as SubmissionNotification;
+            setSubmissionNotifications(prev => [newNotif, ...prev]);
+            
+            // Show browser push notification
+            if (canShowNotifications && newNotif.id !== lastNotificationIdRef.current) {
+              lastNotificationIdRef.current = newNotif.id;
+              showNotification('ThouArt', {
+                body: newNotif.message,
+                tag: `submission-${newNotif.id}`,
+              });
+            }
           }
         )
         .subscribe();
@@ -136,7 +150,21 @@ export const NotificationBell = () => {
         supabase.removeChannel(channel);
       };
     }
-  }, [fetchSubmissionNotifications, user]);
+  }, [fetchSubmissionNotifications, user, canShowNotifications, showNotification]);
+
+  // Listen for forum notifications and show browser push
+  useEffect(() => {
+    if (forumNotifications.length > 0 && canShowNotifications) {
+      const latestNotif = forumNotifications[0];
+      if (latestNotif && !latestNotif.is_read && latestNotif.id !== lastNotificationIdRef.current) {
+        lastNotificationIdRef.current = latestNotif.id;
+        showNotification('ThouArt - Forum', {
+          body: latestNotif.message,
+          tag: `forum-${latestNotif.id}`,
+        });
+      }
+    }
+  }, [forumNotifications, canShowNotifications, showNotification]);
 
   const handleForumNotificationClick = async (notification: ForumNotification) => {
     if (!notification.is_read) {
@@ -151,10 +179,10 @@ export const NotificationBell = () => {
 
   const handleSubmissionNotificationClick = async (notification: SubmissionNotification) => {
     if (!notification.is_read) {
-      await supabase
-        .from('submission_notifications')
+      await (supabase
+        .from('submission_notifications' as any)
         .update({ is_read: true })
-        .eq('id', notification.id);
+        .eq('id', notification.id)) as any;
 
       setSubmissionNotifications(prev =>
         prev.map(n => n.id === notification.id ? { ...n, is_read: true } : n)
@@ -172,10 +200,10 @@ export const NotificationBell = () => {
 
     const unreadIds = submissionNotifications.filter(n => !n.is_read).map(n => n.id);
     
-    await supabase
-      .from('submission_notifications')
+    await (supabase
+      .from('submission_notifications' as any)
       .update({ is_read: true })
-      .in('id', unreadIds);
+      .in('id', unreadIds)) as any;
 
     setSubmissionNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
   };

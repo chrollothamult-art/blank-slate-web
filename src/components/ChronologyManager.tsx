@@ -42,10 +42,10 @@ export const ChronologyManager = () => {
   }, []);
 
   const fetchEvents = async () => {
-    const { data, error } = await supabase
-      .from("chronology_events")
+    const { data, error } = await (supabase
+      .from("chronology_events" as any)
       .select("*")
-      .order("order_index", { ascending: true });
+      .order("order_index", { ascending: true })) as any;
 
     if (error) {
       toast({
@@ -56,7 +56,7 @@ export const ChronologyManager = () => {
       return;
     }
 
-    setEvents(data as ChronologyEvent[] || []);
+    setEvents((data as ChronologyEvent[]) || []);
   };
 
   const handleSubmit = async () => {
@@ -74,8 +74,8 @@ export const ChronologyManager = () => {
       : events.length;
 
     if (editingId) {
-      const { error } = await supabase
-        .from("chronology_events")
+      const { error } = await (supabase
+        .from("chronology_events" as any)
         .update({
           title: formData.title,
           date: formData.date,
@@ -83,7 +83,7 @@ export const ChronologyManager = () => {
           description: formData.description,
           article: formData.article,
         })
-        .eq("id", editingId);
+        .eq("id", editingId)) as any;
 
       if (error) {
         toast({
@@ -99,12 +99,12 @@ export const ChronologyManager = () => {
         description: "Event updated successfully",
       });
     } else {
-      const { error } = await supabase
-        .from("chronology_events")
+      const { error } = await (supabase
+        .from("chronology_events" as any)
         .insert({
           ...formData,
           order_index: orderIndex,
-        });
+        })) as any;
 
       if (error) {
         toast({
@@ -140,10 +140,10 @@ export const ChronologyManager = () => {
   const handleDelete = async (id: string) => {
     if (!confirm("Are you sure you want to delete this event?")) return;
 
-    const { error } = await supabase
-      .from("chronology_events")
+    const { error } = await (supabase
+      .from("chronology_events" as any)
       .delete()
-      .eq("id", id);
+      .eq("id", id)) as any;
 
     if (error) {
       toast({

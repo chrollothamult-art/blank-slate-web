@@ -5,11 +5,13 @@
 ### High Priority
 - [ ] **User Dashboard** - Personal dashboard showing reading progress, achievements, and activity summary
 - [ ] **Book Reading Tracker** - Track pages read per session with time-based analytics
-- [ ] **Push Notifications** - Real-time notifications for new comments, likes, and follows
-- [ ] **Advanced Search** - Full-text search across books, almanac entries, and community content
-- [ ] **Offline Mode** - PWA support for reading books offline
+- [x] **Push Notifications** - Real-time browser push notifications via Service Worker (PWA)
+- [x] **Advanced Search** - Full-text search across books, almanac entries, and community content
+- [x] **Offline Mode** - PWA support with service worker caching for offline access
 
 ### Community Features
+- [x] **@Mentions in Replies** - Tag users in forum and submission replies
+- [x] **Reply Editing/Deleting** - Edit and delete your own replies
 - [ ] **Direct Messaging** - Private messaging between users
 - [ ] **User Badges Display** - Show earned badges on user profiles and submissions
 - [ ] **Community Challenges** - Weekly/monthly reading or art challenges
@@ -30,7 +32,6 @@
 - [ ] **Reading Goals** - Set and track daily/weekly reading goals
 - [x] **Book Clubs** - Create and join book discussion groups
 - [ ] **Annotation Sharing** - Share highlighted passages with the community
-- [ ] **Annotation Sharing** - Share highlighted passages with the community
 
 ### Admin Features
 - [ ] **Bulk Content Import** - CSV/JSON import for almanac entries
@@ -41,7 +42,7 @@
 
 ### Technical Improvements
 - [ ] **Image Optimization** - Implement lazy loading and WebP conversion
-- [ ] **Caching Strategy** - Add service worker caching for faster loads
+- [x] **Caching Strategy** - Service worker caching via PWA for faster loads
 - [ ] **SEO Enhancements** - Dynamic meta tags and structured data
 - [ ] **Performance Monitoring** - Add analytics for Core Web Vitals
 - [ ] **Accessibility Audit** - Full WCAG 2.1 compliance review
@@ -75,6 +76,13 @@
 
 ## ✅ Recently Completed
 
+- [x] Push notifications with Service Worker support
+- [x] PWA configuration with offline caching
+- [x] @Mentions in forum replies with user search
+- [x] Reply editing and deleting functionality
+- [x] Enhanced profile dropdown component
+- [x] Fixed fan art submission links (404 error)
+- [x] Fixed user preferences settings persistence
 - [x] Modern UI overhaul with rounded corners and softer design
 - [x] Page transition animations with framer-motion
 - [x] Staggered list and grid animations

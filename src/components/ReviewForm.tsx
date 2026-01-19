@@ -57,13 +57,13 @@ export const ReviewForm = ({ bookId, onReviewSubmitted }: ReviewFormProps) => {
 
     setSubmitting(true);
 
-    const { error } = await supabase.from("reviews").insert({
+    const { error } = await (supabase.from("reviews" as any).insert({
       book_id: bookId,
       user_id: user.id,
       rating,
       title: title.trim(),
       comment: comment.trim(),
-    });
+    })) as any;
 
     if (error) {
       if (error.code === "23505") {

@@ -58,14 +58,14 @@ export const BookDisplay = ({ book, onAddToCart }: BookDisplayProps) => {
     const fetchRatingData = async () => {
       if (!book?.id) return;
       
-      const { data, error } = await supabase
-        .from("reviews")
+      const { data, error } = await (supabase
+        .from("reviews" as any)
         .select("rating")
-        .eq("book_id", book.id);
+        .eq("book_id", book.id)) as any;
 
       if (!error && data) {
         const avgRating = data.length > 0 
-          ? data.reduce((sum, review) => sum + review.rating, 0) / data.length 
+          ? data.reduce((sum: number, review: any) => sum + review.rating, 0) / data.length 
           : 0;
         setRating(avgRating);
         setReviewCount(data.length);

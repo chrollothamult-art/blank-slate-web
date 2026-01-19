@@ -35,27 +35,27 @@ export const ReviewList = ({ bookId }: ReviewListProps) => {
     setLoading(true);
     
     // First fetch reviews
-    const { data: reviewsData, error: reviewsError } = await supabase
-      .from("reviews")
+    const { data: reviewsData, error: reviewsError } = await (supabase
+      .from("reviews" as any)
       .select("*")
       .eq("book_id", bookId)
-      .order("created_at", { ascending: false });
+      .order("created_at", { ascending: false })) as any;
 
     if (reviewsData) {
       // Then fetch profiles for each review
-      const userIds = reviewsData.map((r) => r.user_id);
-      const { data: profilesData } = await supabase
-        .from("profiles")
+      const userIds = reviewsData.map((r: any) => r.user_id);
+      const { data: profilesData } = await (supabase
+        .from("profiles" as any)
         .select("id, username, avatar_url")
-        .in("id", userIds);
+        .in("id", userIds)) as any;
 
       // Merge profiles into reviews
-      const reviewsWithProfiles = reviewsData.map((review) => ({
+      const reviewsWithProfiles = reviewsData.map((review: any) => ({
         ...review,
-        profiles: profilesData?.find((p) => p.id === review.user_id) || null,
+        profiles: profilesData?.find((p: any) => p.id === review.user_id) || null,
       }));
 
-      setReviews(reviewsWithProfiles);
+      setReviews(reviewsWithProfiles as Review[]);
     }
     setLoading(false);
   };

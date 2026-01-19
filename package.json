@@ -69,6 +69,7 @@
     "three": "^0.180.0",
     "turn.js": "^1.0.5",
     "vaul": "^0.9.9",
+    "vite-plugin-pwa": "^1.2.0",
     "zod": "^3.25.76"
   },
   "devDependencies": {

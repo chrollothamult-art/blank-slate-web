@@ -66,14 +66,14 @@ export const BookFilters = ({
   }, []);
 
   const fetchCategories = async () => {
-    const { data } = await supabase
-      .from("books")
+    const { data } = await (supabase
+      .from("books" as any)
       .select("category")
-      .eq("status", "active");
+      .eq("status", "active")) as any;
 
     if (data) {
-      const uniqueCategories = [...new Set(data.map((b) => b.category))].sort();
-      setCategories(uniqueCategories);
+      const uniqueCategories = [...new Set(data.map((b: any) => b.category))].sort();
+      setCategories(uniqueCategories as string[]);
     }
   };
 

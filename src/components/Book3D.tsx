@@ -45,11 +45,11 @@ export const Book3D = ({ book, onClose }: Book3DProps) => {
   useEffect(() => {
     const fetchPreviewPDF = async () => {
       setIsLoading(true);
-      const { data } = await supabase
-        .from("books")
+      const { data } = await (supabase
+        .from("books" as any)
         .select("preview_pdf_url")
         .eq("id", book.id)
-        .maybeSingle();
+        .maybeSingle()) as any;
       
       setPreviewPDF(data?.preview_pdf_url || null);
       setIsLoading(false);

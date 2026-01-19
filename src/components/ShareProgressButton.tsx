@@ -72,14 +72,14 @@ export const ShareProgressButton = ({
         ? `${milestoneMessage}\n\n${customMessage}`
         : milestoneMessage;
 
-      const { error } = await supabase.from("forum_posts").insert({
+      const { error } = await (supabase.from("forum_posts" as any).insert({
         title: progress.completed 
           ? `Finished: ${bookTitle}` 
           : `Reading Progress: ${bookTitle}`,
         content: fullContent,
         category: "Book Discussion",
         author_id: user.id,
-      });
+      })) as any;
 
       if (error) throw error;
 

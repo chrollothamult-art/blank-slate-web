@@ -41,13 +41,13 @@ export const ChronologyTimeline = () => {
   }, []);
 
   const fetchEvents = async () => {
-    const { data, error } = await supabase
-      .from("chronology_events")
+    const { data, error } = await (supabase
+      .from("chronology_events" as any)
       .select("id, title, date, era, description")
-      .order("order_index", { ascending: true });
+      .order("order_index", { ascending: true })) as any;
 
     if (data) {
-      setTimelineEvents(data);
+      setTimelineEvents(data as TimelineEvent[]);
     }
     setLoading(false);
   };

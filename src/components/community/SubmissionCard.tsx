@@ -68,7 +68,7 @@ export const SubmissionCard = ({
   const handleShare = async () => {
     setIsSharing(true);
     try {
-      const url = `${window.location.origin}/community/${submission.id}`;
+      const url = `${window.location.origin}/community/submission/${submission.id}`;
       await navigator.clipboard.writeText(url);
       toast({
         title: 'Link copied!',
@@ -89,7 +89,7 @@ export const SubmissionCard = ({
     <Card className="group overflow-hidden rounded-2xl border-border/40 hover:border-primary/30 transition-all duration-300 hover:shadow-xl hover:shadow-primary/5 hover:scale-[1.02] bg-card/80 backdrop-blur-sm">
       {/* Image Section */}
       {submission.image_url && (
-        <Link to={`/community/${submission.id}`} className="block">
+        <Link to={`/community/submission/${submission.id}`} className="block">
           <div className="relative aspect-[4/3] overflow-hidden bg-muted/50 rounded-t-2xl">
             <img
               src={submission.image_url}
@@ -134,7 +134,7 @@ export const SubmissionCard = ({
         )}
 
         {/* Title */}
-        <Link to={`/community/${submission.id}`}>
+        <Link to={`/community/submission/${submission.id}`}>
           <h3 className="font-semibold text-foreground hover:text-primary transition-colors line-clamp-2 mb-2">
             {submission.title}
           </h3>
@@ -204,7 +204,7 @@ export const SubmissionCard = ({
           </Button>
 
           {/* Comments */}
-          <Link to={`/community/${submission.id}`}>
+          <Link to={`/community/submission/${submission.id}`}>
             <Button variant="ghost" size="sm" className="gap-1.5 px-3 rounded-full hover:bg-primary/10">
               <MessageCircle className="w-4 h-4" />
               <span>{submission.comments_count}</span>
