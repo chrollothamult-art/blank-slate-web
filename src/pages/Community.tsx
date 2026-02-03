@@ -454,22 +454,30 @@ export const Community = () => {
               Share your fan art, start discussions, and connect with fellow ThouArt enthusiasts.
             </p>
 
-            {/* Stats */}
+            {/* Stats - Only show if we have data */}
             <div className="flex items-center justify-center gap-6 md:gap-8">
               <div className="text-center">
-                <div className="text-xl md:text-2xl font-bold text-primary">{galleryStats.totalArt}</div>
+                <div className="text-xl md:text-2xl font-bold text-primary">
+                  {galleryStats.totalArt || '-'}
+                </div>
                 <div className="text-xs md:text-sm text-muted-foreground">Artworks</div>
               </div>
               <div className="text-center">
-                <div className="text-xl md:text-2xl font-bold text-primary">{galleryStats.totalDiscussions}</div>
+                <div className="text-xl md:text-2xl font-bold text-primary">
+                  {galleryStats.totalDiscussions || '-'}
+                </div>
                 <div className="text-xs md:text-sm text-muted-foreground">Discussions</div>
               </div>
               <div className="text-center">
-                <div className="text-xl md:text-2xl font-bold text-primary">{galleryStats.totalReviews}</div>
+                <div className="text-xl md:text-2xl font-bold text-primary">
+                  {galleryStats.totalReviews || '-'}
+                </div>
                 <div className="text-xs md:text-sm text-muted-foreground">Reviews</div>
               </div>
               <div className="text-center">
-                <div className="text-xl md:text-2xl font-bold text-primary">{forumStats.totalMembers}</div>
+                <div className="text-xl md:text-2xl font-bold text-primary">
+                  {forumStats.totalMembers || '-'}
+                </div>
                 <div className="text-xs md:text-sm text-muted-foreground">Members</div>
               </div>
             </div>

@@ -4,6 +4,7 @@ import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { AspectRatio } from '@/components/ui/aspect-ratio';
 import { OptimizedImage } from '@/components/OptimizedImage';
 import {
   Heart,
@@ -91,28 +92,30 @@ export const SubmissionCard = ({
       {/* Image Section */}
       {submission.image_url && (
         <Link to={`/community/submission/${submission.id}`} className="block">
-          <div className="relative aspect-[4/3] overflow-hidden bg-muted/50 rounded-t-2xl">
-            <OptimizedImage
-              src={submission.image_url}
-              alt={submission.title}
-              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-              containerClassName="w-full h-full"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-            <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-              <Badge
-                variant="outline"
-                className={cn('border backdrop-blur-md rounded-full px-3', contentTypeColors[submission.content_type])}
-              >
-                <Icon className="w-3 h-3 mr-1" />
-                {submission.content_type}
-              </Badge>
-              <Button size="sm" variant="secondary" className="gap-1 rounded-full shadow-lg">
-                <Eye className="w-3 h-3" />
-                View
-              </Button>
+          <AspectRatio ratio={4/3} className="overflow-hidden bg-muted/50 rounded-t-2xl">
+            <div className="relative w-full h-full">
+              <OptimizedImage
+                src={submission.image_url}
+                alt={submission.title}
+                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                containerClassName="w-full h-full"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                <Badge
+                  variant="outline"
+                  className={cn('border backdrop-blur-md rounded-full px-3', contentTypeColors[submission.content_type])}
+                >
+                  <Icon className="w-3 h-3 mr-1" />
+                  {submission.content_type}
+                </Badge>
+                <Button size="sm" variant="secondary" className="gap-1 rounded-full shadow-lg">
+                  <Eye className="w-3 h-3" />
+                  View
+                </Button>
+              </div>
             </div>
-          </div>
+          </AspectRatio>
         </Link>
       )}
 
@@ -135,10 +138,10 @@ export const SubmissionCard = ({
           </div>
         )}
 
-        {/* Title */}
+        {/* Title - Show placeholder for very short/invalid titles */}
         <Link to={`/community/submission/${submission.id}`}>
           <h3 className="font-semibold text-foreground hover:text-primary transition-colors line-clamp-2 mb-2">
-            {submission.title}
+            {submission.title.length >= 3 ? submission.title : 'Untitled Submission'}
           </h3>
         </Link>
 
