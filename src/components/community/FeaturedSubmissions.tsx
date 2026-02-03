@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { OptimizedImage } from '@/components/OptimizedImage';
+import { AspectRatio } from '@/components/ui/aspect-ratio';
 import {
   Crown,
   Heart,
@@ -154,31 +155,35 @@ export const FeaturedSubmissions = () => {
               onClick={() => navigate(`/community/submission/${submission.id}`)}
             >
               {submission.image_url ? (
-                <div className="aspect-[4/3] overflow-hidden relative">
-                  <OptimizedImage
-                    src={submission.image_url}
-                    alt={submission.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    containerClassName="w-full h-full"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                  <div className="absolute top-3 right-3">
-                    <Badge className="bg-amber-500 hover:bg-amber-600 text-white gap-1 rounded-full px-3 shadow-lg">
-                      <Crown className="h-3 w-3" />
-                      Featured
-                    </Badge>
+                <AspectRatio ratio={4/3} className="overflow-hidden">
+                  <div className="relative w-full h-full">
+                    <OptimizedImage
+                      src={submission.image_url}
+                      alt={submission.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      containerClassName="w-full h-full"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                    <div className="absolute top-3 right-3">
+                      <Badge className="bg-amber-500 hover:bg-amber-600 text-white gap-1 rounded-full px-3 shadow-lg">
+                        <Crown className="h-3 w-3" />
+                        Featured
+                      </Badge>
+                    </div>
                   </div>
-                </div>
+                </AspectRatio>
               ) : (
-                <div className="aspect-[4/3] bg-muted/50 flex items-center justify-center relative rounded-t-2xl">
-                  <TypeIcon className="h-12 w-12 text-muted-foreground/50" />
-                  <div className="absolute top-3 right-3">
-                    <Badge className="bg-amber-500 hover:bg-amber-600 text-white gap-1 rounded-full px-3 shadow-lg">
-                      <Crown className="h-3 w-3" />
-                      Featured
-                    </Badge>
+                <AspectRatio ratio={4/3} className="bg-muted/50 rounded-t-2xl">
+                  <div className="flex items-center justify-center w-full h-full relative">
+                    <TypeIcon className="h-12 w-12 text-muted-foreground/50" />
+                    <div className="absolute top-3 right-3">
+                      <Badge className="bg-amber-500 hover:bg-amber-600 text-white gap-1 rounded-full px-3 shadow-lg">
+                        <Crown className="h-3 w-3" />
+                        Featured
+                      </Badge>
+                    </div>
                   </div>
-                </div>
+                </AspectRatio>
               )}
               
               <CardContent className="p-5">
@@ -190,7 +195,7 @@ export const FeaturedSubmissions = () => {
                 </div>
                 
                 <h3 className="font-semibold line-clamp-1 group-hover:text-primary transition-colors text-base">
-                  {submission.title}
+                  {submission.title.length >= 3 ? submission.title : 'Untitled Submission'}
                 </h3>
                 
                 {submission.description && (
