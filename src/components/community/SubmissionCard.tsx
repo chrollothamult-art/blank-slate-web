@@ -4,6 +4,7 @@ import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { OptimizedImage } from '@/components/OptimizedImage';
 import {
   Heart,
   MessageCircle,
@@ -91,10 +92,11 @@ export const SubmissionCard = ({
       {submission.image_url && (
         <Link to={`/community/submission/${submission.id}`} className="block">
           <div className="relative aspect-[4/3] overflow-hidden bg-muted/50 rounded-t-2xl">
-            <img
+            <OptimizedImage
               src={submission.image_url}
               alt={submission.title}
               className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+              containerClassName="w-full h-full"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
             <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between opacity-0 group-hover:opacity-100 transition-opacity duration-300">

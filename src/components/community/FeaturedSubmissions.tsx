@@ -5,6 +5,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { OptimizedImage } from '@/components/OptimizedImage';
 import {
   Crown,
   Heart,
@@ -154,10 +155,11 @@ export const FeaturedSubmissions = () => {
             >
               {submission.image_url ? (
                 <div className="aspect-[4/3] overflow-hidden relative">
-                  <img
+                  <OptimizedImage
                     src={submission.image_url}
                     alt={submission.title}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    containerClassName="w-full h-full"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                   <div className="absolute top-3 right-3">

@@ -14,7 +14,12 @@ import {
   Mail,
   Network,
   User,
-  FileText
+  FileText,
+  Calendar,
+  Shield,
+  BarChart3,
+  MapPin,
+  Scale,
 } from "lucide-react";
 import { ChronologyManager } from "@/components/ChronologyManager";
 import { BookManager } from "@/components/admin/BookManager";
@@ -26,6 +31,10 @@ import { NewsletterManager } from "@/components/admin/NewsletterManager";
 import { CharacterRelationshipManager } from "@/components/admin/CharacterRelationshipManager";
 import { CharactersManager } from "@/components/admin/CharactersManager";
 import { SubmissionsManager } from "@/components/admin/SubmissionsManager";
+import { ContentScheduler } from "@/components/admin/ContentScheduler";
+import { ModerationQueue } from "@/components/admin/ModerationQueue";
+import { LocationsManager } from "@/components/admin/LocationsManager";
+import { CharacterStatsManager } from "@/components/admin/CharacterStatsManager";
 
 export const Admin = () => {
   const { books } = useBooks();
@@ -154,13 +163,21 @@ export const Admin = () => {
       {/* Main Content */}
       <div className="container mx-auto px-4 py-8">
         <Tabs defaultValue="books" className="space-y-8">
-          <TabsList className="grid w-full grid-cols-10">
+          <TabsList className="flex flex-wrap gap-1 h-auto p-1">
             <TabsTrigger value="books">Books</TabsTrigger>
             <TabsTrigger value="chronology">Chronology</TabsTrigger>
             <TabsTrigger value="almanac">Almanac</TabsTrigger>
             <TabsTrigger value="characters">
               <User className="h-4 w-4 mr-1" />
               Characters
+            </TabsTrigger>
+            <TabsTrigger value="stats">
+              <Scale className="h-4 w-4 mr-1" />
+              Stats
+            </TabsTrigger>
+            <TabsTrigger value="locations">
+              <MapPin className="h-4 w-4 mr-1" />
+              Locations
             </TabsTrigger>
             <TabsTrigger value="relationships">
               <Network className="h-4 w-4 mr-1" />
@@ -170,10 +187,21 @@ export const Admin = () => {
               <FileText className="h-4 w-4 mr-1" />
               Submissions
             </TabsTrigger>
+            <TabsTrigger value="moderation">
+              <Shield className="h-4 w-4 mr-1" />
+              Moderation
+            </TabsTrigger>
+            <TabsTrigger value="scheduler">
+              <Calendar className="h-4 w-4 mr-1" />
+              Scheduler
+            </TabsTrigger>
             <TabsTrigger value="orders">Orders</TabsTrigger>
             <TabsTrigger value="customers">Customers</TabsTrigger>
             <TabsTrigger value="newsletter">Newsletter</TabsTrigger>
-            <TabsTrigger value="analytics">Analytics</TabsTrigger>
+            <TabsTrigger value="analytics">
+              <BarChart3 className="h-4 w-4 mr-1" />
+              Analytics
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="books" className="space-y-6">
@@ -192,12 +220,28 @@ export const Admin = () => {
             <CharactersManager />
           </TabsContent>
 
+          <TabsContent value="stats" className="space-y-6">
+            <CharacterStatsManager />
+          </TabsContent>
+
+          <TabsContent value="locations" className="space-y-6">
+            <LocationsManager />
+          </TabsContent>
+
           <TabsContent value="relationships" className="space-y-6">
             <CharacterRelationshipManager />
           </TabsContent>
 
           <TabsContent value="submissions" className="space-y-6">
             <SubmissionsManager />
+          </TabsContent>
+
+          <TabsContent value="moderation" className="space-y-6">
+            <ModerationQueue />
+          </TabsContent>
+
+          <TabsContent value="scheduler" className="space-y-6">
+            <ContentScheduler />
           </TabsContent>
 
           <TabsContent value="orders" className="space-y-6">

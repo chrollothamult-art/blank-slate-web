@@ -1,11 +1,12 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Calendar, ZoomIn, ZoomOut, RotateCcw, Users } from "lucide-react";
+import { Calendar, ZoomIn, ZoomOut, RotateCcw, Users, LayoutGrid, Clock, GripVertical } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface ChronologyEvent {
   id: string;
@@ -33,6 +34,8 @@ interface NodePosition {
   y: number;
 }
 
+type ViewMode = "map" | "timeline";
+
 const eraColors: Record<string, string> = {
   BGD: "hsl(262, 83%, 58%)",
   GD: "hsl(45, 93%, 47%)",
@@ -52,6 +55,11 @@ export const AllEventsRelationshipMap = () => {
   const [hoveredCharacter, setHoveredCharacter] = useState<string | null>(null);
   const [zoom, setZoom] = useState(1);
   const [pan, setPan] = useState({ x: 0, y: 0 });
+  const [viewMode, setViewMode] = useState<ViewMode>("map");
+  const [customPositions, setCustomPositions] = useState<Record<string, NodePosition>>({});
+  const [dragging, setDragging] = useState<string | null>(null);
+  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+  const svgRef = useRef<SVGSVGElement>(null);
 
   useEffect(() => {
     fetchData();
@@ -60,7 +68,6 @@ export const AllEventsRelationshipMap = () => {
   const fetchData = async () => {
     setLoading(true);
 
-    // Fetch chronology events
     const { data: eventsData, error: eventsError } = await supabase
       .from("chronology_events" as any)
       .select("id, title, date, era")
@@ -71,7 +78,6 @@ export const AllEventsRelationshipMap = () => {
       console.error("Error fetching chronology events:", eventsError);
     }
 
-    // Fetch character event links
     const { data: linksData, error: linksError } = await supabase
       .from("character_event_links" as any)
       .select("*");
@@ -80,7 +86,6 @@ export const AllEventsRelationshipMap = () => {
       console.error("Error fetching character event links:", linksError);
     }
 
-    // Fetch character names for enrichment
     const { data: charactersData, error: charsError } = await supabase
       .from("almanac_characters" as any)
       .select("id, name");
@@ -109,23 +114,19 @@ export const AllEventsRelationshipMap = () => {
     setLoading(false);
   };
 
-  // Get events that have character links
   const eventsWithLinks = useMemo(() => {
     const eventIdsWithLinks = new Set(eventLinks.map(l => l.event_id));
     return events.filter(e => eventIdsWithLinks.has(e.id));
   }, [events, eventLinks]);
 
-  // Get characters involved in linked events
   const involvedCharacters = useMemo(() => {
     const charIds = new Set(eventLinks.map(l => l.character_id));
     return characters.filter(c => charIds.has(c.id));
   }, [characters, eventLinks]);
 
-  // Calculate node positions - events in a row, characters in a row below
-  const nodePositions = useMemo(() => {
+  // Calculate base positions for map view
+  const mapPositions = useMemo(() => {
     const positions: Record<string, NodePosition> = {};
-    
-    // Position events that have character links
     const linkedEvents = eventsWithLinks.length > 0 ? eventsWithLinks : events.slice(0, 8);
     const eventSpacing = Math.min(180, 700 / Math.max(linkedEvents.length, 1));
     const startX = (800 - (linkedEvents.length - 1) * eventSpacing) / 2;
@@ -137,7 +138,6 @@ export const AllEventsRelationshipMap = () => {
       };
     });
 
-    // Position involved characters below events
     const charSpacing = Math.min(150, 700 / Math.max(involvedCharacters.length, 1));
     const charStartX = (800 - (involvedCharacters.length - 1) * charSpacing) / 2;
     
@@ -151,7 +151,57 @@ export const AllEventsRelationshipMap = () => {
     return positions;
   }, [events, eventsWithLinks, involvedCharacters]);
 
-  // Filter links based on selection
+  // Calculate positions for timeline view (chronological left-to-right)
+  const timelinePositions = useMemo(() => {
+    const positions: Record<string, NodePosition> = {};
+    const linkedEvents = eventsWithLinks.length > 0 ? eventsWithLinks : events.slice(0, 8);
+    
+    // Sort events by date for timeline
+    const sortedEvents = [...linkedEvents].sort((a, b) => {
+      const parseDate = (d: string) => {
+        const match = d.match(/(\d+)/);
+        return match ? parseInt(match[1]) : 0;
+      };
+      return parseDate(a.date) - parseDate(b.date);
+    });
+
+    const eventSpacing = 800 / (sortedEvents.length + 1);
+    
+    sortedEvents.forEach((event, index) => {
+      positions[`event-${event.id}`] = {
+        x: eventSpacing * (index + 1),
+        y: 100,
+      };
+    });
+
+    // Position characters below their most connected event
+    involvedCharacters.forEach((char) => {
+      const charLinks = eventLinks.filter(l => l.character_id === char.id);
+      if (charLinks.length > 0) {
+        const eventPos = positions[`event-${charLinks[0].event_id}`];
+        if (eventPos) {
+          positions[`char-${char.id}`] = {
+            x: eventPos.x + (Math.random() - 0.5) * 60,
+            y: 250 + Math.random() * 50,
+          };
+        } else {
+          positions[`char-${char.id}`] = {
+            x: 400 + (Math.random() - 0.5) * 200,
+            y: 280,
+          };
+        }
+      }
+    });
+
+    return positions;
+  }, [events, eventsWithLinks, involvedCharacters, eventLinks]);
+
+  // Get the current node positions based on view mode and custom positions
+  const nodePositions = useMemo(() => {
+    const basePositions = viewMode === "map" ? mapPositions : timelinePositions;
+    return { ...basePositions, ...customPositions };
+  }, [viewMode, mapPositions, timelinePositions, customPositions]);
+
   const visibleLinks = useMemo(() => {
     if (selectedEvent) {
       return eventLinks.filter(l => l.event_id === selectedEvent);
@@ -163,11 +213,13 @@ export const AllEventsRelationshipMap = () => {
   }, [eventLinks, selectedEvent, selectedCharacter]);
 
   const handleEventClick = (eventId: string) => {
+    if (dragging) return;
     setSelectedCharacter(null);
     setSelectedEvent(prev => prev === eventId ? null : eventId);
   };
 
   const handleCharacterClick = (charId: string) => {
+    if (dragging) return;
     setSelectedEvent(null);
     setSelectedCharacter(prev => prev === charId ? null : charId);
   };
@@ -179,11 +231,83 @@ export const AllEventsRelationshipMap = () => {
     setPan({ x: 0, y: 0 });
     setSelectedEvent(null);
     setSelectedCharacter(null);
+    setCustomPositions({});
+  };
+
+  const toggleViewMode = () => {
+    setCustomPositions({});
+    setViewMode(prev => prev === "map" ? "timeline" : "map");
   };
 
   const getEraColor = (era?: string) => {
     return era ? eraColors[era] || eraColors.default : eraColors.default;
   };
+
+  // Drag handlers
+  const getSVGPoint = useCallback((clientX: number, clientY: number) => {
+    if (!svgRef.current) return { x: 0, y: 0 };
+    const svg = svgRef.current;
+    const pt = svg.createSVGPoint();
+    pt.x = clientX;
+    pt.y = clientY;
+    const ctm = svg.getScreenCTM();
+    if (!ctm) return { x: 0, y: 0 };
+    const svgP = pt.matrixTransform(ctm.inverse());
+    return { x: svgP.x, y: svgP.y };
+  }, []);
+
+  const handleDragStart = useCallback((nodeId: string, clientX: number, clientY: number) => {
+    const svgPoint = getSVGPoint(clientX, clientY);
+    const currentPos = nodePositions[nodeId];
+    if (currentPos) {
+      setDragOffset({
+        x: svgPoint.x - currentPos.x,
+        y: svgPoint.y - currentPos.y,
+      });
+    }
+    setDragging(nodeId);
+  }, [getSVGPoint, nodePositions]);
+
+  const handleDragMove = useCallback((clientX: number, clientY: number) => {
+    if (!dragging) return;
+    const svgPoint = getSVGPoint(clientX, clientY);
+    setCustomPositions(prev => ({
+      ...prev,
+      [dragging]: {
+        x: Math.max(50, Math.min(750, svgPoint.x - dragOffset.x)),
+        y: Math.max(30, Math.min(370, svgPoint.y - dragOffset.y)),
+      },
+    }));
+  }, [dragging, getSVGPoint, dragOffset]);
+
+  const handleDragEnd = useCallback(() => {
+    setDragging(null);
+  }, []);
+
+  useEffect(() => {
+    if (!dragging) return;
+    
+    const handleMouseMove = (e: MouseEvent) => handleDragMove(e.clientX, e.clientY);
+    const handleMouseUp = () => handleDragEnd();
+    const handleTouchMove = (e: TouchEvent) => {
+      if (e.touches.length > 0) {
+        handleDragMove(e.touches[0].clientX, e.touches[0].clientY);
+      }
+    };
+    const handleTouchEnd = () => handleDragEnd();
+
+    window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("mouseup", handleMouseUp);
+    window.addEventListener("touchmove", handleTouchMove);
+    window.addEventListener("touchend", handleTouchEnd);
+
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mouseup", handleMouseUp);
+      window.removeEventListener("touchmove", handleTouchMove);
+      window.removeEventListener("touchend", handleTouchEnd);
+    };
+  }, [dragging, handleDragMove, handleDragEnd]);
 
   if (loading) {
     return (
@@ -225,17 +349,36 @@ export const AllEventsRelationshipMap = () => {
 
   return (
     <Card className="bg-[hsl(var(--parchment-card))] border-[hsl(var(--parchment-border))]">
-      <CardHeader className="flex flex-row items-center justify-between">
+      <CardHeader className="flex flex-row items-center justify-between flex-wrap gap-4">
         <div>
           <CardTitle className="flex items-center gap-2 text-[hsl(var(--parchment-brown))]">
             <Calendar className="h-5 w-5" />
             Event Connections
           </CardTitle>
           <p className="text-sm text-[hsl(var(--parchment-muted))] mt-1">
-            Click on events or characters to see their connections
+            {viewMode === "map" ? "Click to select, drag to reposition" : "Timeline view - events arranged chronologically"}
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
+          <Button 
+            variant={viewMode === "map" ? "default" : "outline"} 
+            size="sm" 
+            onClick={() => viewMode !== "map" && toggleViewMode()}
+            className="gap-1"
+          >
+            <LayoutGrid className="h-4 w-4" />
+            Map
+          </Button>
+          <Button 
+            variant={viewMode === "timeline" ? "default" : "outline"} 
+            size="sm" 
+            onClick={() => viewMode !== "timeline" && toggleViewMode()}
+            className="gap-1"
+          >
+            <Clock className="h-4 w-4" />
+            Timeline
+          </Button>
+          <div className="w-px h-6 bg-[hsl(var(--parchment-border))]" />
           <Button variant="outline" size="icon" onClick={handleZoomOut}>
             <ZoomOut className="h-4 w-4" />
           </Button>
@@ -255,6 +398,9 @@ export const AllEventsRelationshipMap = () => {
           </Badge>
           <Badge variant="outline" className="border-[hsl(173,80%,40%)] text-[hsl(173,80%,40%)]">
             <Users className="h-3 w-3 mr-1" /> Characters
+          </Badge>
+          <Badge variant="outline" className="border-[hsl(var(--parchment-muted))] text-[hsl(var(--parchment-muted))]">
+            <GripVertical className="h-3 w-3 mr-1" /> Drag to move
           </Badge>
           {Object.entries(eraColors)
             .filter(([key]) => key !== "default")
@@ -279,16 +425,36 @@ export const AllEventsRelationshipMap = () => {
 
         {/* SVG Graph */}
         <div className="relative overflow-hidden rounded-lg bg-[hsl(var(--parchment-bg))] border border-[hsl(var(--parchment-border))]">
+          {/* Timeline axis for timeline view */}
+          <AnimatePresence>
+            {viewMode === "timeline" && (
+              <motion.div
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.3 }}
+                className="absolute top-2 left-0 right-0 flex justify-center z-10"
+              >
+                <div className="bg-[hsl(var(--parchment-card))] px-4 py-1 rounded-full border border-[hsl(var(--parchment-border))] shadow-sm">
+                  <span className="text-xs text-[hsl(var(--parchment-muted))]">← Past</span>
+                  <span className="mx-4 text-xs font-medium text-[hsl(var(--parchment-brown))]">Timeline</span>
+                  <span className="text-xs text-[hsl(var(--parchment-muted))]">Future →</span>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
           <svg
+            ref={svgRef}
             width="100%"
             height={400}
             viewBox="0 0 800 400"
             style={{
               transform: `scale(${zoom}) translate(${pan.x}px, ${pan.y}px)`,
               transformOrigin: "center center",
+              cursor: dragging ? "grabbing" : "default",
             }}
           >
-            {/* SVG Definitions for animations and effects */}
             <defs>
               <linearGradient id="connectionGradient" x1="0%" y1="0%" x2="0%" y2="100%">
                 <stop offset="0%" stopColor="hsl(45, 93%, 47%)" />
@@ -301,9 +467,28 @@ export const AllEventsRelationshipMap = () => {
                   <feMergeNode in="SourceGraphic"/>
                 </feMerge>
               </filter>
+              <filter id="dropShadow">
+                <feDropShadow dx="0" dy="2" stdDeviation="3" floodOpacity="0.3"/>
+              </filter>
             </defs>
 
-            {/* Connection lines from events to characters */}
+            {/* Timeline line for timeline view */}
+            {viewMode === "timeline" && (
+              <motion.line
+                initial={{ pathLength: 0, opacity: 0 }}
+                animate={{ pathLength: 1, opacity: 1 }}
+                transition={{ duration: 0.5, ease: "easeOut" }}
+                x1={50}
+                y1={100}
+                x2={750}
+                y2={100}
+                stroke="hsl(var(--parchment-border))"
+                strokeWidth={3}
+                strokeDasharray="8 4"
+              />
+            )}
+
+            {/* Connection lines */}
             {visibleLinks.map((link, idx) => {
               const eventPos = nodePositions[`event-${link.event_id}`];
               const charPos = nodePositions[`char-${link.character_id}`];
@@ -315,36 +500,35 @@ export const AllEventsRelationshipMap = () => {
 
               return (
                 <g key={idx}>
-                  {/* Glow effect line (behind main line) */}
                   {isActive && (
-                    <line
+                    <motion.line
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 0.3 }}
                       x1={eventPos.x}
                       y1={eventPos.y + 25}
                       x2={charPos.x}
                       y2={charPos.y - 25}
                       stroke="url(#connectionGradient)"
                       strokeWidth={8}
-                      strokeOpacity={0.3}
                       filter="url(#glow)"
                       className="pointer-events-none"
                     />
                   )}
-                  {/* Main connection line */}
-                  <line
-                    x1={eventPos.x}
-                    y1={eventPos.y + 25}
-                    x2={charPos.x}
-                    y2={charPos.y - 25}
+                  <motion.line
+                    initial={false}
+                    animate={{
+                      x1: eventPos.x,
+                      y1: eventPos.y + 25,
+                      x2: charPos.x,
+                      y2: charPos.y - 25,
+                    }}
+                    transition={{ type: "spring", stiffness: 300, damping: 30 }}
                     stroke="url(#connectionGradient)"
                     strokeWidth={isActive ? 3 : 2}
                     strokeOpacity={isActive ? 1 : 0.5}
                     strokeDasharray={isActive ? "8 4" : "none"}
                     className={isActive ? "animate-[dash_1s_linear_infinite]" : ""}
-                    style={{
-                      transition: "stroke-width 0.2s ease, stroke-opacity 0.2s ease",
-                    }}
                   />
-                  {/* Animated particles along the line */}
                   {isActive && (
                     <>
                       <circle r={4} fill="hsl(45, 93%, 60%)">
@@ -365,20 +549,21 @@ export const AllEventsRelationshipMap = () => {
                     </>
                   )}
                   {link.role && (
-                    <text
-                      x={(eventPos.x + charPos.x) / 2}
-                      y={(eventPos.y + 25 + charPos.y - 25) / 2}
+                    <motion.text
+                      initial={false}
+                      animate={{
+                        x: (eventPos.x + charPos.x) / 2,
+                        y: (eventPos.y + 25 + charPos.y - 25) / 2,
+                      }}
+                      transition={{ type: "spring", stiffness: 300, damping: 30 }}
                       fill="hsl(var(--parchment-brown))"
                       fontSize="10"
                       textAnchor="middle"
                       className="pointer-events-none"
-                      style={{
-                        fontWeight: isActive ? "bold" : "normal",
-                        transition: "font-weight 0.2s ease",
-                      }}
+                      fontWeight={isActive ? "bold" : "normal"}
                     >
                       {link.role}
-                    </text>
+                    </motion.text>
                   )}
                 </g>
               );
@@ -390,25 +575,38 @@ export const AllEventsRelationshipMap = () => {
               if (!pos) return null;
               const isSelected = selectedEvent === event.id;
               const isHovered = hoveredEvent === event.id;
+              const isDraggingThis = dragging === `event-${event.id}`;
               const hasLink = eventLinks.some(l => l.event_id === event.id);
               const isConnectedToChar = selectedCharacter ? eventLinks.some(l => l.event_id === event.id && l.character_id === selectedCharacter) : true;
               const isConnectedToHoveredChar = hoveredCharacter ? eventLinks.some(l => l.event_id === event.id && l.character_id === hoveredCharacter) : false;
 
               return (
-                <g
+                <motion.g
                   key={event.id}
+                  initial={false}
+                  animate={{
+                    x: pos.x,
+                    y: pos.y,
+                    opacity: selectedCharacter && !isConnectedToChar ? 0.3 : 1,
+                    scale: isDraggingThis ? 1.1 : 1,
+                  }}
+                  transition={{ type: "spring", stiffness: 300, damping: 30 }}
                   onClick={() => handleEventClick(event.id)}
-                  onMouseEnter={() => setHoveredEvent(event.id)}
+                  onMouseEnter={() => !dragging && setHoveredEvent(event.id)}
                   onMouseLeave={() => setHoveredEvent(null)}
-                  className="cursor-pointer"
-                  opacity={selectedCharacter && !isConnectedToChar ? 0.3 : 1}
-                  style={{ transition: "opacity 0.2s ease" }}
+                  onMouseDown={(e) => handleDragStart(`event-${event.id}`, e.clientX, e.clientY)}
+                  onTouchStart={(e) => {
+                    if (e.touches.length > 0) {
+                      handleDragStart(`event-${event.id}`, e.touches[0].clientX, e.touches[0].clientY);
+                    }
+                  }}
+                  className="cursor-grab active:cursor-grabbing"
+                  filter={isDraggingThis ? "url(#dropShadow)" : undefined}
                 >
-                  {/* Glow effect on hover */}
                   {(isHovered || isConnectedToHoveredChar) && (
                     <rect
-                      x={pos.x - 75}
-                      y={pos.y - 30}
+                      x={-75}
+                      y={-30}
                       width={150}
                       height={60}
                       rx={12}
@@ -418,19 +616,18 @@ export const AllEventsRelationshipMap = () => {
                     />
                   )}
                   <rect
-                    x={pos.x - 70}
-                    y={pos.y - 25}
+                    x={-70}
+                    y={-25}
                     width={140}
                     height={50}
                     rx={8}
                     fill={isSelected ? "hsl(var(--parchment-gold))" : "hsl(var(--parchment-card))"}
                     stroke={hasLink ? getEraColor(event.era) : "hsl(var(--parchment-border))"}
-                    strokeWidth={isSelected || isHovered ? 3 : 2}
-                    style={{ transition: "all 0.2s ease" }}
+                    strokeWidth={isSelected || isHovered || isDraggingThis ? 3 : 2}
                   />
                   <text
-                    x={pos.x}
-                    y={pos.y - 5}
+                    x={0}
+                    y={-5}
                     fill="hsl(var(--parchment-brown))"
                     fontSize="11"
                     fontWeight={isSelected || isHovered ? "bold" : "normal"}
@@ -440,8 +637,8 @@ export const AllEventsRelationshipMap = () => {
                     {event.title.length > 16 ? event.title.slice(0, 16) + "..." : event.title}
                   </text>
                   <text
-                    x={pos.x}
-                    y={pos.y + 12}
+                    x={0}
+                    y={12}
                     fill="hsl(var(--parchment-muted))"
                     fontSize="9"
                     textAnchor="middle"
@@ -449,7 +646,7 @@ export const AllEventsRelationshipMap = () => {
                   >
                     {event.date}
                   </text>
-                </g>
+                </motion.g>
               );
             })}
 
@@ -459,24 +656,37 @@ export const AllEventsRelationshipMap = () => {
               if (!pos) return null;
               const isSelected = selectedCharacter === char.id;
               const isHovered = hoveredCharacter === char.id;
+              const isDraggingThis = dragging === `char-${char.id}`;
               const isConnectedToEvent = selectedEvent ? eventLinks.some(l => l.character_id === char.id && l.event_id === selectedEvent) : true;
               const isConnectedToHoveredEvent = hoveredEvent ? eventLinks.some(l => l.character_id === char.id && l.event_id === hoveredEvent) : false;
 
               return (
-                <g
+                <motion.g
                   key={char.id}
+                  initial={false}
+                  animate={{
+                    x: pos.x,
+                    y: pos.y,
+                    opacity: selectedEvent && !isConnectedToEvent ? 0.3 : 1,
+                    scale: isDraggingThis ? 1.1 : 1,
+                  }}
+                  transition={{ type: "spring", stiffness: 300, damping: 30 }}
                   onClick={() => handleCharacterClick(char.id)}
-                  onMouseEnter={() => setHoveredCharacter(char.id)}
+                  onMouseEnter={() => !dragging && setHoveredCharacter(char.id)}
                   onMouseLeave={() => setHoveredCharacter(null)}
-                  className="cursor-pointer"
-                  opacity={selectedEvent && !isConnectedToEvent ? 0.3 : 1}
-                  style={{ transition: "opacity 0.2s ease" }}
+                  onMouseDown={(e) => handleDragStart(`char-${char.id}`, e.clientX, e.clientY)}
+                  onTouchStart={(e) => {
+                    if (e.touches.length > 0) {
+                      handleDragStart(`char-${char.id}`, e.touches[0].clientX, e.touches[0].clientY);
+                    }
+                  }}
+                  className="cursor-grab active:cursor-grabbing"
+                  filter={isDraggingThis ? "url(#dropShadow)" : undefined}
                 >
-                  {/* Glow effect on hover */}
                   {(isHovered || isConnectedToHoveredEvent) && (
                     <circle
-                      cx={pos.x}
-                      cy={pos.y}
+                      cx={0}
+                      cy={0}
                       r={35}
                       fill="hsl(173, 80%, 40%)"
                       opacity={0.2}
@@ -484,19 +694,17 @@ export const AllEventsRelationshipMap = () => {
                     />
                   )}
                   <circle
-                    cx={pos.x}
-                    cy={pos.y}
+                    cx={0}
+                    cy={0}
                     r={28}
                     fill={isSelected ? "hsl(173, 80%, 40%)" : "hsl(var(--parchment-card))"}
                     stroke="hsl(173, 80%, 40%)"
-                    strokeWidth={isSelected || isHovered ? 3 : 2}
-                    style={{ transition: "all 0.2s ease" }}
+                    strokeWidth={isSelected || isHovered || isDraggingThis ? 3 : 2}
                   />
-                  {/* Pulsing ring on hover */}
                   {isHovered && (
                     <circle
-                      cx={pos.x}
-                      cy={pos.y}
+                      cx={0}
+                      cy={0}
                       r={28}
                       fill="none"
                       stroke="hsl(173, 80%, 50%)"
@@ -520,20 +728,19 @@ export const AllEventsRelationshipMap = () => {
                     </circle>
                   )}
                   <text
-                    x={pos.x}
-                    y={pos.y + 4}
+                    x={0}
+                    y={4}
                     fill={isSelected || isHovered ? "white" : "hsl(var(--parchment-brown))"}
                     fontSize="14"
                     fontWeight="bold"
                     textAnchor="middle"
                     className="pointer-events-none"
-                    style={{ transition: "fill 0.2s ease" }}
                   >
                     {char.name.charAt(0)}
                   </text>
                   <text
-                    x={pos.x}
-                    y={pos.y + 45}
+                    x={0}
+                    y={45}
                     fill="hsl(var(--parchment-brown))"
                     fontSize="10"
                     fontWeight={isHovered ? "bold" : "normal"}
@@ -542,99 +749,107 @@ export const AllEventsRelationshipMap = () => {
                   >
                     {char.name.length > 12 ? char.name.slice(0, 12) + "..." : char.name}
                   </text>
-                </g>
+                </motion.g>
               );
             })}
           </svg>
         </div>
 
         {/* Selected info panel */}
-        {(selectedEvent || selectedCharacter) && (
-          <div className="mt-4 p-4 rounded-lg bg-[hsl(var(--parchment-bg))] border border-[hsl(var(--parchment-border))]">
-            {selectedEvent && (() => {
-              const event = events.find((e) => e.id === selectedEvent);
-              if (!event) return null;
-              const eventCharLinks = eventLinks.filter((l) => l.event_id === event.id);
-              return (
-                <div>
-                  <h4 className="font-heading font-bold text-lg text-[hsl(var(--parchment-brown))]">
-                    {event.title}
-                  </h4>
-                  <p className="text-sm text-[hsl(var(--parchment-muted))]">{event.date}</p>
-                  {event.era && (
-                    <Badge
-                      variant="outline"
-                      className="mt-1"
-                      style={{ borderColor: getEraColor(event.era), color: getEraColor(event.era) }}
-                    >
-                      {event.era}
-                    </Badge>
-                  )}
-                  {eventCharLinks.length > 0 ? (
-                    <div className="mt-2">
-                      <p className="text-sm font-medium text-[hsl(var(--parchment-brown))]">
-                        Characters involved:
-                      </p>
-                      <div className="flex flex-wrap gap-1 mt-1">
-                        {eventCharLinks.map((link) => (
-                          <Badge key={link.id} variant="secondary">
-                            {link.character_name}
-                            {link.role && ` (${link.role})`}
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
-                  ) : (
-                    <p className="text-sm text-[hsl(var(--parchment-muted))] mt-2">
-                      No characters linked to this event yet.
-                    </p>
-                  )}
-                  <Button
-                    variant="link"
-                    className="p-0 h-auto mt-2"
-                    onClick={() => navigate(`/chronology/${event.id}`)}
-                  >
-                    View Event Details →
-                  </Button>
-                </div>
-              );
-            })()}
-            {selectedCharacter && (() => {
-              const char = characters.find((c) => c.id === selectedCharacter);
-              if (!char) return null;
-              const charEventLinks = eventLinks.filter((l) => l.character_id === char.id);
-              return (
-                <div>
-                  <h4 className="font-heading font-bold text-lg text-[hsl(var(--parchment-brown))]">
-                    {char.name}
-                  </h4>
-                  {charEventLinks.length > 0 ? (
-                    <div className="mt-2">
-                      <p className="text-sm font-medium text-[hsl(var(--parchment-brown))]">
-                        Events involving this character:
-                      </p>
-                      <div className="flex flex-wrap gap-1 mt-1">
-                        {charEventLinks.map((link) => {
-                          const event = events.find(e => e.id === link.event_id);
-                          return (
+        <AnimatePresence>
+          {(selectedEvent || selectedCharacter) && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 20 }}
+              transition={{ duration: 0.2 }}
+              className="mt-4 p-4 rounded-lg bg-[hsl(var(--parchment-bg))] border border-[hsl(var(--parchment-border))]"
+            >
+              {selectedEvent && (() => {
+                const event = events.find((e) => e.id === selectedEvent);
+                if (!event) return null;
+                const eventCharLinks = eventLinks.filter((l) => l.event_id === event.id);
+                return (
+                  <div>
+                    <h4 className="font-heading font-bold text-lg text-[hsl(var(--parchment-brown))]">
+                      {event.title}
+                    </h4>
+                    <p className="text-sm text-[hsl(var(--parchment-muted))]">{event.date}</p>
+                    {event.era && (
+                      <Badge
+                        variant="outline"
+                        className="mt-1"
+                        style={{ borderColor: getEraColor(event.era), color: getEraColor(event.era) }}
+                      >
+                        {event.era}
+                      </Badge>
+                    )}
+                    {eventCharLinks.length > 0 ? (
+                      <div className="mt-2">
+                        <p className="text-sm font-medium text-[hsl(var(--parchment-brown))]">
+                          Characters involved:
+                        </p>
+                        <div className="flex flex-wrap gap-1 mt-1">
+                          {eventCharLinks.map((link) => (
                             <Badge key={link.id} variant="secondary">
-                              {event?.title || "Unknown Event"}
+                              {link.character_name}
                               {link.role && ` (${link.role})`}
                             </Badge>
-                          );
-                        })}
+                          ))}
+                        </div>
                       </div>
-                    </div>
-                  ) : (
-                    <p className="text-sm text-[hsl(var(--parchment-muted))] mt-2">
-                      No events linked to this character yet.
-                    </p>
-                  )}
-                </div>
-              );
-            })()}
-          </div>
-        )}
+                    ) : (
+                      <p className="text-sm text-[hsl(var(--parchment-muted))] mt-2">
+                        No characters linked to this event yet.
+                      </p>
+                    )}
+                    <Button
+                      variant="link"
+                      className="p-0 h-auto mt-2"
+                      onClick={() => navigate(`/chronology/${event.id}`)}
+                    >
+                      View Event Details →
+                    </Button>
+                  </div>
+                );
+              })()}
+              {selectedCharacter && (() => {
+                const char = characters.find((c) => c.id === selectedCharacter);
+                if (!char) return null;
+                const charEventLinks = eventLinks.filter((l) => l.character_id === char.id);
+                return (
+                  <div>
+                    <h4 className="font-heading font-bold text-lg text-[hsl(var(--parchment-brown))]">
+                      {char.name}
+                    </h4>
+                    {charEventLinks.length > 0 ? (
+                      <div className="mt-2">
+                        <p className="text-sm font-medium text-[hsl(var(--parchment-brown))]">
+                          Events involving this character:
+                        </p>
+                        <div className="flex flex-wrap gap-1 mt-1">
+                          {charEventLinks.map((link) => {
+                            const event = events.find(e => e.id === link.event_id);
+                            return (
+                              <Badge key={link.id} variant="secondary">
+                                {event?.title || "Unknown Event"}
+                                {link.role && ` (${link.role})`}
+                              </Badge>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    ) : (
+                      <p className="text-sm text-[hsl(var(--parchment-muted))] mt-2">
+                        No events linked to this character yet.
+                      </p>
+                    )}
+                  </div>
+                );
+              })()}
+            </motion.div>
+          )}
+        </AnimatePresence>
       </CardContent>
     </Card>
   );

@@ -9,6 +9,7 @@ import { Card } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Avatar } from '@/components/ui/avatar';
+import { Separator } from '@/components/ui/separator';
 import {
   Search,
   Plus,
@@ -28,6 +29,8 @@ import {
   Trash2,
   Save,
   BookOpen,
+  ArrowLeft,
+  ChevronUp,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSubmissions } from '@/hooks/useSubmissions';
@@ -49,6 +52,8 @@ import {
   PaginationPrevious,
   PaginationEllipsis,
 } from "@/components/ui/pagination";
+import { ForumReplySection } from '@/components/community/ForumReplySection';
+import { useForumReplies } from '@/hooks/useForumReplies';
 
 type ContentType = Database['public']['Enums']['content_type'];
 
@@ -115,6 +120,25 @@ export const Community = () => {
     activeToday: 0,
     newThisWeek: 0,
   });
+
+  // State for expanded discussion (to show inline thread)
+  const [expandedPostId, setExpandedPostId] = useState<string | null>(null);
+
+  // Use the threaded replies hook
+  const { replies, loading: repliesLoading, refetch: refetchReplies } = useForumReplies(expandedPostId);
+
+  const handleToggleThread = (post: ForumPost) => {
+    if (expandedPostId === post.id) {
+      setExpandedPostId(null);
+    } else {
+      setExpandedPostId(post.id);
+    }
+  };
+
+  const handleRefreshReplies = () => {
+    refetchReplies();
+    fetchPosts(); // Also refresh posts to update reply counts
+  };
 
   const { submissions, loading, toggleLike, deleteSubmission, refetch } = useSubmissions({
     contentType: activeFilter,
@@ -713,65 +737,111 @@ export const Community = () => {
                 ) : (
                   <>
                     {paginatedPosts.map((post) => (
-                      <Card key={post.id} className="p-6 hover:shadow-md transition-shadow">
-                        <div className="flex items-start space-x-4">
-                          <Avatar className="w-10 h-10 bg-accent/10 flex items-center justify-center">
-                            <span className="text-sm font-medium text-accent">
-                              {post.author_username.charAt(0).toUpperCase()}
-                            </span>
-                          </Avatar>
+                      <Card key={post.id} className="overflow-hidden transition-shadow hover:shadow-md">
+                        <div 
+                          className="p-6 cursor-pointer"
+                          onClick={() => handleToggleThread(post)}
+                        >
+                          <div className="flex items-start space-x-4">
+                            <Avatar className="w-10 h-10 bg-accent/10 flex items-center justify-center">
+                              <span className="text-sm font-medium text-accent">
+                                {post.author_username.charAt(0).toUpperCase()}
+                              </span>
+                            </Avatar>
 
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2 mb-2 flex-wrap">
-                              {post.is_sticky && (
-                                <Badge variant="secondary" className="text-xs">Pinned</Badge>
-                              )}
-                              <Badge variant="outline" className="text-xs">{post.category}</Badge>
-                            </div>
-
-                            <div className="flex items-start justify-between gap-2">
-                              <h3 className="font-semibold text-lg hover:text-accent cursor-pointer line-clamp-1">
-                                {post.title}
-                              </h3>
-                              {user?.id === post.author_id && (
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  onClick={() => handleDeletePost(post.id)}
-                                  className="h-8 w-8 text-destructive flex-shrink-0"
-                                >
-                                  <Trash2 className="h-4 w-4" />
-                                </Button>
-                              )}
-                            </div>
-
-                            <p className="text-muted-foreground text-sm line-clamp-2 mt-1">
-                              {post.content}
-                            </p>
-
-                            <div className="flex items-center justify-between mt-4 text-sm text-muted-foreground">
-                              <div className="flex items-center gap-4">
-                                <span>{post.author_username}</span>
-                                <span>{formatDate(post.created_at)}</span>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 mb-2 flex-wrap">
+                                {post.is_sticky && (
+                                  <Badge variant="secondary" className="text-xs">Pinned</Badge>
+                                )}
+                                <Badge variant="outline" className="text-xs">{post.category}</Badge>
                               </div>
-                              <div className="flex items-center gap-4">
-                                <button
-                                  onClick={() => handleLikePost(post.id, post.user_has_liked || false)}
-                                  className={`flex items-center gap-1 hover:text-accent transition-colors ${
-                                    post.user_has_liked ? 'text-accent' : ''
-                                  }`}
-                                >
-                                  <ThumbsUp className="h-4 w-4" />
-                                  {post.likes_count}
-                                </button>
-                                <span className="flex items-center gap-1">
-                                  <MessageCircle className="h-4 w-4" />
-                                  {post.replies_count}
-                                </span>
+
+                              <div className="flex items-start justify-between gap-2">
+                                <h3 className="font-semibold text-lg hover:text-accent line-clamp-1">
+                                  {post.title}
+                                </h3>
+                                {user?.id === post.author_id && (
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleDeletePost(post.id);
+                                    }}
+                                    className="h-8 w-8 text-destructive flex-shrink-0"
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                )}
+                              </div>
+
+                              <p className={`text-muted-foreground text-sm mt-1 ${expandedPostId === post.id ? '' : 'line-clamp-2'}`}>
+                                {post.content}
+                              </p>
+
+                              <div className="flex items-center justify-between mt-4 text-sm text-muted-foreground">
+                                <div className="flex items-center gap-4">
+                                  <span>{post.author_username}</span>
+                                  <span>{formatDate(post.created_at)}</span>
+                                </div>
+                                <div className="flex items-center gap-4">
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleLikePost(post.id, post.user_has_liked || false);
+                                    }}
+                                    className={`flex items-center gap-1 hover:text-accent transition-colors ${
+                                      post.user_has_liked ? 'text-accent' : ''
+                                    }`}
+                                  >
+                                    <ThumbsUp className="h-4 w-4" />
+                                    {post.likes_count}
+                                  </button>
+                                  <span className={`flex items-center gap-1 ${expandedPostId === post.id ? 'text-accent' : ''}`}>
+                                    <MessageCircle className="h-4 w-4" />
+                                    {post.replies_count}
+                                  </span>
+                                </div>
                               </div>
                             </div>
                           </div>
                         </div>
+
+                        {/* Inline Thread Section with Animation */}
+                        <motion.div
+                          initial={false}
+                          animate={expandedPostId === post.id ? { height: 'auto', opacity: 1 } : { height: 0, opacity: 0 }}
+                          transition={{ duration: 0.3, ease: 'easeInOut' }}
+                          className="overflow-hidden"
+                        >
+                          {expandedPostId === post.id && (
+                            <div className="border-t bg-muted/30 p-6">
+                              <ForumReplySection
+                                postId={post.id}
+                                replies={replies}
+                                loading={repliesLoading}
+                                onRefresh={handleRefreshReplies}
+                              />
+                              
+                              {/* Collapse Thread Button */}
+                              <div className="flex justify-center mt-6 pt-4 border-t border-border/50">
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setExpandedPostId(null);
+                                  }}
+                                  className="text-muted-foreground hover:text-foreground gap-2"
+                                >
+                                  <ChevronUp className="h-4 w-4" />
+                                  Collapse Thread
+                                </Button>
+                              </div>
+                            </div>
+                          )}
+                        </motion.div>
                       </Card>
                     ))}
                     {renderPagination()}

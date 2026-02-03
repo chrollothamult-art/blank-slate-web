@@ -159,11 +159,11 @@ export const Settings = () => {
       <div className="container mx-auto px-4">
         <div className="max-w-4xl mx-auto">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-            <TabsList className="grid w-full grid-cols-4">
-              <TabsTrigger value="profile">Profile</TabsTrigger>
-              <TabsTrigger value="preferences">Preferences</TabsTrigger>
-              <TabsTrigger value="achievements">Achievements</TabsTrigger>
-              <TabsTrigger value="social">Social</TabsTrigger>
+            <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 h-auto gap-1">
+              <TabsTrigger value="profile" className="text-xs sm:text-sm py-2">Profile</TabsTrigger>
+              <TabsTrigger value="preferences" className="text-xs sm:text-sm py-2">Preferences</TabsTrigger>
+              <TabsTrigger value="achievements" className="text-xs sm:text-sm py-2">Achievements</TabsTrigger>
+              <TabsTrigger value="social" className="text-xs sm:text-sm py-2">Social</TabsTrigger>
             </TabsList>
 
             <TabsContent value="profile" className="space-y-6">

@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card } from '@/components/ui/card';
-import { MessageSquare, Reply, Send, Trash2 } from 'lucide-react';
+import { MessageSquare, Reply, Send, Trash2, Edit, X, Check } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 
 interface DiscussionReply {
@@ -38,40 +38,69 @@ export const DiscussionReplySection = ({ discussionId, clubId }: DiscussionReply
   const fetchReplies = useCallback(async () => {
     setLoading(true);
     try {
-      // Note: For now, we'll use the book_club_discussions table with parent_id field
-      // In a full implementation, you'd have a separate discussion_replies table
-      const { data, error } = await supabase
-        .from('book_club_discussions')
+      const { data: repliesData, error } = await supabase
+        .from('discussion_replies')
         .select('*')
-        .eq('club_id', clubId)
-        .not('id', 'eq', discussionId)
+        .eq('discussion_id', discussionId)
         .order('created_at', { ascending: true });
 
       if (error) throw error;
 
-      // For this implementation, we'll simulate replies from discussions
-      // that reference this discussion (treating them as replies)
-      // Fetch author profiles
-      const authorIds = [...new Set((data || []).map(d => d.author_id))];
-      let profiles: any[] = [];
-      if (authorIds.length > 0) {
-        const { data: profileData } = await supabase
-          .from('profiles')
-          .select('id, username, avatar_url')
-          .in('id', authorIds);
-        profiles = profileData || [];
+      if (!repliesData || repliesData.length === 0) {
+        setReplies([]);
+        setLoading(false);
+        return;
       }
 
-      const profilesMap = new Map(profiles.map(p => [p.id, p]));
+      // Fetch author profiles
+      const authorIds = [...new Set(repliesData.map(r => r.author_id))];
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('id, username, avatar_url')
+        .in('id', authorIds);
 
-      // For now, we'll return an empty array and implement inline replies
-      setReplies([]);
+      const profileMap = new Map(profiles?.map(p => [p.id, p]) || []);
+
+      // Build reply tree
+      const replyMap = new Map<string, DiscussionReply>();
+      const rootReplies: DiscussionReply[] = [];
+
+      repliesData.forEach(reply => {
+        const profile = profileMap.get(reply.author_id);
+        const enrichedReply: DiscussionReply = {
+          id: reply.id,
+          discussion_id: reply.discussion_id,
+          author_id: reply.author_id,
+          content: reply.content,
+          parent_reply_id: reply.parent_reply_id,
+          created_at: reply.created_at,
+          author_username: profile?.username,
+          author_avatar: profile?.avatar_url,
+          replies: [],
+        };
+        replyMap.set(reply.id, enrichedReply);
+      });
+
+      repliesData.forEach(reply => {
+        const enrichedReply = replyMap.get(reply.id)!;
+        if (reply.parent_reply_id) {
+          const parent = replyMap.get(reply.parent_reply_id);
+          if (parent) {
+            parent.replies = parent.replies || [];
+            parent.replies.push(enrichedReply);
+          }
+        } else {
+          rootReplies.push(enrichedReply);
+        }
+      });
+
+      setReplies(rootReplies);
     } catch (error: any) {
       console.error('Error fetching replies:', error);
     } finally {
       setLoading(false);
     }
-  }, [clubId, discussionId]);
+  }, [discussionId]);
 
   useEffect(() => {
     fetchReplies();
@@ -82,15 +111,13 @@ export const DiscussionReplySection = ({ discussionId, clubId }: DiscussionReply
 
     setIsSubmitting(true);
     try {
-      // Create a new discussion as a reply (with a reference pattern in the title)
       const { error } = await supabase
-        .from('book_club_discussions')
+        .from('discussion_replies')
         .insert({
-          club_id: clubId,
+          discussion_id: discussionId,
           author_id: user.id,
-          title: `Reply to discussion`,
           content: newReply.trim(),
-          chapter: `reply:${discussionId}${replyingTo ? `:${replyingTo}` : ''}`,
+          parent_reply_id: replyingTo,
         });
 
       if (error) throw error;
@@ -115,11 +142,34 @@ export const DiscussionReplySection = ({ discussionId, clubId }: DiscussionReply
     }
   };
 
+  const handleDeleteReply = async (replyId: string) => {
+    if (!confirm('Delete this reply?')) return;
+    
+    try {
+      const { error } = await supabase
+        .from('discussion_replies')
+        .delete()
+        .eq('id', replyId);
+
+      if (error) throw error;
+
+      toast({ title: 'Reply deleted' });
+      fetchReplies();
+    } catch (error: any) {
+      console.error('Error deleting reply:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to delete reply',
+        variant: 'destructive',
+      });
+    }
+  };
+
   return (
     <div className="mt-4 border-t pt-4">
       <h4 className="font-medium flex items-center gap-2 mb-4">
         <MessageSquare className="h-4 w-4" />
-        Replies
+        Replies ({replies.length})
       </h4>
 
       {user ? (
@@ -132,6 +182,20 @@ export const DiscussionReplySection = ({ discussionId, clubId }: DiscussionReply
               </AvatarFallback>
             </Avatar>
             <div className="flex-1 space-y-2">
+              {replyingTo && (
+                <div className="text-sm text-muted-foreground flex items-center gap-2">
+                  <Reply className="h-3 w-3" />
+                  Replying to a comment
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-5 w-5 p-0"
+                    onClick={() => setReplyingTo(null)}
+                  >
+                    <X className="h-3 w-3" />
+                  </Button>
+                </div>
+              )}
               <Textarea
                 placeholder="Write a reply..."
                 value={newReply}
@@ -140,15 +204,6 @@ export const DiscussionReplySection = ({ discussionId, clubId }: DiscussionReply
                 className="resize-none"
               />
               <div className="flex justify-end gap-2">
-                {replyingTo && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setReplyingTo(null)}
-                  >
-                    Cancel
-                  </Button>
-                )}
                 <Button
                   size="sm"
                   onClick={handleSubmitReply}
@@ -179,7 +234,8 @@ export const DiscussionReplySection = ({ discussionId, clubId }: DiscussionReply
             <ReplyCard
               key={reply.id}
               reply={reply}
-              onReply={() => setReplyingTo(reply.id)}
+              onReply={(id) => setReplyingTo(id)}
+              onDelete={handleDeleteReply}
               currentUserId={user?.id}
             />
           ))}
@@ -191,13 +247,41 @@ export const DiscussionReplySection = ({ discussionId, clubId }: DiscussionReply
 
 interface ReplyCardProps {
   reply: DiscussionReply;
-  onReply: () => void;
+  onReply: (id: string) => void;
+  onDelete: (id: string) => void;
   currentUserId?: string;
   depth?: number;
 }
 
-const ReplyCard = ({ reply, onReply, currentUserId, depth = 0 }: ReplyCardProps) => {
+const ReplyCard = ({ reply, onReply, onDelete, currentUserId, depth = 0 }: ReplyCardProps) => {
   const maxDepth = 3;
+  const [isEditing, setIsEditing] = useState(false);
+  const [editContent, setEditContent] = useState(reply.content);
+  const { toast } = useToast();
+
+  const handleSaveEdit = async () => {
+    if (!editContent.trim()) return;
+    
+    try {
+      const { error } = await supabase
+        .from('discussion_replies')
+        .update({ content: editContent.trim(), updated_at: new Date().toISOString() })
+        .eq('id', reply.id);
+
+      if (error) throw error;
+
+      reply.content = editContent.trim();
+      setIsEditing(false);
+      toast({ title: 'Reply updated' });
+    } catch (error: any) {
+      console.error('Error updating reply:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to update reply',
+        variant: 'destructive',
+      });
+    }
+  };
 
   return (
     <div className={`${depth > 0 ? 'ml-6 border-l-2 border-muted pl-4' : ''}`}>
@@ -216,18 +300,64 @@ const ReplyCard = ({ reply, onReply, currentUserId, depth = 0 }: ReplyCardProps)
                 {formatDistanceToNow(new Date(reply.created_at), { addSuffix: true })}
               </span>
             </div>
-            <p className="text-sm mt-1">{reply.content}</p>
-            {depth < maxDepth && (
-              <Button
-                variant="ghost"
-                size="sm"
-                className="mt-1 h-7 px-2 text-xs"
-                onClick={onReply}
-              >
-                <Reply className="h-3 w-3 mr-1" />
-                Reply
-              </Button>
+            
+            {isEditing ? (
+              <div className="mt-2 space-y-2">
+                <Textarea
+                  value={editContent}
+                  onChange={(e) => setEditContent(e.target.value)}
+                  rows={2}
+                  className="resize-none"
+                />
+                <div className="flex gap-2">
+                  <Button size="sm" onClick={handleSaveEdit}>
+                    <Check className="h-3 w-3 mr-1" />
+                    Save
+                  </Button>
+                  <Button size="sm" variant="ghost" onClick={() => setIsEditing(false)}>
+                    Cancel
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <p className="text-sm mt-1">{reply.content}</p>
             )}
+            
+            <div className="flex items-center gap-2 mt-1">
+              {depth < maxDepth && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 px-2 text-xs"
+                  onClick={() => onReply(reply.id)}
+                >
+                  <Reply className="h-3 w-3 mr-1" />
+                  Reply
+                </Button>
+              )}
+              {currentUserId === reply.author_id && !isEditing && (
+                <>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 px-2 text-xs"
+                    onClick={() => setIsEditing(true)}
+                  >
+                    <Edit className="h-3 w-3 mr-1" />
+                    Edit
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 px-2 text-xs text-destructive"
+                    onClick={() => onDelete(reply.id)}
+                  >
+                    <Trash2 className="h-3 w-3 mr-1" />
+                    Delete
+                  </Button>
+                </>
+              )}
+            </div>
           </div>
         </div>
       </Card>
@@ -239,6 +369,7 @@ const ReplyCard = ({ reply, onReply, currentUserId, depth = 0 }: ReplyCardProps)
               key={childReply.id}
               reply={childReply}
               onReply={onReply}
+              onDelete={onDelete}
               currentUserId={currentUserId}
               depth={depth + 1}
             />

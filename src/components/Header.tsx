@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -16,6 +16,7 @@ import {
   X,
   BookOpen,
   MessageSquare,
+  MessagesSquare,
 } from "lucide-react";
 import thouartLogo from "@/assets/thouart-logo.png";
 import { ThemeToggle } from "./ThemeToggle";
@@ -28,9 +29,15 @@ export const Header = () => {
   const { user } = useAuth();
   const { totalItems, openCart, isOpen, closeCart, items, updateQuantity, removeFromCart } = useCart();
 
+  // Close mobile menu on route change
+  useEffect(() => {
+    setIsMenuOpen(false);
+  }, [location.pathname]);
+
   const navigation = [
     { name: "Books", href: "/books", icon: BookOpen },
     { name: "Community", href: "/community", icon: MessageSquare },
+    { name: "Forum", href: "/forum", icon: MessagesSquare },
   ];
 
   const isActive = (path: string) => location.pathname === path;
@@ -88,31 +95,40 @@ export const Header = () => {
           </form>
 
           {/* Right Side Actions */}
-          <div className="flex items-center space-x-2">
-            {/* Reading Streak Badge */}
-            <StreakBadge size="sm" />
+          <div className="flex items-center space-x-1 sm:space-x-2">
+            {/* Reading Streak Badge - hidden on mobile */}
+            <div className="hidden sm:block">
+              <StreakBadge size="sm" />
+            </div>
             
-            {/* Notifications */}
-            {user && <NotificationBell />}
+            {/* Notifications - hidden on mobile, shown in mobile menu */}
+            {user && (
+              <div className="hidden sm:block">
+                <NotificationBell />
+              </div>
+            )}
             
-            {/* Theme Toggle */}
-            <ThemeToggle />
-            {/* User Account */}
+            {/* Theme Toggle - hidden on mobile */}
+            <div className="hidden sm:block">
+              <ThemeToggle />
+            </div>
+            
+            {/* User Account - always visible */}
             {user ? (
               <ProfileDropdown />
             ) : (
-              <Button variant="ghost" size="sm" onClick={() => navigate("/auth")}>
+              <Button variant="ghost" size="sm" className="hidden sm:flex" onClick={() => navigate("/auth")}>
                 Sign In
               </Button>
             )}
 
             {/* Shopping Cart */}
-            <Button variant="ghost" size="icon" className="relative" onClick={openCart}>
-              <ShoppingCart className="h-5 w-5" />
+            <Button variant="ghost" size="icon" className="relative h-9 w-9 sm:h-10 sm:w-10" onClick={openCart}>
+              <ShoppingCart className="h-4 w-4 sm:h-5 sm:w-5" />
               {totalItems > 0 && (
                 <Badge 
                   variant="destructive" 
-                  className="absolute -top-2 -right-2 h-5 w-5 rounded-full p-0 text-xs flex items-center justify-center"
+                  className="absolute -top-1 -right-1 sm:-top-2 sm:-right-2 h-4 w-4 sm:h-5 sm:w-5 rounded-full p-0 text-[10px] sm:text-xs flex items-center justify-center"
                 >
                   {totalItems}
                 </Badge>
@@ -132,7 +148,7 @@ export const Header = () => {
             <Button
               variant="ghost"
               size="icon"
-              className="md:hidden"
+              className="md:hidden h-9 w-9"
               onClick={() => setIsMenuOpen(!isMenuOpen)}
             >
               {isMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
@@ -143,10 +159,10 @@ export const Header = () => {
         {/* Mobile Navigation */}
         {isMenuOpen && (
           <div className="md:hidden border-t border-border/50 bg-background py-4 rounded-b-2xl">
-            <div className="flex flex-col space-y-4">
+            <div className="flex flex-col space-y-4 px-4">
               {/* Mobile Search */}
               <form onSubmit={handleSearch} className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Search className="absolute left-7 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   type="search"
                   placeholder="Search books..."
@@ -174,6 +190,45 @@ export const Header = () => {
                   </Link>
                 ))}
               </nav>
+
+              {/* Mobile-only Actions */}
+              <div className="border-t border-border/50 pt-4 space-y-2">
+                {/* Streak Badge */}
+                <div className="flex items-center justify-between px-4 py-2">
+                  <span className="text-sm text-muted-foreground">Reading Streak</span>
+                  <StreakBadge size="sm" />
+                </div>
+                
+                {/* Notifications */}
+                {user && (
+                  <div className="flex items-center justify-between px-4 py-2">
+                    <span className="text-sm text-muted-foreground">Notifications</span>
+                    <NotificationBell />
+                  </div>
+                )}
+                
+                {/* Theme Toggle */}
+                <div className="flex items-center justify-between px-4 py-2">
+                  <span className="text-sm text-muted-foreground">Theme</span>
+                  <ThemeToggle />
+                </div>
+                
+                {/* Sign In for non-logged users */}
+                {!user && (
+                  <div className="px-4 pt-2">
+                    <Button 
+                      variant="outline" 
+                      className="w-full" 
+                      onClick={() => {
+                        navigate("/auth");
+                        setIsMenuOpen(false);
+                      }}
+                    >
+                      Sign In
+                    </Button>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         )}

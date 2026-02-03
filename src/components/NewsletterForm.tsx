@@ -58,20 +58,24 @@ export const NewsletterForm = () => {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-2 w-full max-w-md">
+    <form onSubmit={handleSubmit} className="flex w-full max-w-md">
       <div className="relative flex-1">
-        <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input
           type="email"
           placeholder="Enter your email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="pl-9"
+          className="pl-10 pr-4 h-12 rounded-l-full rounded-r-none border-r-0 bg-background/80 backdrop-blur-sm focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-primary"
           required
           disabled={isLoading}
         />
       </div>
-      <Button type="submit" disabled={isLoading} size="sm">
+      <Button 
+        type="submit" 
+        disabled={isLoading} 
+        className="h-12 px-6 rounded-l-none rounded-r-full font-medium"
+      >
         {isLoading ? (
           <>
             <Loader2 className="h-4 w-4 animate-spin mr-2" />

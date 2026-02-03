@@ -1,7 +1,8 @@
 import * as React from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { Settings, CreditCard, FileText, LogOut, User, Library, Heart, Trophy, ChevronRight } from "lucide-react";
+import { Settings, LogOut, User, Library, Heart, Trophy, ChevronRight, Mail, LayoutDashboard } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,6 +13,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/AuthContext";
+import { PrivateMessaging } from "@/components/messaging/PrivateMessaging";
 
 interface MenuItem {
   label: string;
@@ -31,11 +33,17 @@ export default function ProfileDropdown({
 }: ProfileDropdownProps) {
   const navigate = useNavigate();
   const { user, profile, signOut } = useAuth();
-  const [isOpen, setIsOpen] = React.useState(false);
+  const [isOpen, setIsOpen] = useState(false);
+  const [isMessagingOpen, setIsMessagingOpen] = useState(false);
 
   if (!user) return null;
 
   const menuItems: MenuItem[] = [
+    {
+      label: "Dashboard",
+      href: "/dashboard",
+      icon: <LayoutDashboard className="w-4 h-4" />,
+    },
     {
       label: "My Profile",
       href: "/profile",
@@ -63,6 +71,11 @@ export default function ProfileDropdown({
       icon: <Settings className="w-4 h-4" />,
     },
   ];
+
+  const handleOpenMessages = () => {
+    setIsOpen(false);
+    setIsMessagingOpen(true);
+  };
 
   const handleSignOut = async () => {
     await signOut();
@@ -173,6 +186,22 @@ export default function ProfileDropdown({
 
           <DropdownMenuSeparator className="my-1" />
 
+          {/* Messages */}
+          <div className="p-2">
+            <DropdownMenuItem
+              onClick={handleOpenMessages}
+              className="flex items-center justify-between px-3 py-2.5 rounded-lg cursor-pointer hover:bg-accent/50 transition-colors group"
+            >
+              <div className="flex items-center gap-3">
+                <Mail className="w-4 h-4 text-muted-foreground group-hover:text-foreground transition-colors" />
+                <span className="text-sm font-medium">Messages</span>
+              </div>
+              <ChevronRight className="w-3.5 h-3.5 text-muted-foreground opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
+            </DropdownMenuItem>
+          </div>
+
+          <DropdownMenuSeparator className="my-1" />
+
           {/* Sign Out */}
           <div className="p-2">
             <DropdownMenuItem
@@ -187,6 +216,9 @@ export default function ProfileDropdown({
           </div>
         </DropdownMenuContent>
       </DropdownMenu>
+
+      {/* Private Messaging Dialog */}
+      <PrivateMessaging isOpen={isMessagingOpen} onClose={() => setIsMessagingOpen(false)} />
     </div>
   );
 }

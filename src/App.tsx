@@ -10,7 +10,12 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { CartProvider } from "@/contexts/CartContext";
 import { Header } from "./components/Header";
 import { PageTransition } from "./components/PageTransition";
+import { ScrollToTop } from "./components/ScrollToTop";
+import { NavigationProgress } from "./components/NavigationProgress";
+import { BackToTop } from "./components/BackToTop";
+import { KeyboardShortcutsProvider } from "./components/KeyboardShortcutsProvider";
 import Index from "./pages/Index";
+import Dashboard from "./pages/Dashboard";
 import { Admin } from "./pages/Admin";
 import { AdminAuth } from "./pages/AdminAuth";
 import { Auth } from "./pages/Auth";
@@ -35,9 +40,10 @@ const AnimatedRoutes = () => {
   const location = useLocation();
 
   return (
-    <AnimatePresence mode="wait">
+    <AnimatePresence mode="wait" onExitComplete={() => window.scrollTo(0, 0)}>
       <Routes location={location} key={location.pathname}>
         <Route path="/" element={<PageTransition><Index /></PageTransition>} />
+        <Route path="/dashboard" element={<PageTransition><Dashboard /></PageTransition>} />
         <Route path="/profile" element={<PageTransition><ProfilePage /></PageTransition>} />
         <Route path="/profile/:userId" element={<PageTransition><ProfilePage /></PageTransition>} />
         <Route path="/forum" element={<Navigate to="/community" replace />} />
@@ -73,10 +79,15 @@ const App = () => (
               <Toaster />
               <Sonner />
               <BrowserRouter>
-                <div className="min-h-screen bg-background transition-colors duration-300">
-                  <Header />
-                  <AnimatedRoutes />
-                </div>
+                <ScrollToTop />
+                <NavigationProgress />
+                <KeyboardShortcutsProvider>
+                  <div className="min-h-screen bg-background transition-colors duration-300">
+                    <Header />
+                    <AnimatedRoutes />
+                    <BackToTop />
+                  </div>
+                </KeyboardShortcutsProvider>
               </BrowserRouter>
             </BooksProvider>
           </CartProvider>

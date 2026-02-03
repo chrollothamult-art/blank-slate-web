@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { useCart } from "@/contexts/CartContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -25,7 +26,10 @@ export const Checkout = () => {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const cartItems = (location.state?.items || []) as CartItem[];
+  const { items: cartContextItems, clearCart } = useCart();
+  
+  // Use cart context items directly for real-time sync
+  const cartItems = cartContextItems as CartItem[];
 
   const [formData, setFormData] = useState({
     fullName: "",
@@ -44,9 +48,9 @@ export const Checkout = () => {
 
   useEffect(() => {
     if (!loading && !user) {
-      navigate("/auth", { state: { returnTo: "/checkout", cartItems } });
+      navigate("/auth", { state: { returnTo: "/checkout" } });
     }
-  }, [user, loading, navigate, cartItems]);
+  }, [user, loading, navigate]);
 
   useEffect(() => {
     if (user?.email) {

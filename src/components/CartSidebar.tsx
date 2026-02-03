@@ -43,12 +43,12 @@ export const CartSidebar = ({
   const total = subtotal;
 
   const handleCheckout = () => {
-    if (!user) {
-      navigate("/auth", { state: { returnTo: "/checkout", items } });
-    } else {
-      navigate("/checkout", { state: { items } });
-    }
     onClose();
+    if (!user) {
+      navigate("/auth", { state: { returnTo: "/checkout" } });
+    } else {
+      navigate("/checkout");
+    }
   };
 
   return (

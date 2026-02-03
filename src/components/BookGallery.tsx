@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Star, ShoppingCart } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { WishlistButton } from "@/components/WishlistButton";
+import { OptimizedImage } from "@/components/OptimizedImage";
 import bookCollection from "@/assets/book-collection.jpg";
 
 interface BookGalleryProps {
@@ -117,10 +118,11 @@ export const BookGallery = ({ onBookSelect, selectedBookId }: BookGalleryProps) 
                   {/* Book Cover */}
                   <div className="relative mb-4 group">
                     <div className="w-full aspect-[2/3] bg-muted rounded-md overflow-hidden book-shadow">
-                      <img
+                      <OptimizedImage
                         src={book.cover_image_url || bookCollection}
                         alt={book.title}
                         className="w-full h-full object-cover"
+                        containerClassName="w-full h-full"
                       />
                     </div>
                     {/* Wishlist Button */}

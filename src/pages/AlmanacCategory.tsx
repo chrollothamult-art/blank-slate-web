@@ -1,15 +1,24 @@
 import { useState, useEffect, useMemo } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useSearchParams, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { almanacCategories } from "@/data/chronologyData";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Network } from "lucide-react";
+import { ArrowLeft, Network, Loader2, BookOpen, ExternalLink } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { ImageGallery } from "@/components/ImageGallery";
 import { Footer } from "@/components/Footer";
 import { BookSearchBar } from "@/components/BookSearchBar";
+import { AlmanacReferenceParser } from "@/components/AlmanacReferenceParser";
+import { OptimizedImage } from "@/components/OptimizedImage";
+import { Breadcrumbs } from "@/components/Breadcrumbs";
+import { EmptyState } from "@/components/EmptyState";
+import SocialButton from "@/components/ui/social-button";
+import { useAlmanacEntries } from "@/hooks/useAlmanacEntries";
+import { CategoryMetadataBadges } from "@/components/almanac/CategoryMetadataBadges";
+import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
+import { useUserPreferences } from "@/hooks/useUserPreferences";
 import {
   Pagination,
   PaginationContent,
@@ -20,6 +29,13 @@ import {
   PaginationEllipsis,
 } from "@/components/ui/pagination";
 
+interface PromoBook {
+  id: string;
+  title: string;
+  author: string;
+  cover_image_url: string | null;
+}
+
 interface AlmanacEntry {
   id: string;
   name: string;
@@ -27,6 +43,11 @@ interface AlmanacEntry {
   description: string;
   article: string;
   image_url: string | null;
+  is_disabled?: boolean;
+  promo_enabled?: boolean;
+  promo_text?: string | null;
+  promo_link?: string | null;
+  promo_book_id?: string | null;
   // Character-specific fields
   role?: string;
   affiliation?: string;
@@ -34,6 +55,26 @@ interface AlmanacEntry {
   species?: string;
   abilities?: string;
   relationships?: string;
+  // Kingdom-specific fields
+  founded_date?: string;
+  status?: string;
+  // Location-specific fields
+  location_type?: string;
+  kingdom?: string;
+  // Magic-specific fields
+  magic_type?: string;
+  difficulty?: string;
+  // Relic-specific fields
+  type?: string;
+  power_level?: string;
+  // Race-specific fields
+  population?: string;
+  homeland?: string;
+  // Concept-specific fields
+  concept_type?: string;
+  // Title-specific fields
+  rank?: string;
+  authority?: string;
 }
 
 interface GalleryImage {
@@ -57,13 +98,21 @@ const ITEMS_PER_PAGE = 9;
 
 const AlmanacCategory = () => {
   const { categoryId } = useParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const [entries, setEntries] = useState<AlmanacEntry[]>([]);
   const [selectedEntry, setSelectedEntry] = useState<AlmanacEntry | null>(null);
   const [galleryImages, setGalleryImages] = useState<GalleryImage[]>([]);
+  const [promoBook, setPromoBook] = useState<PromoBook | null>(null);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  
+  // Get user preference for infinite scroll
+  const { infiniteScrollEnabled } = useUserPreferences();
+
+  // Get all almanac entries for cross-referencing
+  const { entries: allAlmanacEntries } = useAlmanacEntries();
 
   const category = almanacCategories.find((c) => c.id === categoryId);
   const tableName = categoryId ? categoryTableMap[categoryId] : null;
@@ -75,13 +124,39 @@ const AlmanacCategory = () => {
     }
   }, [tableName]);
 
+  // Handle entry URL parameter for deep linking and browser back/forward
   useEffect(() => {
-    if (selectedEntry && isCharacterCategory) {
-      fetchGalleryImages(selectedEntry.id);
+    const entrySlug = searchParams.get("entry");
+    if (entrySlug && entries.length > 0) {
+      const entry = entries.find((e) => e.slug === entrySlug);
+      if (entry) {
+        setSelectedEntry(entry);
+      }
+    } else if (!entrySlug && selectedEntry) {
+      // Browser back button was pressed, clear selection
+      setSelectedEntry(null);
+    }
+  }, [searchParams, entries]);
+
+  useEffect(() => {
+    if (selectedEntry) {
+      // Fetch gallery images - characters use their own table, others use the generic table
+      if (isCharacterCategory) {
+        fetchCharacterGalleryImages(selectedEntry.id);
+      } else if (categoryId) {
+        fetchGenericGalleryImages(selectedEntry.id, categoryId);
+      }
     } else {
       setGalleryImages([]);
     }
-  }, [selectedEntry, isCharacterCategory]);
+
+    // Fetch promo book if entry has one
+    if (selectedEntry?.promo_enabled && selectedEntry?.promo_book_id) {
+      fetchPromoBook(selectedEntry.promo_book_id);
+    } else {
+      setPromoBook(null);
+    }
+  }, [selectedEntry, isCharacterCategory, categoryId]);
 
   const fetchEntries = async () => {
     if (!tableName) return;
@@ -89,6 +164,7 @@ const AlmanacCategory = () => {
     const { data, error } = await supabase
       .from(tableName as any)
       .select("*")
+      .eq("is_disabled", false)
       .order("order_index", { ascending: true });
 
     if (!error && data) {
@@ -97,7 +173,7 @@ const AlmanacCategory = () => {
     setLoading(false);
   };
 
-  const fetchGalleryImages = async (characterId: string) => {
+  const fetchCharacterGalleryImages = async (characterId: string) => {
     const { data, error } = await supabase
       .from("almanac_character_images" as any)
       .select("id, image_url, caption")
@@ -106,6 +182,31 @@ const AlmanacCategory = () => {
 
     if (!error && data) {
       setGalleryImages(data as unknown as GalleryImage[]);
+    }
+  };
+
+  const fetchGenericGalleryImages = async (entryId: string, category: string) => {
+    const { data, error } = await supabase
+      .from("almanac_entry_images" as any)
+      .select("id, image_url, caption")
+      .eq("entry_id", entryId)
+      .eq("category", category)
+      .order("order_index", { ascending: true });
+
+    if (!error && data) {
+      setGalleryImages(data as unknown as GalleryImage[]);
+    }
+  };
+
+  const fetchPromoBook = async (bookId: string) => {
+    const { data, error } = await supabase
+      .from("books")
+      .select("id, title, author, cover_image_url")
+      .eq("id", bookId)
+      .single();
+
+    if (!error && data) {
+      setPromoBook(data as PromoBook);
     }
   };
 
@@ -122,20 +223,57 @@ const AlmanacCategory = () => {
     );
   }, [entries, searchQuery]);
 
-  // Pagination logic
+  // Infinite scroll hook
+  const {
+    displayedItems: infiniteScrollItems,
+    hasMore: infiniteScrollHasMore,
+    loadMoreRef,
+  } = useInfiniteScroll({
+    items: filteredEntries,
+    itemsPerPage: ITEMS_PER_PAGE,
+    enabled: infiniteScrollEnabled,
+  });
+
+  // Pagination logic (used when infinite scroll is disabled)
   const totalPages = Math.ceil(filteredEntries.length / ITEMS_PER_PAGE);
   const paginatedEntries = useMemo(() => {
     const start = (currentPage - 1) * ITEMS_PER_PAGE;
     return filteredEntries.slice(start, start + ITEMS_PER_PAGE);
   }, [filteredEntries, currentPage]);
 
+  // Get the entries to display based on scroll mode
+  const displayedEntries = infiniteScrollEnabled ? infiniteScrollItems : paginatedEntries;
+
   // Reset to page 1 when search changes
   useEffect(() => {
     setCurrentPage(1);
   }, [searchQuery]);
 
+  // Handle URL query param for direct entry linking (from cross-references)
+  useEffect(() => {
+    const entrySlug = searchParams.get("entry");
+    if (entrySlug && entries.length > 0) {
+      const matchedEntry = entries.find(
+        (e) => e.slug === entrySlug || e.name.toLowerCase() === entrySlug.toLowerCase()
+      );
+      if (matchedEntry) {
+        setSelectedEntry(matchedEntry);
+      }
+    }
+  }, [searchParams, entries]);
+
+  // Scroll to top when selected entry changes
+  useEffect(() => {
+    if (selectedEntry) {
+      window.scrollTo(0, 0);
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
+    }
+  }, [selectedEntry]);
+
   const renderPagination = () => {
-    if (totalPages <= 1) return null;
+    // Don't show pagination if infinite scroll is enabled
+    if (infiniteScrollEnabled || totalPages <= 1) return null;
 
     const pages: (number | "ellipsis")[] = [];
     if (totalPages <= 5) {
@@ -187,6 +325,21 @@ const AlmanacCategory = () => {
     );
   };
 
+  const renderInfiniteScrollLoader = () => {
+    if (!infiniteScrollEnabled) return null;
+    
+    return (
+      <div ref={loadMoreRef} className="flex justify-center py-8">
+        {infiniteScrollHasMore && (
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <Loader2 className="h-5 w-5 animate-spin" />
+            <span>Loading more...</span>
+          </div>
+        )}
+      </div>
+    );
+  };
+
   if (!category || !tableName) {
     return (
       <div className="min-h-screen flex flex-col bg-[hsl(var(--parchment-bg))]">
@@ -211,13 +364,28 @@ const AlmanacCategory = () => {
     );
   }
 
+  // Handle back button to clear entry selection
+  const handleBackToCategory = () => {
+    setSelectedEntry(null);
+    setSearchParams({});
+  };
+
   if (selectedEntry) {
     return (
       <div className="min-h-screen flex flex-col bg-[hsl(var(--parchment-bg))]">
         <div className="flex-1 container mx-auto px-4 py-8 max-w-4xl">
+          <Breadcrumbs 
+            items={[
+              { label: "Chronology", href: "/chronology" },
+              { label: category.title, href: `/almanac/${categoryId}` },
+              { label: selectedEntry.name }
+            ]}
+            className="mb-4"
+          />
+          
           <Button
             variant="ghost"
-            onClick={() => setSelectedEntry(null)}
+            onClick={handleBackToCategory}
             className="mb-6 text-[hsl(var(--parchment-brown))] hover:bg-[hsl(var(--parchment-card))]"
           >
             <ArrowLeft className="mr-2 h-4 w-4" />
@@ -226,63 +394,48 @@ const AlmanacCategory = () => {
 
           <Card className="shadow-xl bg-[hsl(var(--parchment-card))] border-[hsl(var(--parchment-border))]">
             <CardHeader>
-              <CardTitle className="text-4xl font-heading text-[hsl(var(--parchment-brown))]">
-                {selectedEntry.name}
-              </CardTitle>
-              <CardDescription className="text-[hsl(var(--parchment-light-muted))]">
-                {selectedEntry.description}
-              </CardDescription>
-              
-              {/* Character-specific metadata */}
-              {isCharacterCategory && (
-                <div className="flex flex-wrap gap-2 mt-4">
-                  {selectedEntry.role && (
-                    <span className="px-3 py-1 rounded-full text-sm bg-[hsl(var(--parchment-border))] text-[hsl(var(--parchment-brown))]">
-                      {selectedEntry.role}
-                    </span>
-                  )}
-                  {selectedEntry.affiliation && (
-                    <span className="px-3 py-1 rounded-full text-sm bg-[hsl(var(--parchment-bg))] text-[hsl(var(--parchment-brown))]">
-                      {selectedEntry.affiliation}
-                    </span>
-                  )}
-                  {selectedEntry.era && (
-                    <span className="px-3 py-1 rounded-full text-sm bg-[hsl(var(--parchment-gold))] text-white">
-                      {selectedEntry.era}
-                    </span>
-                  )}
-                  {selectedEntry.species && (
-                    <span className="px-3 py-1 rounded-full text-sm bg-[hsl(var(--parchment-muted))] text-white">
-                      {selectedEntry.species}
-                    </span>
-                  )}
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex-1">
+                  <CardTitle className="text-4xl font-heading text-[hsl(var(--parchment-brown))]">
+                    {selectedEntry.name}
+                  </CardTitle>
+                  <CardDescription className="text-[hsl(var(--parchment-light-muted))] mt-2">
+                    {selectedEntry.description}
+                  </CardDescription>
                 </div>
-              )}
+                <SocialButton 
+                  shareUrl={`${window.location.origin}/almanac/${categoryId}?entry=${selectedEntry.slug}`}
+                  shareTitle={`${selectedEntry.name} - ThouArt Almanac`}
+                  shareDescription={selectedEntry.description}
+                />
+              </div>
+              
+              {/* Category-specific metadata badges */}
+              <CategoryMetadataBadges 
+                categoryId={categoryId || ""} 
+                entry={selectedEntry} 
+              />
             </CardHeader>
 
             <CardContent className="space-y-6">
-              {/* Image Gallery for Characters, Single Image for Others */}
-              {isCharacterCategory ? (
+              {/* Image Gallery for all categories */}
+              {(galleryImages.length > 0 || selectedEntry.image_url) ? (
                 <ImageGallery 
                   images={galleryImages} 
                   mainImage={selectedEntry.image_url}
                   altText={selectedEntry.name}
                 />
-              ) : selectedEntry.image_url ? (
-                <div className="w-full">
-                  <img
-                    src={selectedEntry.image_url}
-                    alt={selectedEntry.name}
-                    className="w-full h-96 object-cover rounded-2xl shadow-lg"
-                  />
-                </div>
               ) : null}
 
               <Separator className="bg-[hsl(var(--parchment-border))]" />
 
               <div className="prose max-w-none">
-                <p className="leading-relaxed whitespace-pre-line text-[hsl(var(--parchment-brown))]">
-                  {selectedEntry.article}
+                <p className="leading-relaxed text-[hsl(var(--parchment-brown))]">
+                  <AlmanacReferenceParser
+                    content={selectedEntry.article}
+                    allEntries={allAlmanacEntries}
+                    currentEntryId={selectedEntry.id}
+                  />
                 </p>
               </div>
 
@@ -296,8 +449,12 @@ const AlmanacCategory = () => {
                         <h3 className="text-xl font-heading font-semibold mb-3 text-[hsl(var(--parchment-brown))]">
                           Abilities
                         </h3>
-                        <p className="whitespace-pre-line text-[hsl(var(--parchment-muted))]">
-                          {selectedEntry.abilities}
+                        <p className="text-[hsl(var(--parchment-muted))]">
+                          <AlmanacReferenceParser
+                            content={selectedEntry.abilities}
+                            allEntries={allAlmanacEntries}
+                            currentEntryId={selectedEntry.id}
+                          />
                         </p>
                       </div>
                     </>
@@ -310,12 +467,64 @@ const AlmanacCategory = () => {
                         <h3 className="text-xl font-heading font-semibold mb-3 text-[hsl(var(--parchment-brown))]">
                           Relationships
                         </h3>
-                        <p className="whitespace-pre-line text-[hsl(var(--parchment-muted))]">
-                          {selectedEntry.relationships}
+                        <p className="text-[hsl(var(--parchment-muted))]">
+                          <AlmanacReferenceParser
+                            content={selectedEntry.relationships}
+                            allEntries={allAlmanacEntries}
+                            currentEntryId={selectedEntry.id}
+                          />
                         </p>
                       </div>
                     </>
                   )}
+                </>
+              )}
+
+              {/* Promo Banner */}
+              {selectedEntry.promo_enabled && (selectedEntry.promo_book_id || selectedEntry.promo_link) && (
+                <>
+                  <Separator className="bg-[hsl(var(--parchment-border))]" />
+                  <div className="bg-gradient-to-r from-[hsl(var(--parchment-gold))/10] to-[hsl(var(--parchment-border))/30] rounded-xl p-6 border border-[hsl(var(--parchment-gold))/30]">
+                    <div className="flex flex-col md:flex-row items-center gap-4">
+                      {promoBook?.cover_image_url && (
+                        <div className="w-20 h-28 flex-shrink-0 rounded-lg overflow-hidden shadow-lg">
+                          <img
+                            src={promoBook.cover_image_url}
+                            alt={promoBook.title}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                      )}
+                      <div className="flex-1 text-center md:text-left">
+                        <p className="text-lg font-heading font-semibold text-[hsl(var(--parchment-brown))] mb-2">
+                          {selectedEntry.promo_text || `Find out more about ${selectedEntry.name}!`}
+                        </p>
+                        {promoBook && (
+                          <p className="text-sm text-[hsl(var(--parchment-muted))] mb-3">
+                            {promoBook.title} by {promoBook.author}
+                          </p>
+                        )}
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        {selectedEntry.promo_book_id && promoBook && (
+                          <Link to={`/books?book=${promoBook.id}`}>
+                            <Button className="bg-[hsl(var(--parchment-gold))] hover:bg-[hsl(var(--parchment-gold))]/90 text-white">
+                              <BookOpen className="h-4 w-4 mr-2" />
+                              View Book
+                            </Button>
+                          </Link>
+                        )}
+                        {selectedEntry.promo_link && (
+                          <a href={selectedEntry.promo_link} target="_blank" rel="noopener noreferrer">
+                            <Button variant="outline" className="border-[hsl(var(--parchment-gold))] text-[hsl(var(--parchment-brown))] hover:bg-[hsl(var(--parchment-gold))]/10">
+                              <ExternalLink className="h-4 w-4 mr-2" />
+                              Learn More
+                            </Button>
+                          </a>
+                        )}
+                      </div>
+                    </div>
+                  </div>
                 </>
               )}
             </CardContent>
@@ -329,11 +538,19 @@ const AlmanacCategory = () => {
   return (
     <div className="min-h-screen flex flex-col bg-[hsl(var(--parchment-bg))]">
       <div className="flex-1 container mx-auto px-4 py-8 max-w-6xl">
-        <div className="flex items-center justify-between mb-6">
+        <Breadcrumbs 
+          items={[
+            { label: "Chronology", href: "/chronology" },
+            { label: category.title }
+          ]}
+          className="mb-4"
+        />
+        
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
           <Button
             variant="ghost"
             onClick={() => navigate("/chronology")}
-            className="text-[hsl(var(--parchment-brown))] hover:bg-[hsl(var(--parchment-card))]"
+            className="text-[hsl(var(--parchment-brown))] hover:bg-[hsl(var(--parchment-card))] w-fit"
           >
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to Chronology
@@ -343,7 +560,7 @@ const AlmanacCategory = () => {
             <Button
               variant="outline"
               onClick={() => navigate("/relationships")}
-              className="border-[hsl(var(--parchment-gold))] text-[hsl(var(--parchment-brown))] hover:bg-[hsl(var(--parchment-gold))/10]"
+              className="border-[hsl(var(--parchment-gold))] text-[hsl(var(--parchment-brown))] hover:bg-[hsl(var(--parchment-gold))/10] w-fit"
             >
               <Network className="mr-2 h-4 w-4" />
               View Relationships Map
@@ -374,13 +591,11 @@ const AlmanacCategory = () => {
             <p className="text-[hsl(var(--parchment-muted))]">Loading entries...</p>
           </div>
         ) : filteredEntries.length === 0 ? (
-          <Card className="bg-[hsl(var(--parchment-card))] border-[hsl(var(--parchment-border))]">
-            <CardContent className="p-12 text-center">
-              <p className="text-[hsl(var(--parchment-muted))]">
-                {searchQuery ? `No entries matching "${searchQuery}"` : `No entries yet for ${category.title}. Check back later!`}
-              </p>
-            </CardContent>
-          </Card>
+          <EmptyState
+            type="search"
+            title={searchQuery ? `No results for "${searchQuery}"` : `No ${category.title.toLowerCase()} yet`}
+            description={searchQuery ? "Try adjusting your search terms" : "Check back later for new entries!"}
+          />
         ) : (
           <>
           <motion.div 
@@ -395,7 +610,7 @@ const AlmanacCategory = () => {
               },
             }}
           >
-            {paginatedEntries.map((entry) => (
+            {displayedEntries.map((entry) => (
               <motion.div
                 key={entry.id}
                 variants={{
@@ -406,14 +621,18 @@ const AlmanacCategory = () => {
               >
                 <Card
                   className="cursor-pointer transition-all duration-200 hover:shadow-xl hover:-translate-y-1 bg-[hsl(var(--parchment-card))] border-[hsl(var(--parchment-border))]"
-                  onClick={() => setSelectedEntry(entry)}
+                  onClick={() => {
+                    setSelectedEntry(entry);
+                    setSearchParams({ entry: entry.slug });
+                  }}
                 >
                   {entry.image_url && (
                     <div className="w-full h-80 overflow-hidden rounded-t-2xl">
-                      <img
+                      <OptimizedImage
                         src={entry.image_url}
                         alt={entry.name}
                         className="w-full h-full object-cover"
+                        containerClassName="w-full h-full"
                       />
                     </div>
                   )}
@@ -424,27 +643,19 @@ const AlmanacCategory = () => {
                     <CardDescription className="line-clamp-3 text-[hsl(var(--parchment-muted))]">
                       {entry.description}
                     </CardDescription>
-                    {/* Show character role/era badges in list */}
-                    {isCharacterCategory && (entry.role || entry.era) && (
-                      <div className="flex flex-wrap gap-1 mt-2">
-                        {entry.role && (
-                          <span className="px-2 py-0.5 rounded text-xs bg-[hsl(var(--parchment-border))] text-[hsl(var(--parchment-brown))]">
-                            {entry.role}
-                          </span>
-                        )}
-                        {entry.era && (
-                          <span className="px-2 py-0.5 rounded text-xs bg-[hsl(var(--parchment-gold))] text-white">
-                            {entry.era}
-                          </span>
-                        )}
-                      </div>
-                    )}
+                    {/* Show category-specific badges in list */}
+                    <CategoryMetadataBadges 
+                      categoryId={categoryId || ""} 
+                      entry={entry} 
+                      variant="compact"
+                    />
                   </CardHeader>
                 </Card>
               </motion.div>
             ))}
           </motion.div>
           {renderPagination()}
+          {renderInfiniteScrollLoader()}
           </>
         )}
       </div>

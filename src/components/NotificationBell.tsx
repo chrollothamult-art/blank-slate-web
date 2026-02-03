@@ -1,7 +1,8 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useForumNotifications, ForumNotification } from "@/hooks/useForumNotifications";
 import { useAuth } from "@/contexts/AuthContext";
+import { useUserPreferences } from "@/hooks/useUserPreferences";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import {
@@ -75,6 +76,7 @@ const submissionNotificationConfig = {
 export const NotificationBell = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { notificationsComments, notificationsLikes, notificationsFollows } = useUserPreferences();
   const {
     notifications: forumNotifications,
     unreadCount: forumUnreadCount,
@@ -92,8 +94,18 @@ export const NotificationBell = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'all' | 'forum' | 'submissions'>('all');
 
+  // Filter forum notifications based on user preferences
+  const filteredForumNotifications = useMemo(() => {
+    return forumNotifications.filter(n => {
+      if (n.type === 'reply' || n.type === 'mention') return notificationsComments;
+      if (n.type === 'like') return notificationsLikes;
+      return true; // Show other types by default
+    });
+  }, [forumNotifications, notificationsComments, notificationsLikes]);
+
+  const filteredForumUnreadCount = filteredForumNotifications.filter(n => !n.is_read).length;
   const submissionUnreadCount = submissionNotifications.filter(n => !n.is_read).length;
-  const totalUnreadCount = forumUnreadCount + submissionUnreadCount;
+  const totalUnreadCount = filteredForumUnreadCount + submissionUnreadCount;
 
   const fetchSubmissionNotifications = useCallback(async () => {
     if (!user) return;
@@ -152,10 +164,10 @@ export const NotificationBell = () => {
     }
   }, [fetchSubmissionNotifications, user, canShowNotifications, showNotification]);
 
-  // Listen for forum notifications and show browser push
+  // Listen for forum notifications and show browser push (only if that type is enabled)
   useEffect(() => {
-    if (forumNotifications.length > 0 && canShowNotifications) {
-      const latestNotif = forumNotifications[0];
+    if (filteredForumNotifications.length > 0 && canShowNotifications) {
+      const latestNotif = filteredForumNotifications[0];
       if (latestNotif && !latestNotif.is_read && latestNotif.id !== lastNotificationIdRef.current) {
         lastNotificationIdRef.current = latestNotif.id;
         showNotification('ThouArt - Forum', {
@@ -164,7 +176,7 @@ export const NotificationBell = () => {
         });
       }
     }
-  }, [forumNotifications, canShowNotifications, showNotification]);
+  }, [filteredForumNotifications, canShowNotifications, showNotification]);
 
   const handleForumNotificationClick = async (notification: ForumNotification) => {
     if (!notification.is_read) {
@@ -217,9 +229,9 @@ export const NotificationBell = () => {
 
   const loading = forumLoading || submissionLoading;
 
-  // Combine and sort all notifications
+  // Combine and sort all notifications (using filtered forum notifications)
   const allNotifications = [
-    ...forumNotifications.map(n => ({ ...n, notifType: 'forum' as const })),
+    ...filteredForumNotifications.map(n => ({ ...n, notifType: 'forum' as const })),
     ...submissionNotifications.map(n => ({ ...n, notifType: 'submission' as const })),
   ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
@@ -273,7 +285,7 @@ export const NotificationBell = () => {
               All {totalUnreadCount > 0 && `(${totalUnreadCount})`}
             </TabsTrigger>
             <TabsTrigger value="forum" className="text-xs">
-              Forum {forumUnreadCount > 0 && `(${forumUnreadCount})`}
+              Forum {filteredForumUnreadCount > 0 && `(${filteredForumUnreadCount})`}
             </TabsTrigger>
             <TabsTrigger value="submissions" className="text-xs">
               Content {submissionUnreadCount > 0 && `(${submissionUnreadCount})`}

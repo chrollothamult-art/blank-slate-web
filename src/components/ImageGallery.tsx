@@ -1,8 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight, X, ZoomIn } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
+import { createPortal } from "react-dom";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface GalleryImage {
   id: string;
@@ -19,12 +21,32 @@ interface ImageGalleryProps {
 export const ImageGallery = ({ images, mainImage, altText = "Gallery image" }: ImageGalleryProps) => {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
+  const isMobile = useIsMobile();
 
   // Combine main image with gallery images
   const allImages: GalleryImage[] = [
     ...(mainImage ? [{ id: "main", image_url: mainImage, caption: "Main image" }] : []),
     ...images,
   ];
+
+  // Handle keyboard navigation for desktop lightbox
+  useEffect(() => {
+    if (!isLightboxOpen || isMobile) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "ArrowLeft") goToPrevious();
+      if (e.key === "ArrowRight") goToNext();
+      if (e.key === "Escape") setIsLightboxOpen(false);
+    };
+
+    document.body.style.overflow = "hidden";
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.body.style.overflow = "";
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isLightboxOpen, isMobile]);
 
   if (allImages.length === 0) {
     return null;
@@ -40,11 +62,67 @@ export const ImageGallery = ({ images, mainImage, altText = "Gallery image" }: I
     setSelectedIndex((prev) => (prev === allImages.length - 1 ? 0 : prev + 1));
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "ArrowLeft") goToPrevious();
-    if (e.key === "ArrowRight") goToNext();
-    if (e.key === "Escape") setIsLightboxOpen(false);
-  };
+  // Desktop lightbox using portal
+  const desktopLightbox = isLightboxOpen && !isMobile ? createPortal(
+    <div 
+      className="fixed inset-0 z-[9999] bg-black/95 flex items-center justify-center"
+      onClick={() => setIsLightboxOpen(false)}
+    >
+      <button
+        onClick={() => setIsLightboxOpen(false)}
+        className="absolute top-4 right-4 z-[10000] text-white hover:text-white/80 p-2 rounded-full hover:bg-white/10 transition-colors"
+      >
+        <X className="h-8 w-8" />
+      </button>
+
+      {allImages.length > 1 && (
+        <>
+          <button
+            onClick={(e) => { e.stopPropagation(); goToPrevious(); }}
+            className="absolute left-4 z-[10000] text-white hover:text-white/80 p-2 rounded-full hover:bg-white/10 transition-colors"
+          >
+            <ChevronLeft className="h-10 w-10" />
+          </button>
+          <button
+            onClick={(e) => { e.stopPropagation(); goToNext(); }}
+            className="absolute right-4 z-[10000] text-white hover:text-white/80 p-2 rounded-full hover:bg-white/10 transition-colors"
+          >
+            <ChevronRight className="h-10 w-10" />
+          </button>
+        </>
+      )}
+
+      <div 
+        className="flex items-center justify-center p-8 box-border"
+        style={{ width: '100vw', height: '100vh' }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <img
+          src={currentImage.image_url}
+          alt={currentImage.caption || altText}
+          style={{
+            maxWidth: 'calc(100vw - 120px)',
+            maxHeight: 'calc(100vh - 100px)',
+            width: 'auto',
+            height: 'auto',
+            objectFit: 'contain',
+          }}
+        />
+      </div>
+
+      <div className="absolute bottom-4 left-0 right-0 text-center z-[10000]">
+        {currentImage.caption && (
+          <p className="text-white text-base mb-1">{currentImage.caption}</p>
+        )}
+        {allImages.length > 1 && (
+          <p className="text-white/70 text-sm">
+            {selectedIndex + 1} / {allImages.length}
+          </p>
+        )}
+      </div>
+    </div>,
+    document.body
+  ) : null;
 
   return (
     <div className="space-y-4">
@@ -119,66 +197,57 @@ export const ImageGallery = ({ images, mainImage, altText = "Gallery image" }: I
         </div>
       )}
 
-      {/* Lightbox Modal */}
-      <Dialog open={isLightboxOpen} onOpenChange={setIsLightboxOpen}>
-        <DialogContent 
-          className="max-w-5xl w-full h-[90vh] p-0 bg-black/95 border-none"
-          onKeyDown={handleKeyDown}
-        >
-          <div className="relative w-full h-full flex items-center justify-center">
-            {/* Close button */}
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setIsLightboxOpen(false)}
-              className="absolute top-4 right-4 z-50 text-white hover:bg-white/20"
-            >
-              <X className="h-6 w-6" />
-            </Button>
+      {/* Desktop Lightbox Portal */}
+      {desktopLightbox}
 
-            {/* Navigation arrows */}
-            {allImages.length > 1 && (
-              <>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={goToPrevious}
-                  className="absolute left-4 z-50 text-white hover:bg-white/20 h-12 w-12"
-                >
-                  <ChevronLeft className="h-8 w-8" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={goToNext}
-                  className="absolute right-4 z-50 text-white hover:bg-white/20 h-12 w-12"
-                >
-                  <ChevronRight className="h-8 w-8" />
-                </Button>
-              </>
-            )}
+      {/* Mobile Dialog */}
+      {isMobile && (
+        <Dialog open={isLightboxOpen} onOpenChange={setIsLightboxOpen}>
+          <DialogContent 
+            className="max-w-[95vw] max-h-[95vh] w-auto h-auto p-2 bg-black/95 border-none"
+          >
+            <div className="relative flex items-center justify-center">
+              {allImages.length > 1 && (
+                <>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={goToPrevious}
+                    className="absolute left-0 z-50 text-white hover:bg-white/20 h-8 w-8"
+                  >
+                    <ChevronLeft className="h-5 w-5" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={goToNext}
+                    className="absolute right-0 z-50 text-white hover:bg-white/20 h-8 w-8"
+                  >
+                    <ChevronRight className="h-5 w-5" />
+                  </Button>
+                </>
+              )}
 
-            {/* Main image */}
-            <img
-              src={currentImage.image_url}
-              alt={currentImage.caption || altText}
-              className="max-w-full max-h-full object-contain"
-            />
+              <img
+                src={currentImage.image_url}
+                alt={currentImage.caption || altText}
+                className="max-w-full max-h-[80vh] object-contain"
+              />
+            </div>
 
-            {/* Caption and counter */}
-            <div className="absolute bottom-4 left-0 right-0 text-center">
+            <div className="text-center mt-2">
               {currentImage.caption && (
-                <p className="text-white text-lg mb-2">{currentImage.caption}</p>
+                <p className="text-white text-sm mb-1">{currentImage.caption}</p>
               )}
               {allImages.length > 1 && (
-                <p className="text-white/70 text-sm">
+                <p className="text-white/70 text-xs">
                   {selectedIndex + 1} / {allImages.length}
                 </p>
               )}
             </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 };

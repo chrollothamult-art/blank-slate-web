@@ -83,6 +83,32 @@ export const useForumReplies = (postId: string | null) => {
     fetchReplies();
   }, [fetchReplies]);
 
+  // Real-time subscription for new replies
+  useEffect(() => {
+    if (!postId) return;
+
+    const channel = supabase
+      .channel(`forum_replies:${postId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'forum_replies',
+          filter: `post_id=eq.${postId}`,
+        },
+        () => {
+          // Refetch all replies when any change occurs
+          fetchReplies();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [postId, fetchReplies]);
+
   return {
     replies,
     loading,

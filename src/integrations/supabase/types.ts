@@ -80,8 +80,14 @@ export type Database = {
           era: string | null
           id: string
           image_url: string | null
+          is_disabled: boolean | null
           name: string
           order_index: number | null
+          origin_location_id: string | null
+          promo_book_id: string | null
+          promo_enabled: boolean | null
+          promo_link: string | null
+          promo_text: string | null
           relationships: string | null
           role: string | null
           slug: string
@@ -97,8 +103,14 @@ export type Database = {
           era?: string | null
           id?: string
           image_url?: string | null
+          is_disabled?: boolean | null
           name: string
           order_index?: number | null
+          origin_location_id?: string | null
+          promo_book_id?: string | null
+          promo_enabled?: boolean | null
+          promo_link?: string | null
+          promo_text?: string | null
           relationships?: string | null
           role?: string | null
           slug: string
@@ -114,15 +126,36 @@ export type Database = {
           era?: string | null
           id?: string
           image_url?: string | null
+          is_disabled?: boolean | null
           name?: string
           order_index?: number | null
+          origin_location_id?: string | null
+          promo_book_id?: string | null
+          promo_enabled?: boolean | null
+          promo_link?: string | null
+          promo_text?: string | null
           relationships?: string | null
           role?: string | null
           slug?: string
           species?: string | null
           updated_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "almanac_characters_origin_location_id_fkey"
+            columns: ["origin_location_id"]
+            isOneToOne: false
+            referencedRelation: "world_locations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "almanac_characters_promo_book_id_fkey"
+            columns: ["promo_book_id"]
+            isOneToOne: false
+            referencedRelation: "books"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       almanac_concepts: {
         Row: {
@@ -132,8 +165,13 @@ export type Database = {
           description: string
           id: string
           image_url: string | null
+          is_disabled: boolean | null
           name: string
           order_index: number | null
+          promo_book_id: string | null
+          promo_enabled: boolean | null
+          promo_link: string | null
+          promo_text: string | null
           slug: string
           updated_at: string | null
         }
@@ -144,8 +182,13 @@ export type Database = {
           description: string
           id?: string
           image_url?: string | null
+          is_disabled?: boolean | null
           name: string
           order_index?: number | null
+          promo_book_id?: string | null
+          promo_enabled?: boolean | null
+          promo_link?: string | null
+          promo_text?: string | null
           slug: string
           updated_at?: string | null
         }
@@ -156,10 +199,53 @@ export type Database = {
           description?: string
           id?: string
           image_url?: string | null
+          is_disabled?: boolean | null
           name?: string
           order_index?: number | null
+          promo_book_id?: string | null
+          promo_enabled?: boolean | null
+          promo_link?: string | null
+          promo_text?: string | null
           slug?: string
           updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "almanac_concepts_promo_book_id_fkey"
+            columns: ["promo_book_id"]
+            isOneToOne: false
+            referencedRelation: "books"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      almanac_entry_images: {
+        Row: {
+          caption: string | null
+          category: string
+          created_at: string | null
+          entry_id: string
+          id: string
+          image_url: string
+          order_index: number | null
+        }
+        Insert: {
+          caption?: string | null
+          category: string
+          created_at?: string | null
+          entry_id: string
+          id?: string
+          image_url: string
+          order_index?: number | null
+        }
+        Update: {
+          caption?: string | null
+          category?: string
+          created_at?: string | null
+          entry_id?: string
+          id?: string
+          image_url?: string
+          order_index?: number | null
         }
         Relationships: []
       }
@@ -171,8 +257,13 @@ export type Database = {
           founded_date: string | null
           id: string
           image_url: string | null
+          is_disabled: boolean | null
           name: string
           order_index: number | null
+          promo_book_id: string | null
+          promo_enabled: boolean | null
+          promo_link: string | null
+          promo_text: string | null
           slug: string
           status: string | null
           updated_at: string | null
@@ -184,8 +275,13 @@ export type Database = {
           founded_date?: string | null
           id?: string
           image_url?: string | null
+          is_disabled?: boolean | null
           name: string
           order_index?: number | null
+          promo_book_id?: string | null
+          promo_enabled?: boolean | null
+          promo_link?: string | null
+          promo_text?: string | null
           slug: string
           status?: string | null
           updated_at?: string | null
@@ -197,13 +293,26 @@ export type Database = {
           founded_date?: string | null
           id?: string
           image_url?: string | null
+          is_disabled?: boolean | null
           name?: string
           order_index?: number | null
+          promo_book_id?: string | null
+          promo_enabled?: boolean | null
+          promo_link?: string | null
+          promo_text?: string | null
           slug?: string
           status?: string | null
           updated_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "almanac_kingdoms_promo_book_id_fkey"
+            columns: ["promo_book_id"]
+            isOneToOne: false
+            referencedRelation: "books"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       almanac_locations: {
         Row: {
@@ -212,10 +321,15 @@ export type Database = {
           description: string
           id: string
           image_url: string | null
+          is_disabled: boolean | null
           kingdom: string | null
           location_type: string | null
           name: string
           order_index: number | null
+          promo_book_id: string | null
+          promo_enabled: boolean | null
+          promo_link: string | null
+          promo_text: string | null
           slug: string
           updated_at: string | null
         }
@@ -225,10 +339,15 @@ export type Database = {
           description: string
           id?: string
           image_url?: string | null
+          is_disabled?: boolean | null
           kingdom?: string | null
           location_type?: string | null
           name: string
           order_index?: number | null
+          promo_book_id?: string | null
+          promo_enabled?: boolean | null
+          promo_link?: string | null
+          promo_text?: string | null
           slug: string
           updated_at?: string | null
         }
@@ -238,14 +357,27 @@ export type Database = {
           description?: string
           id?: string
           image_url?: string | null
+          is_disabled?: boolean | null
           kingdom?: string | null
           location_type?: string | null
           name?: string
           order_index?: number | null
+          promo_book_id?: string | null
+          promo_enabled?: boolean | null
+          promo_link?: string | null
+          promo_text?: string | null
           slug?: string
           updated_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "almanac_locations_promo_book_id_fkey"
+            columns: ["promo_book_id"]
+            isOneToOne: false
+            referencedRelation: "books"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       almanac_magic: {
         Row: {
@@ -255,9 +387,14 @@ export type Database = {
           difficulty: string | null
           id: string
           image_url: string | null
+          is_disabled: boolean | null
           magic_type: string | null
           name: string
           order_index: number | null
+          promo_book_id: string | null
+          promo_enabled: boolean | null
+          promo_link: string | null
+          promo_text: string | null
           slug: string
           updated_at: string | null
         }
@@ -268,9 +405,14 @@ export type Database = {
           difficulty?: string | null
           id?: string
           image_url?: string | null
+          is_disabled?: boolean | null
           magic_type?: string | null
           name: string
           order_index?: number | null
+          promo_book_id?: string | null
+          promo_enabled?: boolean | null
+          promo_link?: string | null
+          promo_text?: string | null
           slug: string
           updated_at?: string | null
         }
@@ -281,13 +423,26 @@ export type Database = {
           difficulty?: string | null
           id?: string
           image_url?: string | null
+          is_disabled?: boolean | null
           magic_type?: string | null
           name?: string
           order_index?: number | null
+          promo_book_id?: string | null
+          promo_enabled?: boolean | null
+          promo_link?: string | null
+          promo_text?: string | null
           slug?: string
           updated_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "almanac_magic_promo_book_id_fkey"
+            columns: ["promo_book_id"]
+            isOneToOne: false
+            referencedRelation: "books"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       almanac_races: {
         Row: {
@@ -297,9 +452,14 @@ export type Database = {
           homeland: string | null
           id: string
           image_url: string | null
+          is_disabled: boolean | null
           name: string
           order_index: number | null
           population: string | null
+          promo_book_id: string | null
+          promo_enabled: boolean | null
+          promo_link: string | null
+          promo_text: string | null
           slug: string
           updated_at: string | null
         }
@@ -310,9 +470,14 @@ export type Database = {
           homeland?: string | null
           id?: string
           image_url?: string | null
+          is_disabled?: boolean | null
           name: string
           order_index?: number | null
           population?: string | null
+          promo_book_id?: string | null
+          promo_enabled?: boolean | null
+          promo_link?: string | null
+          promo_text?: string | null
           slug: string
           updated_at?: string | null
         }
@@ -323,13 +488,26 @@ export type Database = {
           homeland?: string | null
           id?: string
           image_url?: string | null
+          is_disabled?: boolean | null
           name?: string
           order_index?: number | null
           population?: string | null
+          promo_book_id?: string | null
+          promo_enabled?: boolean | null
+          promo_link?: string | null
+          promo_text?: string | null
           slug?: string
           updated_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "almanac_races_promo_book_id_fkey"
+            columns: ["promo_book_id"]
+            isOneToOne: false
+            referencedRelation: "books"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       almanac_relics: {
         Row: {
@@ -338,9 +516,14 @@ export type Database = {
           description: string
           id: string
           image_url: string | null
+          is_disabled: boolean | null
           name: string
           order_index: number | null
           power_level: string | null
+          promo_book_id: string | null
+          promo_enabled: boolean | null
+          promo_link: string | null
+          promo_text: string | null
           slug: string
           type: string | null
           updated_at: string | null
@@ -351,9 +534,14 @@ export type Database = {
           description: string
           id?: string
           image_url?: string | null
+          is_disabled?: boolean | null
           name: string
           order_index?: number | null
           power_level?: string | null
+          promo_book_id?: string | null
+          promo_enabled?: boolean | null
+          promo_link?: string | null
+          promo_text?: string | null
           slug: string
           type?: string | null
           updated_at?: string | null
@@ -364,14 +552,27 @@ export type Database = {
           description?: string
           id?: string
           image_url?: string | null
+          is_disabled?: boolean | null
           name?: string
           order_index?: number | null
           power_level?: string | null
+          promo_book_id?: string | null
+          promo_enabled?: boolean | null
+          promo_link?: string | null
+          promo_text?: string | null
           slug?: string
           type?: string | null
           updated_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "almanac_relics_promo_book_id_fkey"
+            columns: ["promo_book_id"]
+            isOneToOne: false
+            referencedRelation: "books"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       almanac_titles: {
         Row: {
@@ -381,8 +582,13 @@ export type Database = {
           description: string
           id: string
           image_url: string | null
+          is_disabled: boolean | null
           name: string
           order_index: number | null
+          promo_book_id: string | null
+          promo_enabled: boolean | null
+          promo_link: string | null
+          promo_text: string | null
           rank: string | null
           slug: string
           updated_at: string | null
@@ -394,8 +600,13 @@ export type Database = {
           description: string
           id?: string
           image_url?: string | null
+          is_disabled?: boolean | null
           name: string
           order_index?: number | null
+          promo_book_id?: string | null
+          promo_enabled?: boolean | null
+          promo_link?: string | null
+          promo_text?: string | null
           rank?: string | null
           slug: string
           updated_at?: string | null
@@ -407,13 +618,26 @@ export type Database = {
           description?: string
           id?: string
           image_url?: string | null
+          is_disabled?: boolean | null
           name?: string
           order_index?: number | null
+          promo_book_id?: string | null
+          promo_enabled?: boolean | null
+          promo_link?: string | null
+          promo_text?: string | null
           rank?: string | null
           slug?: string
           updated_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "almanac_titles_promo_book_id_fkey"
+            columns: ["promo_book_id"]
+            isOneToOne: false
+            referencedRelation: "books"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       badge_types: {
         Row: {
@@ -553,6 +777,47 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      book_external_links: {
+        Row: {
+          book_id: string
+          created_at: string
+          format_type: string
+          id: string
+          order_index: number | null
+          store_name: string
+          updated_at: string
+          url: string
+        }
+        Insert: {
+          book_id: string
+          created_at?: string
+          format_type: string
+          id?: string
+          order_index?: number | null
+          store_name: string
+          updated_at?: string
+          url: string
+        }
+        Update: {
+          book_id?: string
+          created_at?: string
+          format_type?: string
+          id?: string
+          order_index?: number | null
+          store_name?: string
+          updated_at?: string
+          url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "book_external_links_book_id_fkey"
+            columns: ["book_id"]
+            isOneToOne: false
+            referencedRelation: "books"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       book_highlights: {
         Row: {
@@ -763,22 +1028,28 @@ export type Database = {
         Row: {
           character_id: string
           created_at: string
+          description: string | null
           event_id: string
           id: string
+          role: string | null
           role_in_event: string | null
         }
         Insert: {
           character_id: string
-          created_at: string
+          created_at?: string
+          description?: string | null
           event_id: string
           id?: string
+          role?: string | null
           role_in_event?: string | null
         }
         Update: {
           character_id?: string
           created_at?: string
+          description?: string | null
           event_id?: string
           id?: string
+          role?: string | null
           role_in_event?: string | null
         }
         Relationships: []
@@ -815,6 +1086,53 @@ export type Database = {
           target_character_id?: string | null
         }
         Relationships: []
+      }
+      character_stats: {
+        Row: {
+          agility: number | null
+          character_id: string
+          charisma: number | null
+          created_at: string
+          endurance: number | null
+          id: string
+          intelligence: number | null
+          magic: number | null
+          strength: number | null
+          updated_at: string
+        }
+        Insert: {
+          agility?: number | null
+          character_id: string
+          charisma?: number | null
+          created_at?: string
+          endurance?: number | null
+          id?: string
+          intelligence?: number | null
+          magic?: number | null
+          strength?: number | null
+          updated_at?: string
+        }
+        Update: {
+          agility?: number | null
+          character_id?: string
+          charisma?: number | null
+          created_at?: string
+          endurance?: number | null
+          id?: string
+          intelligence?: number | null
+          magic?: number | null
+          strength?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "character_stats_character_id_fkey"
+            columns: ["character_id"]
+            isOneToOne: true
+            referencedRelation: "almanac_characters"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       chronology_event_relationships: {
         Row: {
@@ -935,6 +1253,51 @@ export type Database = {
           user_id?: string | null
         }
         Relationships: []
+      }
+      discussion_replies: {
+        Row: {
+          author_id: string
+          content: string
+          created_at: string
+          discussion_id: string
+          id: string
+          parent_reply_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          author_id: string
+          content: string
+          created_at?: string
+          discussion_id: string
+          id?: string
+          parent_reply_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          author_id?: string
+          content?: string
+          created_at?: string
+          discussion_id?: string
+          id?: string
+          parent_reply_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "discussion_replies_discussion_id_fkey"
+            columns: ["discussion_id"]
+            isOneToOne: false
+            referencedRelation: "book_club_discussions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "discussion_replies_parent_reply_id_fkey"
+            columns: ["parent_reply_id"]
+            isOneToOne: false
+            referencedRelation: "discussion_replies"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       forum_likes: {
         Row: {
@@ -1483,6 +1846,65 @@ export type Database = {
           usage_count?: number
         }
         Relationships: []
+      }
+      private_conversations: {
+        Row: {
+          created_at: string
+          id: string
+          participant_one: string
+          participant_two: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          participant_one: string
+          participant_two: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          participant_one?: string
+          participant_two?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      private_messages: {
+        Row: {
+          content: string
+          conversation_id: string
+          created_at: string
+          id: string
+          is_read: boolean
+          sender_id: string
+        }
+        Insert: {
+          content: string
+          conversation_id: string
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          sender_id: string
+        }
+        Update: {
+          content?: string
+          conversation_id?: string
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          sender_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "private_messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "private_conversations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
@@ -2141,6 +2563,42 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      world_locations: {
+        Row: {
+          color: string | null
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          type: string
+          updated_at: string
+          x_position: number
+          y_position: number
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          type?: string
+          updated_at?: string
+          x_position?: number
+          y_position?: number
+        }
+        Update: {
+          color?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          type?: string
+          updated_at?: string
+          x_position?: number
+          y_position?: number
+        }
+        Relationships: []
       }
     }
     Views: {

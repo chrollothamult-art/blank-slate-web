@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserProfile } from "@/hooks/useUserProfile";
@@ -5,6 +6,7 @@ import { useAchievements } from "@/hooks/useAchievements";
 import { useStreaks } from "@/hooks/useStreaks";
 import { useWishlist } from "@/hooks/useWishlist";
 import { useBooks } from "@/contexts/BooksContext";
+import { useFollows } from "@/hooks/useFollows";
 
 import { Footer } from "@/components/Footer";
 import { FollowButton } from "@/components/FollowButton";
@@ -12,6 +14,7 @@ import { AchievementsDisplay } from "@/components/AchievementsDisplay";
 import { ActivityFeed } from "@/components/ActivityFeed";
 import { UserSubmissionsList } from "@/components/profile/UserSubmissionsList";
 import { FollowersList } from "@/components/profile/FollowersList";
+import { PrivateMessaging } from "@/components/messaging/PrivateMessaging";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -20,6 +23,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Progress } from "@/components/ui/progress";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import {
   BookOpen,
   CheckCircle,
@@ -34,7 +38,7 @@ import {
   Flame,
   Settings,
   Edit,
-  Palette,
+  Mail,
 } from "lucide-react";
 import { formatReadingTime } from "@/hooks/useReadingProgress";
 import { formatDistanceToNow } from "date-fns";
@@ -48,6 +52,8 @@ const ProfilePage = () => {
   const { streak } = useStreaks();
   const { wishlist } = useWishlist();
   const { books } = useBooks();
+  const { isFollowing } = useFollows();
+  const [isMessagingOpen, setIsMessagingOpen] = useState(false);
 
   // If no userId provided, show current user's profile
   const targetUserId = userId || currentUser?.id;
@@ -167,12 +173,43 @@ const ProfilePage = () => {
                           </Button>
                         </>
                       ) : (
-                        <FollowButton targetUserId={profile.id} size="default" />
+                        <>
+                          <FollowButton targetUserId={profile.id} size="default" />
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <span>
+                                  <Button
+                                    variant="outline"
+                                    size="default"
+                                    onClick={() => setIsMessagingOpen(true)}
+                                    disabled={!isFollowing(profile.id)}
+                                  >
+                                    <Mail className="h-4 w-4 mr-1" />
+                                    Message
+                                  </Button>
+                                </span>
+                              </TooltipTrigger>
+                              {!isFollowing(profile.id) && (
+                                <TooltipContent>
+                                  <p>Follow this user to send a message</p>
+                                </TooltipContent>
+                              )}
+                            </Tooltip>
+                          </TooltipProvider>
+                        </>
                       )}
                     </div>
                   </div>
                 </div>
               </CardContent>
+              
+              {/* Private Messaging Dialog */}
+              <PrivateMessaging 
+                isOpen={isMessagingOpen} 
+                onClose={() => setIsMessagingOpen(false)} 
+                initialUserId={profile.id}
+              />
             </Card>
 
             {/* Stats Cards */}

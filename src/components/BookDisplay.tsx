@@ -18,6 +18,7 @@ import bookCoverDefault from "@/assets/book-cover-default.jpg";
 import { Book3D } from "./Book3D";
 import { ReviewList } from "./ReviewList";
 import { ReviewForm } from "./ReviewForm";
+import { BookExternalLinks } from "./BookExternalLinks";
 
 interface BookVersion {
   type: "ebook" | "paperback" | "hardcover";
@@ -300,6 +301,9 @@ export const BookDisplay = ({ book, onAddToCart }: BookDisplayProps) => {
             </div>
           </div>
         </Card>
+
+        {/* External Purchase Links */}
+        <BookExternalLinks bookId={book.id} />
       </div>
     </div>
 

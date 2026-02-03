@@ -1,8 +1,10 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BarChart, DollarSign, TrendingUp, BookOpen, Users } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { EngagementAnalytics } from "./EngagementAnalytics";
 
 interface Analytics {
   totalRevenue: number;
@@ -130,6 +132,13 @@ export const AnalyticsManager = () => {
   }
 
   return (
+    <Tabs defaultValue="sales" className="space-y-6">
+      <TabsList>
+        <TabsTrigger value="sales">Sales Analytics</TabsTrigger>
+        <TabsTrigger value="engagement">User Engagement</TabsTrigger>
+      </TabsList>
+
+      <TabsContent value="sales">
     <div className="space-y-6">
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
@@ -260,5 +269,11 @@ export const AnalyticsManager = () => {
         </CardContent>
       </Card>
     </div>
+      </TabsContent>
+
+      <TabsContent value="engagement">
+        <EngagementAnalytics />
+      </TabsContent>
+    </Tabs>
   );
 };

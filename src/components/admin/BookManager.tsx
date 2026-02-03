@@ -6,8 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Edit, Trash2, Save, X, Upload } from "lucide-react";
+import { Plus, Edit, Trash2, Save, X, Upload, ExternalLink } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { BookExternalLinksManager } from "./BookExternalLinksManager";
 
 interface Book {
   id: string;
@@ -585,6 +586,14 @@ export const BookManager = () => {
                 ))}
               </div>
             </div>
+
+            {/* External Links Manager - Only show when editing an existing book */}
+            {editingId && (
+              <BookExternalLinksManager 
+                bookId={editingId} 
+                bookTitle={formData.title} 
+              />
+            )}
 
             <div className="flex justify-end space-x-3">
               <Button variant="outline" onClick={resetForm}>Cancel</Button>
