@@ -106,3 +106,80 @@ export const StaggeredSkeletonList = ({
     </motion.div>
   );
 };
+
+// Book card skeleton for consistent loading state
+export const BookCardSkeleton = () => (
+  <motion.div
+    className="rounded-2xl border bg-card overflow-hidden"
+    variants={{
+      hidden: { opacity: 0, y: 20 },
+      visible: { opacity: 1, y: 0 },
+    }}
+  >
+    <div className="p-4">
+      <Skeleton className="w-full aspect-[2/3] mb-4 rounded-lg" />
+      <Skeleton className="h-5 w-16 mb-3 rounded-full" />
+      <Skeleton className="h-6 w-full mb-2" />
+      <Skeleton className="h-4 w-24 mb-3" />
+      <div className="flex gap-1 mb-3">
+        {Array.from({ length: 5 }).map((_, j) => (
+          <Skeleton key={j} className="h-3 w-3 rounded-full" />
+        ))}
+      </div>
+      <div className="flex justify-between pt-2">
+        <Skeleton className="h-6 w-16" />
+        <Skeleton className="h-4 w-14" />
+      </div>
+    </div>
+  </motion.div>
+);
+
+// Book list item skeleton for list view
+export const BookListItemSkeleton = () => (
+  <motion.div
+    className="flex gap-4 p-4 rounded-2xl border bg-card"
+    variants={{
+      hidden: { opacity: 0, x: -20 },
+      visible: { opacity: 1, x: 0 },
+    }}
+  >
+    <Skeleton className="w-20 h-28 rounded-lg flex-shrink-0" />
+    <div className="flex-1 space-y-2">
+      <Skeleton className="h-5 w-16 rounded-full" />
+      <Skeleton className="h-6 w-3/4" />
+      <Skeleton className="h-4 w-32" />
+      <div className="flex gap-1">
+        {Array.from({ length: 5 }).map((_, j) => (
+          <Skeleton key={j} className="h-3 w-3 rounded-full" />
+        ))}
+      </div>
+    </div>
+    <div className="flex flex-col items-end gap-2">
+      <Skeleton className="h-6 w-16" />
+      <Skeleton className="h-8 w-24 rounded-lg" />
+    </div>
+  </motion.div>
+);
+
+// Skeleton container with stagger animation
+interface SkeletonContainerProps {
+  children: React.ReactNode;
+  className?: string;
+}
+
+export const SkeletonContainer = ({ children, className }: SkeletonContainerProps) => (
+  <motion.div
+    className={className}
+    initial="hidden"
+    animate="visible"
+    variants={{
+      hidden: { opacity: 0 },
+      visible: {
+        opacity: 1,
+        transition: { staggerChildren: 0.08 },
+      },
+    }}
+  >
+    {children}
+  </motion.div>
+);

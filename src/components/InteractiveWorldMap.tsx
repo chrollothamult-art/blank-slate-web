@@ -60,7 +60,7 @@ export const InteractiveWorldMap = () => {
     setLoading(true);
 
     const { data: locationsData, error: locationsError } = await supabase
-      .from("world_locations")
+      .from("world_locations" as any)
       .select("*")
       .order("name");
 
@@ -69,7 +69,7 @@ export const InteractiveWorldMap = () => {
     }
 
     const { data: charactersData, error: charactersError } = await supabase
-      .from("almanac_characters")
+      .from("almanac_characters" as any)
       .select("id, name, image_url, origin_location_id, affiliation");
 
     if (charactersError) {
@@ -77,11 +77,11 @@ export const InteractiveWorldMap = () => {
     }
 
     if (locationsData) {
-      setLocations(locationsData as Location[]);
+      setLocations(locationsData as unknown as Location[]);
     }
 
     if (charactersData) {
-      setCharacters(charactersData as Character[]);
+      setCharacters(charactersData as unknown as Character[]);
     }
 
     setLoading(false);

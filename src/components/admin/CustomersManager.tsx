@@ -59,36 +59,52 @@ export const CustomersManager = () => {
     }
   };
 
-  const fetchCustomerPurchases = async (userId: string) => {
+  const handleViewDetails = async (customer: Customer) => {
+    setSelectedCustomer(customer);
+    // Fetch purchases for this customer using the customer id via orders
     try {
-      const { data, error } = await supabase
-        .from("purchases")
-        .select("*")
-        .eq("user_id", userId)
-        .order("purchased_at", { ascending: false });
-
+      const { data: orders, error } = await supabase
+        .from("orders")
+        .select("id, created_at")
+        .eq("customer_id", customer.id);
+      
       if (error) throw error;
-      setPurchases(data || []);
+      
+      if (orders && orders.length > 0) {
+        const orderIds = orders.map(o => o.id);
+        const orderDateMap = new Map(orders.map((o: any) => [o.id, o.created_at]));
+        
+        const { data: items } = await supabase
+          .from("order_items")
+          .select(`
+            id,
+            quantity,
+            price,
+            version_type,
+            order_id,
+            books(title, author)
+          `)
+          .in("order_id", orderIds);
+        
+        const purchases: Purchase[] = (items || []).map((item: any) => ({
+          id: item.id,
+          book_title: item.books?.title || "Unknown",
+          book_author: item.books?.author || "Unknown",
+          book_version: item.version_type,
+          price: item.price,
+          purchased_at: orderDateMap.get(item.order_id) || new Date().toISOString(),
+        }));
+        
+        setPurchases(purchases);
+      } else {
+        setPurchases([]);
+      }
     } catch (error: any) {
       toast({
         title: "Error",
         description: error.message,
         variant: "destructive",
       });
-    }
-  };
-
-  const handleViewDetails = async (customer: Customer) => {
-    setSelectedCustomer(customer);
-    // Need to get user_id from customer to fetch purchases
-    const { data: customerData } = await supabase
-      .from("customers")
-      .select("user_id")
-      .eq("id", customer.id)
-      .single();
-
-    if (customerData?.user_id) {
-      await fetchCustomerPurchases(customerData.user_id);
     }
     setShowDetails(true);
   };

@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -10,15 +11,20 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Star, ShoppingCart, BookOpen } from "lucide-react";
+import { Star, ShoppingCart, BookOpen, Grid3X3, List } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { Skeleton } from "@/components/ui/skeleton";
 import { WishlistButton } from "@/components/WishlistButton";
 import { BookSearchBar } from "@/components/BookSearchBar";
 import { BookFilters, ActiveFilters, FilterState } from "@/components/BookFilters";
 import { Footer } from "@/components/Footer";
 import { useCart } from "@/contexts/CartContext";
 import { useToast } from "@/hooks/use-toast";
+import { OptimizedImage } from "@/components/OptimizedImage";
+import { 
+  BookCardSkeleton, 
+  BookListItemSkeleton, 
+  SkeletonContainer 
+} from "@/components/StaggeredSkeleton";
 import bookCollection from "@/assets/book-collection.jpg";
 import {
   Pagination,
@@ -29,6 +35,8 @@ import {
   PaginationPrevious,
   PaginationEllipsis,
 } from "@/components/ui/pagination";
+
+type ViewMode = "grid" | "list";
 
 type SortOption = "newest" | "price-asc" | "price-desc" | "rating" | "title";
 
@@ -61,6 +69,7 @@ export const Books = () => {
   const [filters, setFilters] = useState<FilterState>(defaultFilters);
   const [searchQuery, setSearchQuery] = useState(searchParams.get("search") || "");
   const [currentPage, setCurrentPage] = useState(1);
+  const [viewMode, setViewMode] = useState<ViewMode>("grid");
 
   // Fetch books from database
   useEffect(() => {
@@ -369,18 +378,40 @@ export const Books = () => {
                 </span>
               </div>
 
-              <Select value={sortBy} onValueChange={(v) => setSortBy(v as SortOption)}>
-                <SelectTrigger className="w-48">
-                  <SelectValue placeholder="Sort by" />
-                </SelectTrigger>
-                <SelectContent>
-                  {sortOptions.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <div className="flex items-center gap-3">
+                {/* View Mode Toggle */}
+                <div className="flex items-center border rounded-lg p-1">
+                  <Button
+                    variant={viewMode === "grid" ? "secondary" : "ghost"}
+                    size="icon"
+                    className="h-8 w-8"
+                    onClick={() => setViewMode("grid")}
+                  >
+                    <Grid3X3 className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant={viewMode === "list" ? "secondary" : "ghost"}
+                    size="icon"
+                    className="h-8 w-8"
+                    onClick={() => setViewMode("list")}
+                  >
+                    <List className="h-4 w-4" />
+                  </Button>
+                </div>
+
+                <Select value={sortBy} onValueChange={(v) => setSortBy(v as SortOption)}>
+                  <SelectTrigger className="w-48">
+                    <SelectValue placeholder="Sort by" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {sortOptions.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
 
             {/* Active Filters */}
@@ -394,27 +425,18 @@ export const Books = () => {
 
             {/* Loading State */}
             {loading && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              <SkeletonContainer 
+                className={viewMode === "grid" 
+                  ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
+                  : "space-y-4"
+                }
+              >
                 {Array.from({ length: 8 }).map((_, i) => (
-                  <Card key={i} className="overflow-hidden">
-                    <div className="p-4">
-                      <Skeleton className="w-full aspect-[2/3] mb-4" />
-                      <Skeleton className="h-5 w-16 mb-3" />
-                      <Skeleton className="h-6 w-full mb-2" />
-                      <Skeleton className="h-4 w-24 mb-3" />
-                      <div className="flex gap-1 mb-3">
-                        {Array.from({ length: 5 }).map((_, j) => (
-                          <Skeleton key={j} className="h-3 w-3" />
-                        ))}
-                      </div>
-                      <div className="flex justify-between pt-2">
-                        <Skeleton className="h-6 w-16" />
-                        <Skeleton className="h-4 w-14" />
-                      </div>
-                    </div>
-                  </Card>
+                  viewMode === "grid" 
+                    ? <BookCardSkeleton key={i} />
+                    : <BookListItemSkeleton key={i} />
                 ))}
-              </div>
+              </SkeletonContainer>
             )}
 
             {/* Empty State */}
@@ -433,96 +455,183 @@ export const Books = () => {
               </div>
             )}
 
-            {/* Books Grid */}
+            {/* Books Display */}
             {!loading && filteredBooks.length > 0 && (
               <>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {paginatedBooks.map((book) => (
-                  <Card
-                    key={book.id}
-                    className="cursor-pointer transition-all duration-300 hover:shadow-lg hover:-translate-y-2 bg-card overflow-hidden"
-                    onClick={() => handleBookClick(book)}
+                {viewMode === "grid" ? (
+                  <motion.div 
+                    className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
+                    initial="hidden"
+                    animate="visible"
+                    variants={{
+                      hidden: { opacity: 0 },
+                      visible: { opacity: 1, transition: { staggerChildren: 0.05 } },
+                    }}
                   >
-                    <div className="p-4">
-                      {/* Book Cover */}
-                      <div className="relative mb-4 group">
-                        <div className="w-full aspect-[2/3] bg-muted overflow-hidden book-shadow">
-                          <img
-                            src={book.cover_image_url || bookCollection}
-                            alt={book.title}
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                        {/* Wishlist Button */}
-                        <div className="absolute top-2 right-2 z-10">
-                          <WishlistButton bookId={book.id} />
-                        </div>
-                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300 flex items-center justify-center opacity-0 group-hover:opacity-100">
-                          <Button
-                            size="sm"
-                            variant="secondary"
-                            className="bg-background/90 backdrop-blur"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleQuickAdd(book);
-                            }}
-                          >
-                            <ShoppingCart className="h-4 w-4 mr-2" />
-                            Quick Add
-                          </Button>
-                        </div>
-                      </div>
+                    {paginatedBooks.map((book, index) => (
+                      <motion.div
+                        key={book.id}
+                        variants={{
+                          hidden: { opacity: 0, y: 20 },
+                          visible: { opacity: 1, y: 0 },
+                        }}
+                      >
+                        <Card
+                          className="cursor-pointer transition-all duration-300 hover:shadow-lg hover:-translate-y-2 bg-card overflow-hidden h-full"
+                          onClick={() => handleBookClick(book)}
+                        >
+                          <div className="p-4">
+                            {/* Book Cover */}
+                            <div className="relative mb-4 group">
+                              <OptimizedImage
+                                src={book.cover_image_url || bookCollection}
+                                alt={book.title}
+                                className="w-full h-full object-cover"
+                                containerClassName="w-full aspect-[2/3] rounded-lg overflow-hidden book-shadow"
+                                priority={index < 4}
+                              />
+                              {/* Wishlist Button */}
+                              <div className="absolute top-2 right-2 z-10">
+                                <WishlistButton bookId={book.id} />
+                              </div>
+                              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300 flex items-center justify-center opacity-0 group-hover:opacity-100">
+                                <Button
+                                  size="sm"
+                                  variant="secondary"
+                                  className="bg-background/90 backdrop-blur"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleQuickAdd(book);
+                                  }}
+                                >
+                                  <ShoppingCart className="h-4 w-4 mr-2" />
+                                  Quick Add
+                                </Button>
+                              </div>
+                            </div>
 
-                      {/* Book Info */}
-                      <div className="space-y-2">
-                        <Badge variant="secondary" className="text-xs">
-                          {book.category}
-                        </Badge>
-
-                        <h3 className="font-playfair font-semibold text-lg leading-tight line-clamp-2">
-                          {book.title}
-                        </h3>
-
-                        <p className="text-sm text-muted-foreground">
-                          by {book.author}
-                        </p>
-
-                        {/* Rating */}
-                        <div className="flex items-center space-x-2">
-                          <div className="flex space-x-0.5">
-                            {renderStars(book.rating || 4.0)}
+                            {/* Book Info */}
+                            <div className="space-y-2">
+                              <Badge variant="secondary" className="text-xs">
+                                {book.category}
+                              </Badge>
+                              <h3 className="font-playfair font-semibold text-lg leading-tight line-clamp-2">
+                                {book.title}
+                              </h3>
+                              <p className="text-sm text-muted-foreground">
+                                by {book.author}
+                              </p>
+                              <div className="flex items-center space-x-2">
+                                <div className="flex space-x-0.5">
+                                  {renderStars(book.rating || 4.0)}
+                                </div>
+                                <span className="text-sm font-medium">
+                                  {(book.rating || 4.0).toFixed(1)}
+                                </span>
+                              </div>
+                              <div className="flex items-center justify-between pt-2">
+                                {book.book_versions && book.book_versions.length > 0 && (
+                                  <>
+                                    <span className="text-lg font-bold text-accent">
+                                      ${Math.min(...book.book_versions.map((v: any) => parseFloat(v.price))).toFixed(2)}
+                                    </span>
+                                    {book.book_versions.length > 1 && (
+                                      <span className="text-xs text-muted-foreground">
+                                        {book.book_versions.length} formats
+                                      </span>
+                                    )}
+                                  </>
+                                )}
+                              </div>
+                            </div>
                           </div>
-                          <span className="text-sm font-medium">
-                            {(book.rating || 4.0).toFixed(1)}
-                          </span>
-                        </div>
+                        </Card>
+                      </motion.div>
+                    ))}
+                  </motion.div>
+                ) : (
+                  <motion.div 
+                    className="space-y-4"
+                    initial="hidden"
+                    animate="visible"
+                    variants={{
+                      hidden: { opacity: 0 },
+                      visible: { opacity: 1, transition: { staggerChildren: 0.05 } },
+                    }}
+                  >
+                    {paginatedBooks.map((book, index) => (
+                      <motion.div
+                        key={book.id}
+                        variants={{
+                          hidden: { opacity: 0, x: -20 },
+                          visible: { opacity: 1, x: 0 },
+                        }}
+                      >
+                        <Card
+                          className="cursor-pointer transition-all duration-300 hover:shadow-lg bg-card overflow-hidden"
+                          onClick={() => handleBookClick(book)}
+                        >
+                          <div className="flex gap-4 p-4">
+                            {/* Book Cover */}
+                            <div className="relative flex-shrink-0 group">
+                              <OptimizedImage
+                                src={book.cover_image_url || bookCollection}
+                                alt={book.title}
+                                className="w-full h-full object-cover"
+                                containerClassName="w-20 h-28 rounded-lg overflow-hidden"
+                                priority={index < 5}
+                              />
+                            </div>
 
-                        {/* Price */}
-                        <div className="flex items-center justify-between pt-2">
-                          {book.book_versions && book.book_versions.length > 0 && (
-                            <>
-                              <span className="text-lg font-bold text-accent">
-                                $
-                                {Math.min(
-                                  ...book.book_versions.map((v: any) =>
-                                    parseFloat(v.price)
-                                  )
-                                ).toFixed(2)}
-                              </span>
-                              {book.book_versions.length > 1 && (
-                                <span className="text-xs text-muted-foreground">
-                                  {book.book_versions.length} formats
+                            {/* Book Info */}
+                            <div className="flex-1 min-w-0">
+                              <Badge variant="secondary" className="text-xs mb-1">
+                                {book.category}
+                              </Badge>
+                              <h3 className="font-playfair font-semibold text-lg leading-tight line-clamp-1">
+                                {book.title}
+                              </h3>
+                              <p className="text-sm text-muted-foreground mb-2">
+                                by {book.author}
+                              </p>
+                              <div className="flex items-center space-x-2">
+                                <div className="flex space-x-0.5">
+                                  {renderStars(book.rating || 4.0)}
+                                </div>
+                                <span className="text-sm font-medium">
+                                  {(book.rating || 4.0).toFixed(1)}
+                                </span>
+                              </div>
+                            </div>
+
+                            {/* Price & Actions */}
+                            <div className="flex flex-col items-end justify-between">
+                              {book.book_versions && book.book_versions.length > 0 && (
+                                <span className="text-lg font-bold text-accent">
+                                  ${Math.min(...book.book_versions.map((v: any) => parseFloat(v.price))).toFixed(2)}
                                 </span>
                               )}
-                            </>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  </Card>
-                ))}
-              </div>
-              {renderPagination()}
+                              <div className="flex items-center gap-2">
+                                <WishlistButton bookId={book.id} />
+                                <Button
+                                  size="sm"
+                                  variant="secondary"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleQuickAdd(book);
+                                  }}
+                                >
+                                  <ShoppingCart className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                        </Card>
+                      </motion.div>
+                    ))}
+                  </motion.div>
+                )}
+                {renderPagination()}
               </>
             )}
           </div>

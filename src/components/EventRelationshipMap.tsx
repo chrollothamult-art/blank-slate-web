@@ -86,7 +86,7 @@ export const EventRelationshipMap = ({
       setLoading(true);
 
       const { data: outgoing } = await supabase
-        .from("chronology_event_relationships")
+        .from("chronology_event_relationships" as any)
         .select(`
           id,
           source_event_id,
@@ -99,7 +99,7 @@ export const EventRelationshipMap = ({
         .eq("source_event_id", eventId);
 
       const { data: incoming } = await supabase
-        .from("chronology_event_relationships")
+        .from("chronology_event_relationships" as any)
         .select(`
           id,
           source_event_id,
@@ -111,7 +111,10 @@ export const EventRelationshipMap = ({
         `)
         .eq("target_event_id", eventId);
 
-      const allRelationships = [...(outgoing || []), ...(incoming || [])].map((rel) => ({
+      const outgoingArray = (outgoing || []) as unknown as EventRelationship[];
+      const incomingArray = (incoming || []) as unknown as EventRelationship[];
+
+      const allRelationships = [...outgoingArray, ...incomingArray].map((rel) => ({
         ...rel,
         relationship_type: rel.relationship_type as EventRelationship["relationship_type"],
       }));

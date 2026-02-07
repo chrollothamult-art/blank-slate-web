@@ -11,6 +11,7 @@ import { useFollows } from "@/hooks/useFollows";
 import { Footer } from "@/components/Footer";
 import { FollowButton } from "@/components/FollowButton";
 import { AchievementsDisplay } from "@/components/AchievementsDisplay";
+import { BadgesDisplay } from "@/components/BadgesDisplay";
 import { ActivityFeed } from "@/components/ActivityFeed";
 import { UserSubmissionsList } from "@/components/profile/UserSubmissionsList";
 import { FollowersList } from "@/components/profile/FollowersList";
@@ -339,7 +340,8 @@ const ProfilePage = () => {
                 />
               </TabsContent>
 
-              <TabsContent value="achievements">
+              <TabsContent value="achievements" className="space-y-6">
+                <BadgesDisplay userId={profile.id} showLocked={isOwnProfile} />
                 <AchievementsDisplay showLocked={isOwnProfile} />
               </TabsContent>
 

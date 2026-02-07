@@ -7,8 +7,9 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import { BookOpen, CheckCircle, X } from "lucide-react";
+import { CheckCircle, X } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import thouartLogo from "@/assets/thouart-logo.png";
 
 export const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -181,10 +182,10 @@ export const Auth = () => {
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <div className="flex justify-center mb-4">
-            <BookOpen className="h-12 w-12 text-accent" />
+            <img src={thouartLogo} alt="ThouArt Logo" className="h-16 w-16" />
           </div>
           <CardTitle className="text-2xl font-heading">
-            {showResetPassword ? "Reset Password" : showForgotPassword ? "Forgot Password" : "Welcome to BookHaven"}
+            {showResetPassword ? "Reset Password" : showForgotPassword ? "Forgot Password" : "Welcome to ThouArt"}
           </CardTitle>
           <CardDescription>
             {showResetPassword 

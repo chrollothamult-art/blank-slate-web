@@ -16,6 +16,7 @@ import {
   X,
   BookOpen,
   MessageSquare,
+  Sparkles,
 } from "lucide-react";
 import thouartLogo from "@/assets/thouart-logo.png";
 import { ThemeToggle } from "./ThemeToggle";

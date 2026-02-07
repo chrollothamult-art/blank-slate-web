@@ -31,7 +31,7 @@ export const useForumNotifications = () => {
 
     try {
       const { data, error } = await supabase
-        .from("forum_notifications" as any)
+        .from("forum_notifications")
         .select(`
           *,
           triggered_by:profiles!forum_notifications_triggered_by_user_id_fkey(username)
@@ -61,7 +61,7 @@ export const useForumNotifications = () => {
 
     try {
       await supabase
-        .from("forum_notifications" as any)
+        .from("forum_notifications")
         .update({ is_read: true })
         .eq("id", notificationId);
 
@@ -81,7 +81,7 @@ export const useForumNotifications = () => {
 
     try {
       await supabase
-        .from("forum_notifications" as any)
+        .from("forum_notifications")
         .update({ is_read: true })
         .eq("user_id", user.id)
         .eq("is_read", false);
@@ -98,7 +98,7 @@ export const useForumNotifications = () => {
 
     try {
       await supabase
-        .from("forum_notifications" as any)
+        .from("forum_notifications")
         .delete()
         .eq("id", notificationId);
 

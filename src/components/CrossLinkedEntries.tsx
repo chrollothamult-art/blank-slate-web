@@ -93,12 +93,18 @@ export const CrossLinkedEntries = ({ type, entityId }: CrossLinkedEntriesProps) 
           }>;
           const eventIds = linksArray.map((l) => l.event_id);
           const { data: events } = await supabase
-            .from("chronology_events")
+            .from("chronology_events" as any)
             .select("id, title, date, era")
             .in("id", eventIds);
 
           if (events) {
-            const linkedEvents = events.map((event) => {
+            const eventsArray = events as unknown as Array<{
+              id: string;
+              title: string;
+              date: string;
+              era: string;
+            }>;
+            const linkedEvents = eventsArray.map((event) => {
               const link = linksArray.find((l) => l.event_id === event.id);
               return {
                 ...event,

@@ -29,13 +29,13 @@ export const BookExternalLinks = ({ bookId }: BookExternalLinksProps) => {
   useEffect(() => {
     const fetchLinks = async () => {
       const { data, error } = await supabase
-        .from("book_external_links")
+        .from("book_external_links" as any)
         .select("id, format_type, store_name, url")
         .eq("book_id", bookId)
         .order("order_index", { ascending: true });
 
       if (!error && data) {
-        setLinks(data);
+        setLinks(data as unknown as ExternalLinkData[]);
       }
       setLoading(false);
     };

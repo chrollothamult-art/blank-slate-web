@@ -19,6 +19,8 @@ import { useAlmanacEntries } from "@/hooks/useAlmanacEntries";
 import { CategoryMetadataBadges } from "@/components/almanac/CategoryMetadataBadges";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import { useUserPreferences } from "@/hooks/useUserPreferences";
+import { useAlmanacReadLimit } from "@/hooks/useAlmanacReadLimit";
+import { AlmanacLoginPrompt } from "@/components/AlmanacLoginPrompt";
 import {
   Pagination,
   PaginationContent,
@@ -110,6 +112,14 @@ const AlmanacCategory = () => {
   
   // Get user preference for infinite scroll
   const { infiniteScrollEnabled } = useUserPreferences();
+  
+  // Almanac read limit for non-logged-in users
+  const { 
+    canReadEntry, 
+    recordEntryRead, 
+    showLoginPrompt, 
+    closeLoginPrompt 
+  } = useAlmanacReadLimit();
 
   // Get all almanac entries for cross-referencing
   const { entries: allAlmanacEntries } = useAlmanacEntries();
@@ -622,8 +632,11 @@ const AlmanacCategory = () => {
                 <Card
                   className="cursor-pointer transition-all duration-200 hover:shadow-xl hover:-translate-y-1 bg-[hsl(var(--parchment-card))] border-[hsl(var(--parchment-border))]"
                   onClick={() => {
-                    setSelectedEntry(entry);
-                    setSearchParams({ entry: entry.slug });
+                    if (canReadEntry(entry.id)) {
+                      recordEntryRead(entry.id);
+                      setSelectedEntry(entry);
+                      setSearchParams({ entry: entry.slug });
+                    }
                   }}
                 >
                   {entry.image_url && (
@@ -660,6 +673,9 @@ const AlmanacCategory = () => {
         )}
       </div>
       <Footer />
+      
+      {/* Login Prompt Dialog */}
+      <AlmanacLoginPrompt open={showLoginPrompt} onClose={closeLoginPrompt} />
     </div>
   );
 };

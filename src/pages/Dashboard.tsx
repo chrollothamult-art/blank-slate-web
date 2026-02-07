@@ -5,6 +5,7 @@ import { DashboardStats } from "@/components/dashboard/DashboardStats";
 import { RecentBooksProgress } from "@/components/dashboard/RecentBooksProgress";
 import { DashboardAchievements } from "@/components/dashboard/DashboardAchievements";
 import { DashboardStreak } from "@/components/dashboard/DashboardStreak";
+import { BadgesDisplay } from "@/components/BadgesDisplay";
 import { DashboardActivity } from "@/components/dashboard/DashboardActivity";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { motion } from "framer-motion";
@@ -62,6 +63,7 @@ const Dashboard = () => {
             <div className="space-y-6">
               <DashboardStreak />
               <DashboardAchievements />
+              <BadgesDisplay showLocked={true} />
             </div>
           </div>
 

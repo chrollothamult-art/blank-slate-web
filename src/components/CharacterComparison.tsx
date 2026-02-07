@@ -225,8 +225,8 @@ export const CharacterComparison = () => {
     
     // Fetch characters
     const { data: charsData, error: charsError } = await supabase
-      .from("almanac_characters")
-      .select("*")
+      .from("almanac_characters" as any)
+      .select("id, name, slug, description, image_url, role, affiliation, era, species, abilities, relationships")
       .order("name");
 
     if (charsError) {
@@ -237,7 +237,7 @@ export const CharacterComparison = () => {
 
     // Fetch stats for all characters
     const { data: statsData, error: statsError } = await supabase
-      .from("character_stats")
+      .from("character_stats" as any)
       .select("*");
 
     if (statsError) {
@@ -245,8 +245,19 @@ export const CharacterComparison = () => {
     }
 
     // Merge stats with characters
-    const charactersWithStats = (charsData || []).map(char => {
-      const charStats = statsData?.find(s => s.character_id === char.id);
+    const charactersArray = (charsData || []) as unknown as Character[];
+    const statsArray = (statsData || []) as unknown as Array<{
+      character_id: string;
+      strength?: number;
+      intelligence?: number;
+      agility?: number;
+      magic?: number;
+      charisma?: number;
+      endurance?: number;
+    }>;
+
+    const charactersWithStats = charactersArray.map(char => {
+      const charStats = statsArray.find(s => s.character_id === char.id);
       return {
         ...char,
         stats: charStats ? {

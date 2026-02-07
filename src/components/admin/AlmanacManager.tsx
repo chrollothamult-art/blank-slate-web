@@ -185,13 +185,13 @@ export const AlmanacManager = () => {
 
   const fetchBooks = async () => {
     const { data, error } = await supabase
-      .from("books")
+      .from("books" as any)
       .select("id, title, author")
       .eq("status", "active")
       .order("title");
 
     if (!error && data) {
-      setBooks(data);
+      setBooks(data as unknown as Book[]);
     }
   };
 

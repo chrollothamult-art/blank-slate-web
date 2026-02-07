@@ -47,27 +47,28 @@ export const AnalyticsManager = () => {
     try {
       // Total revenue and orders
       const { data: orders } = await supabase
-        .from("orders")
+        .from("orders" as any)
         .select("total, status");
 
-      const completedOrders = orders?.filter((o) => o.status === "completed") || [];
+      const ordersArray = (orders || []) as unknown as Array<{ total: number; status: string }>;
+      const completedOrders = ordersArray.filter((o) => o.status === "completed");
       const totalRevenue = completedOrders.reduce((sum, o) => sum + o.total, 0);
-      const totalOrders = orders?.length || 0;
+      const totalOrders = ordersArray.length;
 
       // Total books
       const { count: booksCount } = await supabase
-        .from("books")
+        .from("books" as any)
         .select("*", { count: "exact", head: true });
 
       // Total customers
       const { count: customersCount } = await supabase
-        .from("customers")
+        .from("customers" as any)
         .select("*", { count: "exact", head: true });
 
-      // Revenue by version
-      const { data: purchases } = await supabase
-        .from("purchases")
-        .select("book_version, price");
+      // Revenue by version - use order_items instead of non-existent purchases table
+      const { data: orderItems } = await supabase
+        .from("order_items" as any)
+        .select("version_type, price");
 
       const revenueByVersion = {
         ebook: 0,
@@ -75,31 +76,41 @@ export const AnalyticsManager = () => {
         hardcover: 0,
       };
 
-      purchases?.forEach((p) => {
-        const version = p.book_version as keyof typeof revenueByVersion;
+      const orderItemsArray = (orderItems || []) as unknown as Array<{ version_type: string; price: number }>;
+      orderItemsArray.forEach((item) => {
+        const version = item.version_type as keyof typeof revenueByVersion;
         if (revenueByVersion[version] !== undefined) {
-          revenueByVersion[version] += p.price;
+          revenueByVersion[version] += item.price;
         }
       });
 
-      // Top selling books
-      const { data: purchasesByBook } = await supabase
-        .from("purchases")
-        .select("book_id, book_title, book_author, price");
+      // Top selling books from order_items with book join
+      const { data: orderItemsWithBooks } = await supabase
+        .from("order_items" as any)
+        .select("book_id, price, quantity, books(title, author)")
+        .limit(100);
 
       const bookSales = new Map<string, { title: string; author: string; sales: number; revenue: number }>();
 
-      purchasesByBook?.forEach((p) => {
-        const existing = bookSales.get(p.book_id);
+      const itemsWithBooks = (orderItemsWithBooks || []) as unknown as Array<{
+        book_id: string;
+        price: number;
+        quantity: number;
+        books: { title: string; author: string } | null;
+      }>;
+
+      itemsWithBooks.forEach((item) => {
+        if (!item.books) return;
+        const existing = bookSales.get(item.book_id);
         if (existing) {
-          existing.sales += 1;
-          existing.revenue += p.price;
+          existing.sales += item.quantity || 1;
+          existing.revenue += item.price * (item.quantity || 1);
         } else {
-          bookSales.set(p.book_id, {
-            title: p.book_title,
-            author: p.book_author,
-            sales: 1,
-            revenue: p.price,
+          bookSales.set(item.book_id, {
+            title: item.books.title,
+            author: item.books.author,
+            sales: item.quantity || 1,
+            revenue: item.price * (item.quantity || 1),
           });
         }
       });

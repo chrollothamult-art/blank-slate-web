@@ -1,0 +1,20 @@
+-- Insert Lore Chronicles and reading-related badge types
+INSERT INTO badge_types (name, description, icon, criteria) VALUES 
+('First Adventure', 'Completed your first campaign session', '⚔️', 'sessions_completed >= 1'),
+('Veteran Adventurer', 'Completed 10 campaign sessions', '🛡️', 'sessions_completed >= 10'),
+('Character Creator', 'Created your first character', '🧙', 'characters_created >= 1'),
+('Diverse Roster', 'Created 5 different characters', '👥', 'characters_created >= 5'),
+('Lore Contributor', 'Had a lore proposal approved', '📜', 'proposals_approved >= 1'),
+('Master Lorekeeper', 'Had 10 lore proposals approved', '🏛️', 'proposals_approved >= 10'),
+('Campaign Author', 'Published your first campaign', '✍️', 'campaigns_published >= 1'),
+('Storyteller', 'Published 5 campaigns', '📖', 'campaigns_published >= 5'),
+('Faction Friend', 'Reached max reputation with any faction', '🤝', 'max_faction_rep >= 100'),
+('Level 5 Hero', 'Reached level 5 with a character', '⭐', 'max_character_level >= 5'),
+('Level 10 Champion', 'Reached level 10 with a character', '🌟', 'max_character_level >= 10'),
+('Level 20 Legend', 'Reached level 20 with a character', '👑', 'max_character_level >= 20'),
+('Ability Collector', 'Unlocked 10 abilities across all characters', '🔮', 'total_abilities >= 10'),
+('Crossover Pioneer', 'Participated in a crossover session', '🌀', 'crossovers_joined >= 1'),
+('Social Butterfly', 'Joined a group session with 3+ players', '🦋', 'group_sessions >= 1'),
+('Night Reader', 'Read a book after midnight', '🦉', 'time_based_night'),
+('Bookworm', 'Finished reading 5 books', '🐛', 'books_completed >= 5'),
+('Streak Master', 'Maintained a 30-day reading streak', '🔥', 'streak_days >= 30');

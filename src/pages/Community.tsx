@@ -145,11 +145,14 @@ export const Community = () => {
     status: 'approved',
   });
 
-  // Fetch forum data when discussions tab is active
+  // Fetch forum stats on mount for hero display, and posts when discussions tab is active
+  useEffect(() => {
+    fetchForumStats(); // Always fetch stats for hero section
+  }, []);
+
   useEffect(() => {
     if (mainTab === 'discussions') {
       fetchPosts();
-      fetchForumStats();
     }
   }, [mainTab]);
 
@@ -440,8 +443,13 @@ export const Community = () => {
   return (
     <div className="min-h-screen bg-background">
       {/* Hero Section */}
-      <div className="relative bg-gradient-to-br from-primary/10 via-background to-accent/10 border-b">
-        <div className="container mx-auto px-4 py-12 md:py-16">
+      <div className="relative overflow-hidden border-b bg-gradient-to-br from-primary/10 via-background to-accent/10">
+        {/* Background decoration - hidden overflow prevents any bleeding */}
+        <div className="absolute inset-0 -z-10 opacity-30">
+          <div className="absolute top-0 left-1/4 w-72 h-72 bg-primary/20 rounded-full blur-3xl" />
+          <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-accent/20 rounded-full blur-3xl" />
+        </div>
+        <div className="container mx-auto px-4 py-12 md:py-16 relative z-10">
           <div className="max-w-3xl mx-auto text-center">
             <Badge variant="secondary" className="mb-4">
               <Sparkles className="w-3 h-3 mr-1" />
