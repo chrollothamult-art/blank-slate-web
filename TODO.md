@@ -1525,6 +1525,88 @@ Draft v1 → Publish → Draft v2 (edit) → Publish v2
   - Happy, worried, angry, injured states
   - Changes based on recent story events and stat thresholds
 
+#### Phase F: Progression & Motivation
+
+- [ ] **Season Pass / Battle Pass** — Tiered reward track per "season" (monthly/quarterly)
+  - Free tier: cosmetic badges, profile borders, title unlocks
+  - Premium tier: exclusive campaign access, rare character portraits, bonus XP
+  - Progress bar visible on Lore Chronicles dashboard
+  - Database: `rp_season_passes`, `rp_season_rewards`, `rp_user_season_progress`
+- [ ] **Character Titles & Epithets** — Earned titles displayed on character profiles
+  - "Dragonslayer", "Lorekeeper", "Shadow Walker" based on campaign completions
+  - Rare titles for unique achievements (first to complete, speed runs, zero-death)
+  - Selectable — players choose which title to display
+- [ ] **Prestige System** — After max level, characters can "prestige" to reset with bonuses
+  - Prestige badge on character sheet, unlocks new race/class combos
+  - Prestige count visible on leaderboard
+- [ ] **Weekly Challenges** — Harder than daily quests, community-wide goals
+  - "Community completes 500 story nodes this week" → everyone gets bonus
+  - Individual: "Finish a campaign without failing a stat check"
+  - Progress bar visible to all players, fosters community cooperation
+
+#### Phase G: Monetization & Premium Features
+
+- [ ] **Premium Campaigns Marketplace** — Creators sell campaigns for real currency
+  - Revenue split: creator 70% / platform 30%
+  - Stripe integration for payouts
+  - Free preview of first 2-3 nodes before purchase
+  - Database: `rp_campaign_purchases`, `rp_creator_payouts`
+- [ ] **Cosmetic Shop** — Character portraits, profile frames, dice skins
+  - Purchasable with premium currency or earned through prestige
+  - Seasonal limited-edition items
+  - Preview before purchase
+- [ ] **Premium AI Dungeon Master** — Enhanced AI narration for subscribers
+  - Free tier: basic AI responses, limited per day
+  - Premium: detailed narration, voice-style options, longer context memory
+  - Ties into existing subscription tiers
+
+#### Phase H: Accessibility & Quality of Life
+
+- [ ] **Campaign Difficulty Indicators** — Clear visual badges on campaign cards
+  - ⭐ Beginner, ⭐⭐ Intermediate, ⭐⭐⭐ Advanced, 💀 Nightmare
+  - Estimated playtime shown (e.g., "~30 min", "~2 hours")
+  - Content warnings for mature themes (toggle in settings)
+- [ ] **Save Slot System** — Multiple save points per campaign
+  - Auto-save at key points + manual save slots (3-5 per campaign)
+  - "Load Save" menu with timestamps and node previews
+  - Prevents losing progress on long campaigns
+- [ ] **Keyboard Shortcuts in Story Player** — Quick navigation
+  - 1/2/3/4 for choice selection, Space for "Continue", Esc for menu
+  - Shortcut overlay (?) for reference
+- [ ] **Text Size & Reading Preferences** — Customizable story player
+  - Font size slider, serif/sans-serif toggle, line spacing
+  - Dark/sepia/light reading modes within story player
+  - Saved per user in preferences
+- [ ] **Offline Mode for Solo Campaigns** — PWA support for cached campaigns
+  - Download campaign data for offline play
+  - Sync progress when back online
+  - Indicator showing "Playing Offline" status
+
+#### Phase I: Advanced Social & Community
+
+- [ ] **Campaign Co-Creation** — Multiple authors collaborate on one campaign
+  - Invite co-authors with role permissions (editor, reviewer, node-author)
+  - Real-time collaborative node editing
+  - Version history and rollback per node
+  - Database: `rp_campaign_collaborators` (campaign_id, user_id, role, invited_at)
+- [ ] **Character Trading Post** — Trade items between characters
+  - In-universe marketplace: post items for sale/trade
+  - Barter system: offer items in exchange
+  - Price history and rarity indicators
+- [ ] **Guild/Party System** — Persistent groups beyond single sessions
+  - Create guilds with names, emblems, and ranks
+  - Guild leaderboard, shared guild achievements
+  - Guild chat and event scheduling
+  - Database: `rp_guilds`, `rp_guild_members`, `rp_guild_achievements`
+- [ ] **Mentorship Program** — Veteran players guide newcomers
+  - "Mentor" badge for experienced players who opt in
+  - Auto-match new players with mentors
+  - Mentors earn XP for mentee milestones
+- [ ] **In-Character Chat / Tavern** — Roleplay chat room in-character
+  - Text-based RP chat tied to character identity (not user identity)
+  - Location-based: "The Silver Tankard Tavern", "The Dark Forest Clearing"
+  - NPCs can be present (AI-driven ambient dialogue)
+
 ---
 
 ## 📋 Development Notes
