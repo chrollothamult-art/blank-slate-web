@@ -19,6 +19,10 @@ interface BackstoryResponse {
   suggestedName: string | null;
 }
 
+interface InspireResponse {
+  hooks: string[];
+}
+
 export const useBackstoryGenerator = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -33,10 +37,8 @@ export const useBackstoryGenerator = () => {
           "https://pwbpbsyagyoytniidoah.functions.supabase.co/ai-generate-backstory",
           {
             method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(params),
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ ...params, mode: "full" }),
           }
         );
 
@@ -48,8 +50,7 @@ export const useBackstoryGenerator = () => {
         const data: BackstoryResponse = await response.json();
         return data.backstory;
       } catch (err) {
-        const errorMessage =
-          err instanceof Error ? err.message : "Unknown error";
+        const errorMessage = err instanceof Error ? err.message : "Unknown error";
         setError(errorMessage);
         console.error("Backstory generation error:", err);
         return null;
@@ -60,8 +61,43 @@ export const useBackstoryGenerator = () => {
     []
   );
 
+  const generateInspiration = useCallback(
+    async (params: BackstoryParams): Promise<string[] | null> => {
+      setIsGenerating(true);
+      setError(null);
+
+      try {
+        const response = await fetch(
+          "https://pwbpbsyagyoytniidoah.functions.supabase.co/ai-generate-backstory",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ ...params, mode: "inspire" }),
+          }
+        );
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || "Failed to generate inspiration");
+        }
+
+        const data: InspireResponse = await response.json();
+        return data.hooks;
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : "Unknown error";
+        setError(errorMessage);
+        console.error("Inspiration generation error:", err);
+        return null;
+      } finally {
+        setIsGenerating(false);
+      }
+    },
+    []
+  );
+
   return {
     generateBackstory,
+    generateInspiration,
     isGenerating,
     error,
     clearError: () => setError(null),

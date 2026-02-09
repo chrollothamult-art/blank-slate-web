@@ -5448,6 +5448,45 @@ export type Database = {
           },
         ]
       }
+      rp_trade_offers: {
+        Row: {
+          created_at: string
+          from_character_id: string
+          id: string
+          message: string | null
+          offered_items: Json
+          requested_items: Json
+          responded_at: string | null
+          session_id: string
+          status: string
+          to_character_id: string
+        }
+        Insert: {
+          created_at?: string
+          from_character_id: string
+          id?: string
+          message?: string | null
+          offered_items?: Json
+          requested_items?: Json
+          responded_at?: string | null
+          session_id: string
+          status?: string
+          to_character_id: string
+        }
+        Update: {
+          created_at?: string
+          from_character_id?: string
+          id?: string
+          message?: string | null
+          offered_items?: Json
+          requested_items?: Json
+          responded_at?: string | null
+          session_id?: string
+          status?: string
+          to_character_id?: string
+        }
+        Relationships: []
+      }
       rp_triggered_events: {
         Row: {
           campaign_id: string

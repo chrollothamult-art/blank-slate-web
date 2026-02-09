@@ -718,7 +718,7 @@ Generate rich, lore-consistent character backstories based on the player's chose
   - High Wisdom → hermit, scholar, elder's apprentice
   - High Agility → thief, scout, acrobat, hunter
 - [x] **Regenerate with Tweaks** — Player can say "make it darker" or "add a lost sibling" and AI refines
-- [ ] **"Inspire Me" Mode** — Generate 3 short backstory hooks (one-liners) for player to choose from before full generation
+- [x] **"Inspire Me" Mode** — Generate 3 short backstory hooks (one-liners) for player to choose from before full generation
 
 ##### UI Integration
 - [x] **"Generate Backstory" Button** — In CharacterCreator Step 3, next to the backstory textarea
@@ -762,8 +762,8 @@ Generate rich, lore-consistent character backstories based on the player's chose
 **Phase AI-5: Polish & Integration**
 - [x] Rate limit handling with user-friendly error messages (429/402)
 - [x] Response caching for repeated narrations
-- [ ] Spoiler guard for lore assistant during active campaigns
-- [ ] Inline lore tooltips during gameplay
+- [x] Spoiler guard for lore assistant during active campaigns
+- [x] Inline lore tooltips during gameplay
 - [ ] Usage analytics and cost monitoring
 - [ ] A/B test AI narration quality across models
 
@@ -947,7 +947,7 @@ Interaction Points (IP) between players accumulate from all interactions and **d
 - [x] **Item Pickups** — Nodes can grant items (relics, weapons, potions)
 - [x] **Inventory Slots** — Limited inventory (expand with levels)
 - [x] **Item Effects** — Consumables, stat boosters, quest items
-- [ ] **Item Trading** — Trade items between characters (future)
+- [x] **Item Trading** — Trade items between characters
 - [x] **Item Requirements** — Nodes can require specific items to proceed
 
 **Database Addition:**

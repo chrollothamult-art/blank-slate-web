@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Sparkles, RefreshCw, Edit3, Check, Loader2, Wand2, X } from "lucide-react";
+import { Sparkles, RefreshCw, Edit3, Check, Loader2, Wand2, X, Lightbulb } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -32,7 +32,7 @@ interface BackstoryGeneratorModalProps {
   existingBackstory?: string;
 }
 
-type ModalPhase = "prompt" | "generating" | "preview" | "editing";
+type ModalPhase = "prompt" | "generating" | "preview" | "editing" | "inspire" | "inspire-loading";
 
 export const BackstoryGeneratorModal = ({
   isOpen,
@@ -43,11 +43,12 @@ export const BackstoryGeneratorModal = ({
   stats,
   existingBackstory,
 }: BackstoryGeneratorModalProps) => {
-  const { generateBackstory, isGenerating, error, clearError } = useBackstoryGenerator();
+  const { generateBackstory, generateInspiration, isGenerating, error, clearError } = useBackstoryGenerator();
   const [phase, setPhase] = useState<ModalPhase>("prompt");
   const [prompt, setPrompt] = useState("");
   const [generatedBackstory, setGeneratedBackstory] = useState("");
   const [editedBackstory, setEditedBackstory] = useState("");
+  const [inspireHooks, setInspireHooks] = useState<string[]>([]);
 
   const inspirationPrompts = [
     "exiled warrior seeking redemption",
@@ -57,16 +58,15 @@ export const BackstoryGeneratorModal = ({
     "former thief who found faith",
   ];
 
+  const baseParams = { raceId, raceName, stats, existingBackstory: existingBackstory || undefined };
+
   const handleGenerate = async (playerPrompt?: string) => {
     clearError();
     setPhase("generating");
 
     const result = await generateBackstory({
-      raceId,
-      raceName,
-      stats,
+      ...baseParams,
       playerPrompt: playerPrompt || prompt.trim() || undefined,
-      existingBackstory: existingBackstory || undefined,
     });
 
     if (result) {
@@ -76,6 +76,25 @@ export const BackstoryGeneratorModal = ({
     } else {
       setPhase("prompt");
     }
+  };
+
+  const handleInspireMe = async () => {
+    clearError();
+    setPhase("inspire-loading");
+
+    const hooks = await generateInspiration(baseParams);
+
+    if (hooks && hooks.length > 0) {
+      setInspireHooks(hooks);
+      setPhase("inspire");
+    } else {
+      setPhase("prompt");
+    }
+  };
+
+  const handlePickHook = async (hook: string) => {
+    setPrompt(hook);
+    await handleGenerate(hook);
   };
 
   const handleRegenerate = async () => {
@@ -97,6 +116,7 @@ export const BackstoryGeneratorModal = ({
     setPrompt("");
     setGeneratedBackstory("");
     setEditedBackstory("");
+    setInspireHooks([]);
     clearError();
     onClose();
   };
@@ -153,15 +173,94 @@ export const BackstoryGeneratorModal = ({
                 </div>
               </div>
 
-              {error && (
-                <p className="text-sm text-destructive">{error}</p>
-              )}
+              {error && <p className="text-sm text-destructive">{error}</p>}
 
-              <div className="flex gap-2 justify-end">
-                <Button variant="ghost" onClick={resetAndClose}>Cancel</Button>
-                <Button onClick={() => handleGenerate()} className="gap-2">
-                  <Sparkles className="h-4 w-4" />
-                  Generate
+              <div className="flex gap-2 justify-between">
+                <Button variant="outline" onClick={handleInspireMe} className="gap-2">
+                  <Lightbulb className="h-4 w-4" />
+                  Inspire Me
+                </Button>
+                <div className="flex gap-2">
+                  <Button variant="ghost" onClick={resetAndClose}>Cancel</Button>
+                  <Button onClick={() => handleGenerate()} className="gap-2">
+                    <Sparkles className="h-4 w-4" />
+                    Generate
+                  </Button>
+                </div>
+              </div>
+            </motion.div>
+          )}
+
+          {/* Phase: Inspire Loading */}
+          {phase === "inspire-loading" && (
+            <motion.div
+              key="inspire-loading"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="py-12 text-center"
+            >
+              <div className="relative mx-auto w-16 h-16 mb-4">
+                <Loader2 className="h-16 w-16 text-primary animate-spin" />
+                <Lightbulb className="h-6 w-6 text-primary absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
+              </div>
+              <p className="text-muted-foreground font-medium">Seeking inspiration from the realm...</p>
+              <p className="text-xs text-muted-foreground mt-2">Generating 3 backstory hooks for you</p>
+              {error && (
+                <div className="mt-4">
+                  <p className="text-sm text-destructive">{error}</p>
+                  <Button variant="ghost" size="sm" className="mt-2" onClick={() => setPhase("prompt")}>
+                    Try Again
+                  </Button>
+                </div>
+              )}
+            </motion.div>
+          )}
+
+          {/* Phase: Inspire Me — Pick a hook */}
+          {phase === "inspire" && (
+            <motion.div
+              key="inspire"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="space-y-4"
+            >
+              <div className="flex items-center gap-2 mb-1">
+                <Lightbulb className="h-4 w-4 text-primary" />
+                <span className="text-sm font-medium">Choose a backstory hook:</span>
+              </div>
+
+              <div className="space-y-3">
+                {inspireHooks.map((hook, idx) => (
+                  <motion.div
+                    key={idx}
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: idx * 0.1 }}
+                  >
+                    <Card
+                      className="cursor-pointer border-border hover:border-primary/50 hover:bg-primary/5 transition-all"
+                      onClick={() => handlePickHook(hook)}
+                    >
+                      <CardContent className="p-3 flex items-start gap-3">
+                        <span className="text-lg mt-0.5">
+                          {idx === 0 ? "⚔️" : idx === 1 ? "🌙" : "🔮"}
+                        </span>
+                        <p className="text-sm leading-relaxed">{hook}</p>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                ))}
+              </div>
+
+              <div className="flex gap-2 justify-between">
+                <Button variant="ghost" size="sm" onClick={() => setPhase("prompt")}>
+                  ← Back
+                </Button>
+                <Button variant="outline" size="sm" onClick={handleInspireMe} disabled={isGenerating} className="gap-1">
+                  <RefreshCw className={`h-3 w-3 ${isGenerating ? "animate-spin" : ""}`} />
+                  New hooks
                 </Button>
               </div>
             </motion.div>
@@ -208,39 +307,22 @@ export const BackstoryGeneratorModal = ({
                     <Sparkles className="h-4 w-4 text-primary" />
                     <span className="text-sm font-medium text-primary">Generated Backstory</span>
                   </div>
-                  <p className="text-sm leading-relaxed whitespace-pre-wrap">
-                    {generatedBackstory}
-                  </p>
+                  <p className="text-sm leading-relaxed whitespace-pre-wrap">{generatedBackstory}</p>
                 </CardContent>
               </Card>
 
               <div className="flex flex-wrap gap-2 justify-end">
                 <Button variant="ghost" size="sm" onClick={resetAndClose}>
-                  <X className="h-4 w-4 mr-1" />
-                  Cancel
+                  <X className="h-4 w-4 mr-1" /> Cancel
                 </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleRegenerate}
-                  disabled={isGenerating}
-                  className="gap-1"
-                >
-                  <RefreshCw className={`h-4 w-4 ${isGenerating ? "animate-spin" : ""}`} />
-                  Regenerate
+                <Button variant="outline" size="sm" onClick={handleRegenerate} disabled={isGenerating} className="gap-1">
+                  <RefreshCw className={`h-4 w-4 ${isGenerating ? "animate-spin" : ""}`} /> Regenerate
                 </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleEdit}
-                  className="gap-1"
-                >
-                  <Edit3 className="h-4 w-4" />
-                  Edit
+                <Button variant="outline" size="sm" onClick={handleEdit} className="gap-1">
+                  <Edit3 className="h-4 w-4" /> Edit
                 </Button>
                 <Button size="sm" onClick={handleAccept} className="gap-1">
-                  <Check className="h-4 w-4" />
-                  Use This
+                  <Check className="h-4 w-4" /> Use This
                 </Button>
               </div>
             </motion.div>
@@ -264,9 +346,7 @@ export const BackstoryGeneratorModal = ({
                   maxLength={2000}
                   className="font-serif"
                 />
-                <p className="text-xs text-muted-foreground text-right">
-                  {editedBackstory.length}/2000
-                </p>
+                <p className="text-xs text-muted-foreground text-right">{editedBackstory.length}/2000</p>
               </div>
 
               <div className="flex gap-2 justify-end">
@@ -274,8 +354,7 @@ export const BackstoryGeneratorModal = ({
                   Back to Preview
                 </Button>
                 <Button size="sm" onClick={handleAccept} className="gap-1" disabled={!editedBackstory.trim()}>
-                  <Check className="h-4 w-4" />
-                  Use Edited Version
+                  <Check className="h-4 w-4" /> Use Edited Version
                 </Button>
               </div>
             </motion.div>

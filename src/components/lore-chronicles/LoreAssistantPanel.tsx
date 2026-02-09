@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, X, MessageCircle } from "lucide-react";
+import { Send, X, MessageCircle, ShieldAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
@@ -10,14 +10,18 @@ import { useLoreAssistant } from "@/hooks/useLoreAssistant";
 interface LoreAssistantPanelProps {
   isOpen: boolean;
   onClose: () => void;
+  activeSessionId?: string | null;
+  activeCampaignId?: string | null;
 }
 
 export const LoreAssistantPanel = ({
   isOpen,
   onClose,
+  activeSessionId,
+  activeCampaignId,
 }: LoreAssistantPanelProps) => {
   const { messages, isLoading, error, lastSources, sendMessage, clearMessages } =
-    useLoreAssistant();
+    useLoreAssistant({ activeSessionId, activeCampaignId });
   const [input, setInput] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -42,6 +46,8 @@ export const LoreAssistantPanel = ({
     }
   };
 
+  const isSpoilerGuarded = !!(activeSessionId && activeCampaignId);
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -58,16 +64,27 @@ export const LoreAssistantPanel = ({
               <div className="flex items-center gap-2">
                 <MessageCircle className="h-5 w-5 text-primary" />
                 <h2 className="font-semibold">Keeper of Lore</h2>
+                {isSpoilerGuarded && (
+                  <Badge variant="outline" className="text-xs gap-1">
+                    <ShieldAlert className="h-3 w-3" />
+                    Spoiler Guard
+                  </Badge>
+                )}
               </div>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={onClose}
-                className="h-8 w-8"
-              >
+              <Button variant="ghost" size="icon" onClick={onClose} className="h-8 w-8">
                 <X className="h-4 w-4" />
               </Button>
             </div>
+
+            {/* Spoiler guard notice */}
+            {isSpoilerGuarded && (
+              <div className="px-4 py-2 bg-muted/50 border-b border-border">
+                <p className="text-xs text-muted-foreground flex items-center gap-1">
+                  <ShieldAlert className="h-3 w-3 shrink-0" />
+                  Spoiler protection active — the Keeper won't reveal unvisited story content.
+                </p>
+              </div>
+            )}
 
             {/* Messages */}
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
@@ -78,9 +95,7 @@ export const LoreAssistantPanel = ({
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
-                    className={`flex ${
-                      msg.role === "user" ? "justify-end" : "justify-start"
-                    }`}
+                    className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
                   >
                     <div
                       className={`max-w-xs px-4 py-2 rounded-lg ${
@@ -89,49 +104,34 @@ export const LoreAssistantPanel = ({
                           : "bg-muted text-muted-foreground"
                       }`}
                     >
-                      <p className="text-sm leading-relaxed whitespace-pre-wrap">
-                        {msg.content}
-                      </p>
+                      <p className="text-sm leading-relaxed whitespace-pre-wrap">{msg.content}</p>
                     </div>
                   </motion.div>
                 ))}
               </AnimatePresence>
 
-              {/* Sources Display */}
-              {lastSources && (
-                Object.values(lastSources).some((arr) => arr.length > 0) && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="mt-4 pt-4 border-t border-border"
-                  >
-                    <p className="text-xs text-muted-foreground mb-2 font-semibold">
-                      Sources Referenced:
-                    </p>
-                    <div className="flex flex-wrap gap-2">
-                      {lastSources.characters.map((c) => (
-                        <Badge key={c} variant="secondary" className="text-xs">
-                          {c}
-                        </Badge>
-                      ))}
-                      {lastSources.locations.map((l) => (
-                        <Badge key={l} variant="secondary" className="text-xs">
-                          {l}
-                        </Badge>
-                      ))}
-                      {lastSources.races.map((r) => (
-                        <Badge key={r} variant="secondary" className="text-xs">
-                          {r}
-                        </Badge>
-                      ))}
-                      {lastSources.relics.map((r) => (
-                        <Badge key={r} variant="secondary" className="text-xs">
-                          {r}
-                        </Badge>
-                      ))}
-                    </div>
-                  </motion.div>
-                )
+              {lastSources && Object.values(lastSources).some((arr) => arr.length > 0) && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="mt-4 pt-4 border-t border-border"
+                >
+                  <p className="text-xs text-muted-foreground mb-2 font-semibold">Sources Referenced:</p>
+                  <div className="flex flex-wrap gap-2">
+                    {lastSources.characters.map((c) => (
+                      <Badge key={c} variant="secondary" className="text-xs">{c}</Badge>
+                    ))}
+                    {lastSources.locations.map((l) => (
+                      <Badge key={l} variant="secondary" className="text-xs">{l}</Badge>
+                    ))}
+                    {lastSources.races.map((r) => (
+                      <Badge key={r} variant="secondary" className="text-xs">{r}</Badge>
+                    ))}
+                    {lastSources.relics.map((r) => (
+                      <Badge key={r} variant="secondary" className="text-xs">{r}</Badge>
+                    ))}
+                  </div>
+                </motion.div>
               )}
 
               {error && (
@@ -170,21 +170,11 @@ export const LoreAssistantPanel = ({
                   disabled={isLoading}
                   className="text-sm"
                 />
-                <Button
-                  onClick={handleSend}
-                  disabled={isLoading || !input.trim()}
-                  size="icon"
-                  className="h-10 w-10"
-                >
+                <Button onClick={handleSend} disabled={isLoading || !input.trim()} size="icon" className="h-10 w-10">
                   <Send className="h-4 w-4" />
                 </Button>
               </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={clearMessages}
-                className="w-full text-xs"
-              >
+              <Button variant="ghost" size="sm" onClick={clearMessages} className="w-full text-xs">
                 Clear History
               </Button>
             </div>

@@ -16,7 +16,12 @@ interface LoreResponse {
   };
 }
 
-export const useLoreAssistant = () => {
+interface LoreAssistantOptions {
+  activeSessionId?: string | null;
+  activeCampaignId?: string | null;
+}
+
+export const useLoreAssistant = (options?: LoreAssistantOptions) => {
   const { user } = useAuth();
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -27,9 +32,7 @@ export const useLoreAssistant = () => {
   ]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [lastSources, setLastSources] = useState<LoreResponse["sources"] | null>(
-    null
-  );
+  const [lastSources, setLastSources] = useState<LoreResponse["sources"] | null>(null);
 
   const sendMessage = useCallback(
     async (text: string) => {
@@ -50,11 +53,10 @@ export const useLoreAssistant = () => {
               Authorization: user ? `Bearer ${await user.id}` : "",
             },
             body: JSON.stringify({
-              messages: [
-                ...messages,
-                userMessage,
-              ],
+              messages: [...messages, userMessage],
               userId: user?.id,
+              activeSessionId: options?.activeSessionId || undefined,
+              activeCampaignId: options?.activeCampaignId || undefined,
             }),
           }
         );
@@ -65,7 +67,7 @@ export const useLoreAssistant = () => {
         }
 
         const data: LoreResponse = await response.json();
-        
+
         const assistantMessage: Message = {
           role: "assistant",
           content: data.message,
@@ -77,14 +79,12 @@ export const useLoreAssistant = () => {
         const errorMessage = err instanceof Error ? err.message : "Unknown error";
         setError(errorMessage);
         console.error("Lore assistant error:", err);
-        
-        // Remove the user message on error
         setMessages((prev) => prev.slice(0, -1));
       } finally {
         setIsLoading(false);
       }
     },
-    [messages, user]
+    [messages, user, options?.activeSessionId, options?.activeCampaignId]
   );
 
   return {

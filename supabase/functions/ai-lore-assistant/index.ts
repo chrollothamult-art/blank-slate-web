@@ -15,6 +15,8 @@ interface Message {
 interface RequestBody {
   messages: Message[];
   userId: string;
+  activeSessionId?: string;
+  activeCampaignId?: string;
 }
 
 serve(async (req: Request) => {
@@ -23,7 +25,7 @@ serve(async (req: Request) => {
   }
 
   try {
-    const { messages, userId } = (await req.json()) as RequestBody;
+    const { messages, userId, activeSessionId, activeCampaignId } = (await req.json()) as RequestBody;
 
     if (!messages || messages.length === 0) {
       return new Response(
@@ -32,12 +34,10 @@ serve(async (req: Request) => {
       );
     }
 
-    // Initialize Supabase client
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Get current user's message
     const userMessage = messages[messages.length - 1];
 
     // Search almanac for relevant entries
@@ -71,20 +71,57 @@ serve(async (req: Request) => {
         (c) => `Character: ${c.name} (${c.species})\nRole: ${c.role}\nAffiliation: ${c.affiliation}\nDescription: ${c.description}`
       ),
       ...(locations || []).map(
-        (l) =>
-          `Location: ${l.name} (${l.location_type})\nKingdom: ${l.kingdom}\nDescription: ${l.description}`
+        (l) => `Location: ${l.name} (${l.location_type})\nKingdom: ${l.kingdom}\nDescription: ${l.description}`
       ),
       ...(races || []).map(
-        (r) =>
-          `Race: ${r.name}\nHomeland: ${r.homeland}\nPopulation: ${r.population}\nDescription: ${r.description}`
+        (r) => `Race: ${r.name}\nHomeland: ${r.homeland}\nPopulation: ${r.population}\nDescription: ${r.description}`
       ),
       ...(relics || []).map(
-        (r) =>
-          `Relic: ${r.name}\nPower Level: ${r.power_level}\nType: ${r.type}\nDescription: ${r.description}`
+        (r) => `Relic: ${r.name}\nPower Level: ${r.power_level}\nType: ${r.type}\nDescription: ${r.description}`
       ),
     ].join("\n\n");
 
-    // Build system prompt with lore context
+    // Build spoiler guard instructions if player is in an active session
+    let spoilerGuard = "";
+    if (activeSessionId && activeCampaignId) {
+      // Fetch how far the player has progressed
+      const { data: progress } = await supabase
+        .from("rp_character_progress")
+        .select("nodes_visited, current_node_id")
+        .eq("session_id", activeSessionId)
+        .limit(1)
+        .single();
+
+      // Fetch campaign node titles for visited nodes to know what they've seen
+      const visitedNodes: string[] = (progress?.nodes_visited as string[]) || [];
+
+      // Fetch future nodes the player hasn't visited
+      const { data: campaignNodes } = await supabase
+        .from("rp_story_nodes")
+        .select("id, title")
+        .eq("campaign_id", activeCampaignId);
+
+      const unseenNodeTitles = (campaignNodes || [])
+        .filter((n) => !visitedNodes.includes(n.id))
+        .map((n) => n.title)
+        .filter(Boolean);
+
+      if (unseenNodeTitles.length > 0) {
+        spoilerGuard = `
+
+CRITICAL SPOILER GUARD: The player is currently in an active campaign session. They have NOT yet visited the following story nodes: ${unseenNodeTitles.slice(0, 10).join(", ")}${unseenNodeTitles.length > 10 ? "..." : ""}.
+
+DO NOT reveal:
+- What happens in story nodes they haven't visited yet
+- Plot twists, character deaths, or betrayals that occur later in the campaign
+- Specific choices or consequences from future nodes
+- Hidden endings or secret paths they haven't discovered
+
+If they ask about something that would be a spoiler, say: "I sense you are walking a path that has not yet revealed itself. Continue your journey, and you shall learn in time." Then redirect to lore that IS safe to discuss (general world knowledge, history, races, etc.).`;
+      }
+    }
+
+    // Build system prompt with lore context + spoiler guard
     const systemPrompt = `You are the Keeper of Lore for the ThouArt universe. You answer questions about the world, its inhabitants, locations, magic, and history using ONLY the provided lore entries. 
 
 If the answer isn't in the provided lore, say so and suggest related topics you DO know about.
@@ -92,9 +129,8 @@ If the answer isn't in the provided lore, say so and suggest related topics you 
 Always be helpful, maintain the mystical tone of the world, and cite which lore entries you're drawing from.
 
 Available lore context:
-${context || "No specific lore matches found. Speaking from general knowledge of the ThouArt universe."}`;
+${context || "No specific lore matches found. Speaking from general knowledge of the ThouArt universe."}${spoilerGuard}`;
 
-    // Call Lovable AI Gateway
     const apiKey = Deno.env.get("LOVABLE_API_KEY");
     if (!apiKey) {
       throw new Error("LOVABLE_API_KEY not configured");
@@ -125,17 +161,13 @@ ${context || "No specific lore matches found. Speaking from general knowledge of
       const error = await response.text();
       console.error("AI Gateway error:", error);
       return new Response(
-        JSON.stringify({
-          error: "Failed to generate response from AI",
-          details: error,
-        }),
+        JSON.stringify({ error: "Failed to generate response from AI", details: error }),
         { status: response.status, headers: corsHeaders }
       );
     }
 
     const aiResponse = await response.json();
-    const assistantMessage =
-      aiResponse.choices[0]?.message?.content || "I'm unable to answer that.";
+    const assistantMessage = aiResponse.choices[0]?.message?.content || "I'm unable to answer that.";
 
     // Save conversation history
     if (userId) {
@@ -155,7 +187,7 @@ ${context || "No specific lore matches found. Speaking from general knowledge of
         await supabase
           .from("rp_lore_conversations")
           .update({
-            messages: updatedMessages.slice(-20), // Keep last 20 messages
+            messages: updatedMessages.slice(-20),
             last_active_at: new Date().toISOString(),
           })
           .eq("user_id", userId);
