@@ -1442,6 +1442,91 @@ Draft v1 → Publish → Draft v2 (edit) → Publish v2
 
 ---
 
+### 🎮 Lore Chronicles — UX & User Engagement Improvements
+
+#### Phase A: Navigation & Onboarding (Quick Wins)
+
+- [ ] **Grouped Tab Navigation** — Consolidate 9 flat tabs into 3 grouped sections:
+  - **Play** → Campaigns, Characters, Sessions
+  - **Community** → Showcase, Leaderboard, Factions, Graveyard
+  - **Govern** → Lore, Loremaster
+  - Use a segmented control for groups, sub-tabs within each
+- [ ] **Quick-Resume Banner** — Sticky banner at top of Lore Chronicles showing active sessions
+  - Character portrait, campaign name, last-played timestamp
+  - "Continue Adventure →" CTA button
+  - Auto-hides if no active sessions
+- [ ] **First-Time Onboarding Tour** — Guided tooltip walkthrough for new players
+  - Highlights: Create Character → Browse Campaigns → Join Session → Expand Lore
+  - Dismissible, remembers completion via `user_preferences`
+
+#### Phase B: Retention & Engagement Loops
+
+- [ ] **Daily Quest Board** — Rotating daily challenges with XP rewards
+  - Examples: "Complete 1 story node", "Rate a campaign", "Submit a lore proposal", "Visit the Graveyard"
+  - Database: `rp_daily_quests` (quest definitions), `rp_daily_quest_completions` (user progress)
+  - Visible as a card on the Lore Chronicles dashboard
+  - Streak multiplier: consecutive daily completions increase XP bonus
+- [ ] **"Previously..." Story Recap** — Cinematic recap when resuming a campaign
+  - Shows last 3-5 key choices made, narrative summary
+  - Animated scroll-style reveal with atmospheric background
+  - "Skip Recap" option for returning players
+- [ ] **Character Legacy Timeline** — Visual timeline of a character's journey
+  - Key events, stat changes, factions joined, campaigns completed
+  - Shareable public view on character profiles
+- [ ] **"What's New" Activity Feed** — Persistent feed on Lore Chronicles landing
+  - New campaigns published, lore proposals approved, leaderboard changes
+  - Personalized: friends' activity, campaigns you follow
+
+#### Phase C: Social & Sharing
+
+- [ ] **Campaign Completion Certificate** — Beautiful journey summary at campaign end
+  - Character portrait, final stats, key choices made, campaign title
+  - Shareable as social image (OG-compatible)
+  - "Share Your Journey" button generates downloadable card
+- [ ] **Social Choice Stats** — Show what % of players picked each choice
+  - Displayed after making a choice: "42% of players chose this path"
+  - Optional toggle (can be hidden for spoiler-free play)
+  - Database: aggregate choice counts per node
+- [ ] **Spectator Mode** — Watch friends play campaigns in real-time
+  - Read-only view of active session with live narration
+  - "Cheer" reactions (emoji pops) visible to the player
+- [ ] **Campaign Recommendations** — "Players who enjoyed X also played Y"
+  - Based on completion data and ratings
+  - Shown on campaign detail pages and after completion
+
+#### Phase D: Creator & Campaign Tools
+
+- [ ] **Campaign Analytics Dashboard** — Stats for campaign authors
+  - Play count, completion rate, average rating, drop-off nodes
+  - Heatmap of most/least chosen paths
+  - Database: `rp_campaign_analytics` (play_count, completion_count, avg_rating, drop_off_data JSONB)
+- [ ] **Campaign Templates** — Pre-built campaign structures for new creators
+  - "Linear Adventure", "Branching Mystery", "Faction War", "Dungeon Crawl"
+  - Template includes starter nodes, suggested key points, sample triggers
+- [ ] **Node Preview Mode** — Play-test individual nodes without starting full session
+  - Quick iteration for campaign creators
+  - Test stat checks and trigger conditions
+
+#### Phase E: Atmosphere & Polish
+
+- [ ] **Ambient Audio Layers** — Background audio in `StoryPlayer.tsx`
+  - Environment sounds: forest, tavern, dungeon, battlefield
+  - Music mood shifts based on node type (tense, peaceful, combat)
+  - Volume control + mute toggle, remembers preference
+- [ ] **Animated Choice Consequences** — Visual feedback after making choices
+  - Stat change badges: "+1 Charisma", "-2 Health" with animated pop-in
+  - Item acquisition: glowing item card appears briefly
+  - Relationship change: NPC portrait with heart/broken-heart icon
+- [ ] **Cinematic Node Transitions** — Smooth transitions between story nodes
+  - Page-turn effect for narrative nodes
+  - Dramatic fade-to-black for major choices
+  - Quick slide for minor transitions
+- [ ] **Character Emotion States** — Character portrait reflects story mood
+  - Happy, worried, angry, injured states
+  - Changes based on recent story events and stat thresholds
+
+---
+
 ## 📋 Development Notes
 
 ### Design System
