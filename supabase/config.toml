@@ -1,1 +1,13 @@
 project_id = "pwbpbsyagyoytniidoah"
+
+[functions.ai-lore-assistant]
+verify_jwt = false
+
+[functions.ai-generate-backstory]
+verify_jwt = false
+
+[functions.ai-interpret-action]
+verify_jwt = false
+
+[functions.send-newsletter]
+verify_jwt = false

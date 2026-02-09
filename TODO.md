@@ -399,11 +399,11 @@ Real-time physical and social interactions between players when they meet in mul
   - **Adjacent** (touching): Stab, pickpocket, embrace, restrain
 
 ##### Physical Actions (Proximity + Inventory + Skill Gated)
-- [ ] **Melee Actions** — Stab, slash, punch, shove (requires: adjacent + weapon in inventory + combat skill)
-- [ ] **Stealth Actions** — Stab from behind, pickpocket, plant item (requires: adjacent + stealth skill + concealed item)
-- [ ] **Social Actions** — Whisper, lie, persuade, intimidate, bargain (requires: close/adjacent + charisma/wisdom checks)
-- [ ] **Ranged Actions** — Throw item, shoot bow, cast spell (requires: mid+ range + item/ability)
-- [ ] **Movement Actions** — Walk closer, run away, block path, follow silently
+- [x] **Melee Actions** — Stab, slash, punch, shove (requires: adjacent + weapon in inventory + combat skill)
+- [x] **Stealth Actions** — Stab from behind, pickpocket, plant item (requires: adjacent + stealth skill + concealed item)
+- [x] **Social Actions** — Whisper, lie, persuade, intimidate, bargain (requires: close/adjacent + charisma/wisdom checks)
+- [x] **Ranged Actions** — Throw item, shoot bow, cast spell (requires: mid+ range + item/ability)
+- [x] **Movement Actions** — Walk closer, run away, block path, follow silently
 
 **Action Availability Logic:**
 ```
@@ -416,34 +416,34 @@ Can player A "stab" player B?
 ```
 
 ##### Pre-Planning & Preparation
-- [ ] **Action Preparation** — Players must prepare actions in advance (hidden from others):
+- [x] **Action Preparation** — Players must prepare actions in advance (hidden from others):
   - "Hide knife in cloak" → Conceals weapon, enables surprise attacks later
   - "Ready bow" → Enables ranged attack next turn but visible to perceptive players
   - "Prepare lie" → Pre-write a deceptive statement for upcoming conversation
   - "Signal ally" → Set up a secret signal with another player
-- [ ] **Preparation Slots** — Limited number of preparations based on level/wisdom
-- [ ] **Preparation Reveal** — Preparations only revealed when used or detected by perception
-- [ ] **Preparation Cooldowns** — Can't re-prepare immediately after use
+- [x] **Preparation Slots** — Limited number of preparations based on level/wisdom
+- [x] **Preparation Reveal** — Preparations only revealed when used or detected by perception
+- [x] **Preparation Cooldowns** — Can't re-prepare immediately after use
 
 ##### Awareness & Perception System
-- [ ] **Passive Perception** — Auto-calculated from wisdom + agility + level
-- [ ] **Perception Checks** — Automatic rolls when nearby players prepare/execute hidden actions
-- [ ] **Awareness Levels:**
+- [x] **Passive Perception** — Auto-calculated from wisdom + agility + level
+- [x] **Perception Checks** — Automatic rolls when nearby players prepare/execute hidden actions
+- [x] **Awareness Levels:**
   - **Oblivious** (low perception): No warnings, easily surprised
   - **Alert** (mid perception): "You sense something is off" hints
   - **Vigilant** (high perception): "Player X reached into their cloak" — partial reveal
   - **Hawkeye** (max perception): Full action detection — "Player X concealed a dagger"
-- [ ] **Perception Modifiers** — Environment (dark = harder), fatigue, distraction, magic
-- [ ] **Detection Notifications** — Private alerts to perceptive players about suspicious actions
-- [ ] **Counter-Actions** — If you detect a threat, unlock reactive options (dodge, block, call out, counter-attack)
+- [x] **Perception Modifiers** — Environment (dark = harder), fatigue, distraction, magic
+- [x] **Detection Notifications** — Private alerts to perceptive players about suspicious actions
+- [x] **Counter-Actions** — If you detect a threat, unlock reactive options (dodge, block, call out, counter-attack)
 
 ##### Action Resolution
-- [ ] **Stat Check Rolls** — Actions resolved via stat checks (attacker stat vs defender stat)
-- [ ] **Surprise Bonus** — Undetected actions get +3 to stat check
-- [ ] **Consequence Engine** — Each action has success/fail outcomes defined by campaign creator
-- [ ] **Witness System** — Other nearby players may witness actions and gain knowledge/flags
-- [ ] **Reputation Impact** — Aggressive actions affect faction standing and NPC relationships
-- [ ] **Death/Injury from PvP** — Stab can wound or kill based on damage system (creator-configured lethality)
+- [x] **Stat Check Rolls** — Actions resolved via stat checks (attacker stat vs defender stat)
+- [x] **Surprise Bonus** — Undetected actions get +3 to stat check
+- [x] **Consequence Engine** — Each action has success/fail outcomes defined by campaign creator
+- [x] **Witness System** — Other nearby players may witness actions and gain knowledge/flags
+- [x] **Reputation Impact** — Aggressive actions affect faction standing and NPC relationships
+- [x] **Death/Injury from PvP** — Stab can wound or kill based on damage system (creator-configured lethality)
 
 **Database Addition:**
 | Table | Purpose | Key Columns |
@@ -471,8 +471,8 @@ Can player A "stab" player B?
 ##### Creator Tools for PvP Interactions
 - [x] **Interaction Zone Editor** — Define which scenes allow PvP interactions
 - [x] **Lethality Settings** — Per-campaign: no-kill, wound-only, permadeath
-- [ ] **Custom Action Builder** — Creators add campaign-specific actions with custom requirements
-- [ ] **Consequence Templates** — Pre-built outcomes (wound, betray, ally, escape) creators can assign
+- [x] **Custom Action Builder** — Creators add campaign-specific actions with custom requirements
+- [x] **Consequence Templates** — Pre-built outcomes (wound, betray, ally, escape) creators can assign
 - [x] **PvP Toggle** — Campaign-level setting to enable/disable player-vs-player actions
 
 ---
@@ -481,33 +481,33 @@ Can player A "stab" player B?
 A dynamic hint system that nudges players toward interesting paths — whether they follow or ignore hints affects the campaign trajectory and can trigger random events.
 
 ##### Hint Mechanics
-- [ ] **Context-Aware Suggestions** — System analyzes player state (stats, inventory, flags, position) and suggests relevant actions
-- [ ] **Hint Types:**
+- [x] **Context-Aware Suggestions** — System analyzes player state (stats, inventory, flags, position) and suggests relevant actions
+- [x] **Hint Types:**
   - 🧭 **Direction hints** — "The eastern path seems less traveled..." (navigation)
   - ⚔️ **Action hints** — "Your blade could serve you well here..." (combat/stealth)
   - 🗣️ **Social hints** — "Perhaps diplomacy would yield better results..." (persuasion)
   - 🔍 **Discovery hints** — "Something glints in the corner of your eye..." (exploration)
   - ⚠️ **Warning hints** — "Your instincts tell you to be cautious..." (danger ahead)
-- [ ] **Hint Frequency** — Configurable per campaign (frequent/moderate/rare/none)
-- [ ] **Hint Accuracy** — Not all hints are helpful — some are traps or misdirection (creator-designed)
+- [x] **Hint Frequency** — Configurable per campaign (frequent/moderate/rare/none)
+- [x] **Hint Accuracy** — Not all hints are helpful — some are traps or misdirection (creator-designed)
 
 ##### Player Response & Consequences
-- [ ] **Follow Hint** — Player takes the suggested action → triggers "obedient path" outcomes
-- [ ] **Ignore Hint** — Player does something else → triggers "defiant path" outcomes
-- [ ] **Opposite Action** — Player deliberately does the opposite → triggers special "contrarian" events
-- [ ] **Hint Tracking** — Track how often a player follows/ignores hints (affects future hint accuracy)
-- [ ] **Hint as Random Event Trigger** — Hint responses serve as triggers for random events:
+- [x] **Follow Hint** — Player takes the suggested action → triggers "obedient path" outcomes
+- [x] **Ignore Hint** — Player does something else → triggers "defiant path" outcomes
+- [x] **Opposite Action** — Player deliberately does the opposite → triggers special "contrarian" events
+- [x] **Hint Tracking** — Track how often a player follows/ignores hints (affects future hint accuracy)
+- [x] **Hint as Random Event Trigger** — Hint responses serve as triggers for random events:
   - Followed 3 hints in a row → "Guardian Angel" event (bonus)
   - Ignored 3 hints in a row → "Lost Wanderer" event (penalty or surprise)
   - Took opposite action → "Wildcard" random event
 
 ##### Creator Hint Designer
-- [ ] **Hint Placement** — Attach hints to specific nodes, key points, or interaction zones
-- [ ] **Conditional Hints** — Hints only appear if certain conditions are met (stat threshold, item, flag)
-- [ ] **Hint Chains** — Sequence of hints that build toward a revelation or trap
-- [ ] **Red Herrings** — Deliberately misleading hints to test player judgment
-- [ ] **Multiplayer Divergent Hints** — Different players in same session get different/conflicting hints
-- [ ] **Hint Source Flavor** — Hints presented as: inner voice, companion whisper, environmental clue, divine sign
+- [x] **Hint Placement** — Attach hints to specific nodes, key points, or interaction zones
+- [x] **Conditional Hints** — Hints only appear if certain conditions are met (stat threshold, item, flag)
+- [x] **Hint Chains** — Sequence of hints that build toward a revelation or trap
+- [x] **Red Herrings** — Deliberately misleading hints to test player judgment
+- [x] **Multiplayer Divergent Hints** — Different players in same session get different/conflicting hints
+- [x] **Hint Source Flavor** — Hints presented as: inner voice, companion whisper, environmental clue, divine sign
 
 **Database Addition:**
 | Table | Purpose | Key Columns |
@@ -533,20 +533,20 @@ Player receives hint: "The shadows whisper of danger ahead..."
 **Phase 8: Player Physical Interactions**
 - [x] Proximity tracking system with zone mechanics
 - [x] Movement action UI (stop/walk/run/approach)
-- [ ] Physical action system with inventory + skill gates
-- [ ] Action preparation mechanic (hide knife, ready bow)
-- [ ] Perception and awareness engine
-- [ ] Action resolution with stat check rolls
-- [ ] Witness and detection notification system
+- [x] Physical action system with inventory + skill gates
+- [x] Action preparation mechanic (hide knife, ready bow)
+- [x] Perception and awareness engine
+- [x] Action resolution with stat check rolls
+- [x] Witness and detection notification system
 - [x] Creator PvP tools (lethality settings, interaction zones, custom actions)
 
 **Phase 9: Hint & Suggestion Engine**
-- [ ] Context-aware hint generation based on player state
-- [ ] Hint response tracking (follow/ignore/opposite)
-- [ ] Hint → random event trigger integration
-- [ ] Creator hint designer with placement and conditions
-- [ ] Red herring and hint chain support
-- [ ] Multiplayer divergent hints
+- [x] Context-aware hint generation based on player state
+- [x] Hint response tracking (follow/ignore/opposite)
+- [x] Hint → random event trigger integration
+- [x] Creator hint designer with placement and conditions
+- [x] Red herring and hint chain support
+- [x] Multiplayer divergent hints
 
 ---
 
@@ -576,26 +576,26 @@ The AI acts as a dynamic narrator/DM that generates story prose, NPC dialogue, a
 4. **Player choices still drive progression** — AI enhances the journey, doesn't replace authored structure
 
 ##### Creator DM Configuration
-- [ ] **DM Instructions Field** — Free-text field on campaign settings where creator defines AI behavior:
+- [x] **DM Instructions Field** — Free-text field on campaign settings where creator defines AI behavior:
   - Tone: "dark and foreboding", "lighthearted adventure", "political intrigue"
   - Constraints: "never kill the player outright", "always offer a peaceful option"
   - Lore focus: "emphasize the conflict between the Elder Council and the Shadow Guild"
   - NPC personalities: "Kael is sarcastic but loyal; The Elder speaks in riddles"
-- [ ] **AI Narration Toggle** — Per-node option: "AI-narrated transition" vs "direct jump to next node"
-- [ ] **Lore Context Injection** — Creator selects which almanac entries the AI should reference for this campaign
-- [ ] **NPC Voice Profiles** — Define speaking style per NPC (formal, casual, cryptic, aggressive)
-- [ ] **Guardrails** — Creator sets hard limits: no romance, no real-world references, PG-13 only, etc.
+- [x] **AI Narration Toggle** — Per-node option: "AI-narrated transition" vs "direct jump to next node"
+- [x] **Lore Context Injection** — Creator selects which almanac entries the AI should reference for this campaign
+- [x] **NPC Voice Profiles** — Define speaking style per NPC (formal, casual, cryptic, aggressive)
+- [x] **Guardrails** — Creator sets hard limits: no romance, no real-world references, PG-13 only, etc.
 
 ##### Technical Implementation
-- [ ] **Edge Function: `ai-dungeon-master`**
+- [x] **Edge Function: `ai-dungeon-master`**
   - Input: `{ session_id, character_id, current_node_id, action_context }`
   - Fetches: campaign data, character stats, session flags, recent history, relevant almanac entries
   - System prompt built dynamically from creator's DM instructions + lore context
   - Output: `{ narration: string, npc_dialogue?: { name, text }[], suggested_choices?: string[], stat_effects?: object }`
   - Streaming response for immersive text reveal
-- [ ] **Context Window Management** — Summarize older session history to fit context limits; keep last 10 interactions verbatim
-- [ ] **Lore Retrieval** — Query almanac tables (characters, locations, races, relics) for relevant context based on current campaign tags/references
-- [ ] **Response Caching** — Cache deterministic narrations (same node + same flags = same narration) to reduce API calls
+- [x] **Context Window Management** — Summarize older session history to fit context limits; keep last 10 interactions verbatim
+- [x] **Lore Retrieval** — Query almanac tables (characters, locations, races, relics) for relevant context based on current campaign tags/references
+- [x] **Response Caching** — Cache deterministic narrations (same node + same flags = same narration) to reduce API calls
 
 ##### Database Addition
 | Table | Purpose | Key Columns |
@@ -604,10 +604,10 @@ The AI acts as a dynamic narrator/DM that generates story prose, NPC dialogue, a
 | `rp_ai_narration_log` | Log of all AI-generated narrations | `session_id`, `character_id`, `node_id`, `prompt_hash`, `narration_text`, `model_used`, `tokens_used`, `created_at` |
 
 ##### UI Integration
-- [ ] **Narration Panel** — AI text appears in a styled "narrator voice" panel with typewriter animation
-- [ ] **NPC Dialogue Bubbles** — AI-generated NPC speech displayed with portrait + speech bubble
-- [ ] **AI Transition Screens** — Between key points, show AI-narrated scene with atmospheric styling
-- [ ] **DM Config Panel** — In campaign editor, a dedicated "AI Dungeon Master" settings tab
+- [x] **Narration Panel** — AI text appears in a styled "narrator voice" panel with typewriter animation
+- [x] **NPC Dialogue Bubbles** — AI-generated NPC speech displayed with portrait + speech bubble
+- [x] **AI Transition Screens** — Between key points, show AI-narrated scene with atmospheric styling
+- [x] **DM Config Panel** — In campaign editor, a dedicated "AI Dungeon Master" settings tab
 
 ---
 
@@ -627,7 +627,7 @@ Players type free-form actions ("I try to pick the lock", "I intimidate the guar
    - Which node to transition to next (if applicable)
 
 ##### Implementation Details
-- [ ] **Edge Function: `ai-interpret-action`**
+- [x] **Edge Function: `ai-interpret-action`**
   - Input: `{ session_id, character_id, node_id, player_text, campaign_ai_config }`
   - System prompt includes: current scene description, character sheet, available exits/choices, DM instructions
   - Uses tool calling to return structured output:
@@ -643,15 +643,15 @@ Players type free-form actions ("I try to pick the lock", "I intimidate the guar
     }
     ```
   - If no matching authored node exists, AI generates a mini-narrative and returns player to the nearest authored node
-- [ ] **Stat Check Resolution** — AI picks the relevant stat, rolls against difficulty, narrates pass/fail
-- [ ] **Action Validation** — AI rejects impossible actions ("I fly to the moon") with in-character responses
-- [ ] **Memory Integration** — AI remembers past free-text actions within the session for continuity
-- [ ] **Creator Opt-In** — Free-text input only available on nodes where the creator enables it
+- [x] **Stat Check Resolution** — AI picks the relevant stat, rolls against difficulty, narrates pass/fail
+- [x] **Action Validation** — AI rejects impossible actions ("I fly to the moon") with in-character responses
+- [x] **Memory Integration** — AI remembers past free-text actions within the session for continuity
+- [x] **Creator Opt-In** — Free-text input only available on nodes where the creator enables it
 
 ##### UI Changes
-- [ ] **Enhanced FreeTextInput** — Add loading state with "The DM considers your action..." animation
-- [ ] **Outcome Display** — Show stat check roll visualization (dice animation), then narration
-- [ ] **Action History** — Scrollable log of past free-text actions and their outcomes in the session
+- [x] **Enhanced FreeTextInput** — Add loading state with "The DM considers your action..." animation
+- [x] **Outcome Display** — Show stat check roll visualization (dice animation), then narration
+- [x] **Action History** — Scrollable log of past free-text actions and their outcomes in the session
 
 ---
 
@@ -666,15 +666,15 @@ A chat-based assistant that answers player questions about the ThouArt universe 
 4. Maintains conversation history for follow-up questions
 
 ##### Implementation Details
-- [ ] **Edge Function: `ai-lore-assistant`**
+- [x] **Edge Function: `ai-lore-assistant`**
   - Input: `{ messages: Message[], user_id }`
   - Pre-processes: searches almanac tables for relevant entries using keyword matching
   - Injects matched almanac entries into system prompt as context
   - System prompt: "You are the Keeper of Lore for the ThouArt universe. Answer questions using ONLY the provided lore entries. If the answer isn't in the provided lore, say so. Cite your sources."
   - Streaming response for conversational feel
-- [ ] **Almanac Search** — Full-text search across `almanac_characters`, `almanac_locations`, `almanac_races`, `almanac_relics` for relevant context
-- [ ] **Source Citations** — AI references which almanac entry each fact comes from, with links
-- [ ] **Conversation Memory** — Store conversation per user (last N messages) for context continuity
+- [x] **Almanac Search** — Full-text search across `almanac_characters`, `almanac_locations`, `almanac_races`, `almanac_relics` for relevant context
+- [x] **Source Citations** — AI references which almanac entry each fact comes from, with links
+- [x] **Conversation Memory** — Store conversation per user (last N messages) for context continuity
 - [ ] **Spoiler Guard** — If player is mid-campaign, AI avoids spoiling unreached story content
 
 ##### Database Addition
@@ -683,9 +683,9 @@ A chat-based assistant that answers player questions about the ThouArt universe 
 | `rp_lore_conversations` | Chat history per user | `user_id`, `messages` (JSONB array), `last_active_at`, `created_at` |
 
 ##### UI Components
-- [ ] **LoreAssistant Panel** — Slide-out sidebar with chat interface, available from Lore Chronicles and Almanac pages
+- [x] **LoreAssistant Panel** — Slide-out sidebar with chat interface, available from Lore Chronicles and Almanac pages
 - [ ] **Inline Lore Tooltips** — During gameplay, highlighted lore terms open a quick AI-powered explanation popup
-- [ ] **"Ask the Keeper" Button** — Floating action button on relevant pages
+- [x] **"Ask the Keeper" Button** — Floating action button on relevant pages
 
 ---
 
@@ -704,64 +704,64 @@ Generate rich, lore-consistent character backstories based on the player's chose
 4. Player can regenerate, edit, or use as-is
 
 ##### Implementation Details
-- [ ] **Edge Function: `ai-generate-backstory`**
+- [x] **Edge Function: `ai-generate-backstory`**
   - Input: `{ race_id, race_lore, stats, player_prompt?, existing_backstory? }`
   - Fetches race data from `almanac_races` for lore context
   - Optionally fetches related almanac entries (locations, factions) for world grounding
   - System prompt: "Generate a compelling 2-3 paragraph character backstory for a {race_name} in the ThouArt universe. Their stats suggest: {stat_interpretation}. Use the following world lore for grounding: {lore_context}. {player_prompt}"
   - Non-streaming (returns complete backstory)
   - Uses tool calling for structured output: `{ backstory: string, suggested_name?: string }`
-- [ ] **Stat Interpretation** — Map stats to narrative hooks:
+- [x] **Stat Interpretation** — Map stats to narrative hooks:
   - High Strength → warrior, laborer, gladiator background
   - High Magic → academy student, wild mage, cursed bloodline
   - High Charisma → diplomat, merchant, performer, cult leader
   - High Wisdom → hermit, scholar, elder's apprentice
   - High Agility → thief, scout, acrobat, hunter
-- [ ] **Regenerate with Tweaks** — Player can say "make it darker" or "add a lost sibling" and AI refines
+- [x] **Regenerate with Tweaks** — Player can say "make it darker" or "add a lost sibling" and AI refines
 - [ ] **"Inspire Me" Mode** — Generate 3 short backstory hooks (one-liners) for player to choose from before full generation
 
 ##### UI Integration
-- [ ] **"Generate Backstory" Button** — In CharacterCreator Step 3, next to the backstory textarea
-- [ ] **Generation Modal** — Shows loading spinner, then displays generated backstory with "Use This" / "Regenerate" / "Edit" buttons
-- [ ] **Prompt Input** — Optional text field: "Any preferences? (e.g., 'exiled warrior', 'orphan mage')"
-- [ ] **Backstory Preview** — Styled preview card showing the generated backstory before confirming
+- [x] **"Generate Backstory" Button** — In CharacterCreator Step 3, next to the backstory textarea
+- [x] **Generation Modal** — Shows loading spinner, then displays generated backstory with "Use This" / "Regenerate" / "Edit" buttons
+- [x] **Prompt Input** — Optional text field: "Any preferences? (e.g., 'exiled warrior', 'orphan mage')"
+- [x] **Backstory Preview** — Styled preview card showing the generated backstory before confirming
 
 ---
 
 #### AI Implementation Phases
 
 **Phase AI-1: Foundation**
-- [ ] Create `ai-lore-assistant` edge function with almanac context injection
-- [ ] Build LoreAssistant chat panel component
-- [ ] Create `rp_lore_conversations` table
+- [x] Create `ai-lore-assistant` edge function with almanac context injection
+- [x] Build LoreAssistant chat panel component
+- [x] Create `rp_lore_conversations` table
 - [ ] Test with existing almanac data
 
 **Phase AI-2: Character Backstory**
-- [ ] Create `ai-generate-backstory` edge function
-- [ ] Add "Generate Backstory" button to CharacterCreator
-- [ ] Build generation modal with regenerate/edit flow
+- [x] Create `ai-generate-backstory` edge function
+- [x] Add "Generate Backstory" button to CharacterCreator
+- [x] Build generation modal with regenerate/edit flow
 - [ ] Test with all existing races
 
 **Phase AI-3: Free-Text Interpreter**
-- [ ] Create `ai-interpret-action` edge function with stat check logic
-- [ ] Enhance `FreeTextInput` component with AI integration
-- [ ] Build outcome display with stat check visualization
-- [ ] Add creator toggle for free-text nodes in campaign editor
+- [x] Create `ai-interpret-action` edge function with stat check logic
+- [x] Enhance `FreeTextInput` component with AI integration
+- [x] Build outcome display with stat check visualization
+- [x] Add creator toggle for free-text nodes in campaign editor
 - [ ] Test in solo sessions
 
 **Phase AI-4: AI Dungeon Master**
-- [ ] Create `rp_campaign_ai_config` table
-- [ ] Create `ai-dungeon-master` edge function with streaming
-- [ ] Build DM configuration panel in campaign editor
-- [ ] Build narration panel with typewriter effect in StoryPlayer
-- [ ] Implement lore context retrieval and injection
-- [ ] Create `rp_ai_narration_log` table for tracking
+- [x] Create `rp_campaign_ai_config` table
+- [x] Create `ai-dungeon-master` edge function with streaming
+- [x] Build DM configuration panel in campaign editor
+- [x] Build narration panel with typewriter effect in StoryPlayer
+- [x] Implement lore context retrieval and injection
+- [x] Create `rp_ai_narration_log` table for tracking
 - [ ] Test with a sample campaign using AI transitions
-- [ ] Implement context window management (history summarization)
+- [x] Implement context window management (history summarization)
 
 **Phase AI-5: Polish & Integration**
-- [ ] Rate limit handling with user-friendly error messages (429/402)
-- [ ] Response caching for repeated narrations
+- [x] Rate limit handling with user-friendly error messages (429/402)
+- [x] Response caching for repeated narrations
 - [ ] Spoiler guard for lore assistant during active campaigns
 - [ ] Inline lore tooltips during gameplay
 - [ ] Usage analytics and cost monitoring
@@ -773,27 +773,27 @@ Generate rich, lore-consistent character backstories based on the player's chose
 Creators choose whether their campaign uses the official ThouArt universe rules or an entirely original custom world system.
 
 ##### Universe Mode Selection (Campaign Creation)
-- [ ] **Universe Toggle** — "ThouArt Variation" or "Original Universe" selected at campaign creation
-- [ ] **ThouArt Variation Mode:**
+- [x] **Universe Toggle** — "ThouArt Variation" or "Original Universe" selected at campaign creation
+- [x] **ThouArt Variation Mode:**
   - Uses existing `almanac_races`, `almanac_magic`, factions, relics, etc.
   - Stat system follows standard ThouArt rules
   - Lore references auto-link to the Witness Almanac
   - Community lore entries also available
-- [ ] **Original Universe Mode:**
+- [x] **Original Universe Mode:**
   - Creator defines **everything** from scratch
   - Custom races, magic systems, beliefs, factions, physics, rules
   - No cross-references to ThouArt almanac
   - Fully self-contained universe
 
 ##### Custom World Builder (Original Mode)
-- [ ] **Custom Races** — Name, description, stat bonuses, lore, portrait
-- [ ] **Custom Magic Systems** — Define magic types, casting rules, costs, effects
-- [ ] **Custom Beliefs/Religions** — Deity pantheons, rituals, divine powers, alignment effects
-- [ ] **Custom Factions** — Organizations with goals, ranks, perks, conflicts
-- [ ] **Custom Items & Weapons** — Define unique weapons, armor, consumables, artifacts
-- [ ] **Custom Stat Systems** — Override default stats (rename, add, remove stat categories)
-- [ ] **World Rules Document** — Free-text world bible that players see before joining
-- [ ] **Custom Titles & Ranks** — Rank hierarchies unique to the universe
+- [x] **Custom Races** — Name, description, stat bonuses, lore, portrait
+- [x] **Custom Magic Systems** — Define magic types, casting rules, costs, effects
+- [x] **Custom Beliefs/Religions** — Deity pantheons, rituals, divine powers, alignment effects
+- [x] **Custom Factions** — Organizations with goals, ranks, perks, conflicts
+- [x] **Custom Items & Weapons** — Define unique weapons, armor, consumables, artifacts
+- [x] **Custom Stat Systems** — Override default stats (rename, add, remove stat categories)
+- [x] **World Rules Document** — Free-text world bible that players see before joining
+- [x] **Custom Titles & Ranks** — Rank hierarchies unique to the universe
 
 **Database Addition:**
 | Table | Purpose | Key Columns |
@@ -810,7 +810,7 @@ Creators choose whether their campaign uses the official ThouArt universe rules 
 Interaction Points (IP) between players accumulate from all interactions and **dynamically unlock situations, events, and forced choices**.
 
 ##### Interaction Point Accumulation
-- [ ] **Auto-Calculated IP** — Every interaction between two characters adjusts their IP score:
+- [x] **Auto-Calculated IP** — Every interaction between two characters adjusts their IP score:
   - Helped in combat → +15 IP
   - Shared item → +10 IP
   - Lied successfully → -5 IP (if discovered later: -20 IP)
@@ -818,7 +818,7 @@ Interaction Points (IP) between players accumulate from all interactions and **d
   - Saved their life → +30 IP
   - Betrayed → -50 IP
   - Whispered secret → +5 to +15 IP depending on value
-- [ ] **IP Thresholds** — Crossing thresholds triggers creator-defined events:
+- [x] **IP Thresholds** — Crossing thresholds triggers creator-defined events:
   - **-75 to -100: Blood Feud** → Forced confrontation event
   - **-50 to -74: Hostile** → "Kill or be killed" scenarios become available
   - **-25 to -49: Distrustful** → Perception bonus against them, limited cooperation
@@ -828,42 +828,42 @@ Interaction Points (IP) between players accumulate from all interactions and **d
   - **+75 to +100: Sworn** → Sacrifice events, combined stat checks, unbreakable alliance mechanics
 
 ##### IP-Triggered Scenarios
-- [ ] **Forced Choice Events** — When IP is deeply negative, creator can trigger:
+- [x] **Forced Choice Events** — When IP is deeply negative, creator can trigger:
   - "Choose who lives" — pick between two characters to save
   - "Duel to the death" — mandatory PvP with no escape
   - "Betray your ally or lose everything" — faction loyalty vs personal bond
-- [ ] **Alliance Events** — When IP is highly positive:
+- [x] **Alliance Events** — When IP is highly positive:
   - "Combined strength" — merge stat checks for powerful joint actions
   - "Shield wall" — one player can absorb damage for the other
   - "Shared vision" — see each other's hints temporarily
-- [ ] **IP-Based Path Unlocks** — Certain story branches only available at specific IP thresholds
+- [x] **IP-Based Path Unlocks** — Certain story branches only available at specific IP thresholds
 
 ##### Hidden Combat & Fog of War
-- [ ] **Hidden Stats in Combat** — Players do NOT see each other's ability scores during encounters
-- [ ] **Blind Decisions** — Must judge opponents based on:
+- [x] **Hidden Stats in Combat** — Players do NOT see each other's ability scores during encounters
+- [x] **Blind Decisions** — Must judge opponents based on:
   - Visible equipment (armor, weapons)
   - Prior interactions (did they seem strong?)
   - Reputation/rumors from NPCs
   - Their own perception skill
-- [ ] **Bluff System** — Players can bluff their strength:
+- [x] **Bluff System** — Players can bluff their strength:
   - "Flex" action → Charisma check to appear stronger than you are
   - "Feign weakness" → Stealth check to appear weaker (lure into trap)
-- [ ] **Combat Reveal** — Stats only revealed after combat resolves (post-fight summary)
-- [ ] **Scouting** — Spend a turn to attempt perception check → partial stat reveal ("They seem agile but frail")
+- [x] **Combat Reveal** — Stats only revealed after combat resolves (post-fight summary)
+- [x] **Scouting** — Spend a turn to attempt perception check → partial stat reveal ("They seem agile but frail")
 
 ##### Free-Text Input → Dynamic Skill Calculation
-- [ ] **Open Input Actions** — Players can type custom actions instead of choosing from a list
-- [ ] **Action Parsing Engine** — System analyzes free-text input and calculates:
+- [x] **Open Input Actions** — Players can type custom actions instead of choosing from a list
+- [x] **Action Parsing Engine** — System analyzes free-text input and calculates:
   - Which stat(s) are required (e.g., "I try to climb the wall" → Agility + Strength)
   - Difficulty rating based on context
   - Required items (e.g., "I pick the lock" → needs lockpick in inventory)
   - IP adjustment if targeting another player
-- [ ] **Interaction Input** — When interacting with another player via free text:
+- [x] **Interaction Input** — When interacting with another player via free text:
   - "I compliment their armor" → Charisma check, +3 IP if passed
   - "I secretly pocket their coin purse" → Agility + Stealth check, -25 IP if caught
   - "I offer to share my food" → No check, +5 IP
-- [ ] **Creator Overrides** — Campaign creator can pre-define custom input responses for specific scenarios
-- [ ] **Fallback Resolution** — If input doesn't match any pattern, default to nearest stat check + narrator description
+- [x] **Creator Overrides** — Campaign creator can pre-define custom input responses for specific scenarios
+- [x] **Fallback Resolution** — If input doesn't match any pattern, default to nearest stat check + narrator description
 
 **Database Addition:**
 | Table | Purpose | Key Columns |
@@ -889,18 +889,18 @@ Interaction Points (IP) between players accumulate from all interactions and **d
 ### Implementation Phases (Advanced Systems — continued)
 
 **Phase 10: Universe Mode & World Builder**
-- [ ] Universe toggle in campaign creation (ThouArt vs Original)
-- [ ] Custom race, magic, belief, faction, and item builders
-- [ ] World rules document editor
-- [ ] Custom stat system override
+- [x] Universe toggle in campaign creation (ThouArt vs Original)
+- [x] Custom race, magic, belief, faction, and item builders
+- [x] World rules document editor
+- [x] Custom stat system override
 
 **Phase 11: Interaction Points & Hidden Combat**
-- [ ] IP accumulation engine from all player interactions
-- [ ] IP threshold event triggers (forced choices, alliances, duels)
-- [ ] Hidden stats during combat encounters
-- [ ] Bluff and scouting mechanics
-- [ ] Free-text input parser with dynamic skill calculation
-- [ ] IP-based path unlocks in story progression
+- [x] IP accumulation engine from all player interactions
+- [x] IP threshold event triggers (forced choices, alliances, duels)
+- [x] Hidden stats during combat encounters
+- [x] Bluff and scouting mechanics
+- [x] Free-text input parser with dynamic skill calculation
+- [x] IP-based path unlocks in story progression
 
 ---
 
@@ -931,7 +931,7 @@ Interaction Points (IP) between players accumulate from all interactions and **d
 - [x] **XP System** — Earn XP for completing nodes, finishing campaigns, making choices
 - [x] **Character Levels** — Level up at XP thresholds (100, 300, 600, 1000...)
 - [x] **Level Benefits** — Unlock stat points, new ability slots, cosmetic titles
-- [ ] **XP Bonuses** — Bonus XP for first completions, difficult paths, group play
+- [x] **XP Bonuses** — Bonus XP for first completions, difficult paths, group play
 
 **XP Awards:**
 | Action | XP |
@@ -944,11 +944,11 @@ Interaction Points (IP) between players accumulate from all interactions and **d
 | First-time campaign bonus | +50 |
 
 #### Inventory System
-- [ ] **Item Pickups** — Nodes can grant items (relics, weapons, potions)
-- [ ] **Inventory Slots** — Limited inventory (expand with levels)
-- [ ] **Item Effects** — Consumables, stat boosters, quest items
+- [x] **Item Pickups** — Nodes can grant items (relics, weapons, potions)
+- [x] **Inventory Slots** — Limited inventory (expand with levels)
+- [x] **Item Effects** — Consumables, stat boosters, quest items
 - [ ] **Item Trading** — Trade items between characters (future)
-- [ ] **Item Requirements** — Nodes can require specific items to proceed
+- [x] **Item Requirements** — Nodes can require specific items to proceed
 
 **Database Addition:**
 | Table | Purpose | Key Columns |
@@ -957,12 +957,12 @@ Interaction Points (IP) between players accumulate from all interactions and **d
 | `rp_character_inventory` | Items held by characters | `character_id`, `item_id`, `quantity`, `acquired_at`, `source_node_id` |
 
 #### Character Death & Failure
-- [ ] **Death Nodes** — Special ending nodes for character death
-- [ ] **Permadeath Mode** — Optional hardcore mode (character deleted on death)
-- [ ] **Respawn System** — Default: restart from last checkpoint node
-- [ ] **Injury System** — Temporary stat penalties instead of death
-- [ ] **Legacy System** — Dead characters leave items/bonuses for next character
-- [ ] **Character Graveyard** — Display "fallen" characters with death context
+- [x] **Death Nodes** — Special ending nodes for character death
+- [x] **Permadeath Mode** — Optional hardcore mode (character deleted on death)
+- [x] **Respawn System** — Default: restart from last checkpoint node
+- [x] **Injury System** — Temporary stat penalties instead of death
+- [x] **Legacy System** — Dead characters leave items/bonuses for next character
+- [x] **Character Graveyard** — Display "fallen" characters with death context
 
 **Failure Handling:**
 - Soft fail: Retry the node with different choice
@@ -970,25 +970,25 @@ Interaction Points (IP) between players accumulate from all interactions and **d
 - Death: Campaign ends, character marked as "fallen" (visible in graveyard)
 
 #### Achievements (Roleplay-Specific)
-- [ ] **First Steps** — Create your first character
-- [ ] **Storyteller** — Complete 5 campaigns
-- [ ] **Lorekeeper** — Have a lore proposal approved
-- [ ] **Survivor** — Complete a campaign without failing any stat check
-- [ ] **Explorer** — Visit 50 unique story nodes
-- [ ] **Charismatic** — Pass 10 Charisma checks
-- [ ] **Completionist** — See all endings of a campaign
-- [ ] **Worldbuilder** — Have 5 lore proposals approved
+- [x] **First Steps** — Create your first character
+- [x] **Storyteller** — Complete 5 campaigns
+- [x] **Lorekeeper** — Have a lore proposal approved
+- [x] **Survivor** — Complete a campaign without failing any stat check
+- [x] **Explorer** — Visit 50 unique story nodes
+- [x] **Charismatic** — Pass 10 Charisma checks
+- [x] **Completionist** — See all endings of a campaign
+- [x] **Worldbuilder** — Have 5 lore proposals approved
 
 ---
 
 ### Rich Media Support
 
 #### Node Illustrations
-- [ ] **Header Images** — Optional banner image per story node
+- [x] **Header Images** — Optional banner image per story node
 - [ ] **Inline Images** — Embed images within narrative text
-- [ ] **Image Library** — Campaign creators upload to dedicated bucket
+- [x] **Image Library** — Campaign creators upload to dedicated bucket
 - [ ] **Stock Art Integration** — Curated fantasy art for common scenes
-- [ ] **Node Preview Thumbnails** — Thumbnails in campaign editor
+- [x] **Node Preview Thumbnails** — Thumbnails in campaign editor
 
 **Storage:**
 - Bucket: `rp-campaign-assets` (public, with RLS per campaign author)

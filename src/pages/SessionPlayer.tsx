@@ -22,6 +22,9 @@ import { toast } from "@/hooks/use-toast";
 import { useSessionTriggers } from "@/hooks/useSessionTriggers";
 import { TriggerLog } from "@/components/lore-chronicles/TriggerLog";
 import { KeyPointProgress } from "@/components/lore-chronicles/KeyPointProgress";
+import { AITransitionScreen } from "@/components/lore-chronicles/AITransitionScreen";
+import { useIPScores, getRelationshipLevel, RELATIONSHIP_LEVEL_CONFIG } from "@/hooks/useIPScores";
+import { PastAction } from "@/hooks/useFreeTextInterpreter";
 
 interface SessionParticipant {
   id: string;
@@ -84,6 +87,9 @@ const SessionPlayer = () => {
   const [visitedNodeIds, setVisitedNodeIds] = useState<string[]>([]);
   const [firedTriggerIds, setFiredTriggerIds] = useState<string[]>([]);
   const [triggerMessages, setTriggerMessages] = useState<string[]>([]);
+  const [actionHistory, setActionHistory] = useState<PastAction[]>([]);
+  const [showTransition, setShowTransition] = useState(false);
+  const [transitionNarration, setTransitionNarration] = useState("");
 
   // Get campaign ID for triggers
   const activeCampaignId = campaign?.id || session?.campaign_id || "";
@@ -671,22 +677,47 @@ const SessionPlayer = () => {
     }
   };
 
-  // Check if choice is available
+  // Check if choice is available (including IP-based path unlocks)
   const canMakeChoice = (choice: RpNodeChoice): { available: boolean; reason?: string } => {
     if (!isMyTurn()) {
       return { available: false, reason: "Wait for your turn" };
     }
-    if (!choice.stat_requirement) return { available: true };
-    
-    const stats = characterProgress?.stats_snapshot || selectedCharacter?.stats || {};
-    const { stat, min_value } = choice.stat_requirement;
-    const currentValue = stats[stat as keyof CharacterStats] || 0;
-    
-    if (currentValue < min_value) {
-      return { 
-        available: false, 
-        reason: `Requires ${min_value} ${stat} (you have ${currentValue})` 
-      };
+
+    // Check stat requirements
+    if (choice.stat_requirement) {
+      const stats = characterProgress?.stats_snapshot || selectedCharacter?.stats || {};
+      const { stat, min_value } = choice.stat_requirement;
+      const currentValue = stats[stat as keyof CharacterStats] || 0;
+      
+      if (currentValue < min_value) {
+        return { 
+          available: false, 
+          reason: `Requires ${min_value} ${stat} (you have ${currentValue})` 
+        };
+      }
+    }
+
+    // Check IP-based path unlocks (item_requirement field repurposed for ip_requirement)
+    if (choice.item_requirement && choice.item_requirement.startsWith("ip:")) {
+      const ipReq = choice.item_requirement.replace("ip:", "");
+      const [targetCharId, minScoreStr] = ipReq.split(",");
+      if (targetCharId && minScoreStr && selectedCharacter) {
+        const minScore = parseInt(minScoreStr, 10);
+        if (!isNaN(minScore)) {
+          // Check if we have sufficient IP with the target character
+          const currentFlags = characterProgress?.story_flags || {};
+          const ipScores = (currentFlags.ip_scores || {}) as Record<string, number>;
+          const currentIP = ipScores[targetCharId] || 0;
+          if (currentIP < minScore) {
+            const level = getRelationshipLevel(currentIP);
+            const requiredLevel = getRelationshipLevel(minScore);
+            return {
+              available: false,
+              reason: `Requires ${RELATIONSHIP_LEVEL_CONFIG[requiredLevel].label} relationship (currently ${RELATIONSHIP_LEVEL_CONFIG[level].label})`,
+            };
+          }
+        }
+      }
     }
     
     return { available: true };

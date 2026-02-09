@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { 
   ArrowLeft, Plus, Save, Play, Trash2, Link2, 
   BookOpen, MessageSquare, GitBranch, CheckCircle,
-  Settings, Eye, EyeOff, Flag, Zap, Dice1, Users, GitMerge, Shield
+  Settings, Eye, EyeOff, Flag, Zap, Dice1, Users, GitMerge, Shield, Lightbulb, Globe, Bot, MessageSquarePlus, Skull, Image as ImageIcon
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -20,12 +20,17 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/hooks/use-toast";
 import { RpCampaign, RpStoryNode, RpNodeChoice } from "@/hooks/useLoreChronicles";
+import { useAIConfig } from "@/hooks/useAIConfig";
 import { KeyPointsEditor } from "@/components/lore-chronicles/KeyPointsEditor";
 import { EventTriggersEditor } from "@/components/lore-chronicles/EventTriggersEditor";
 import { RandomEventsEditor } from "@/components/lore-chronicles/RandomEventsEditor";
 import { InteractionPointsEditor } from "@/components/lore-chronicles/InteractionPointsEditor";
 import { ConvergenceEditor } from "@/components/lore-chronicles/ConvergenceEditor";
 import { CampaignFactionsEditor } from "@/components/lore-chronicles/CampaignFactionsEditor";
+import { HintDesigner } from "@/components/lore-chronicles/HintDesigner";
+import { WorldBuilder } from "@/components/lore-chronicles/WorldBuilder";
+import { AIDMConfigPanel } from "@/components/lore-chronicles/AIDMConfigPanel";
+import { CampaignImageUpload } from "@/components/lore-chronicles/CampaignImageUpload";
  
  interface NodeWithChoices extends RpStoryNode {
    choices: RpNodeChoice[];
@@ -160,16 +165,18 @@ import { CampaignFactionsEditor } from "@/components/lore-chronicles/CampaignFac
    const saveNode = async (node: NodeWithChoices) => {
      setSaving(true);
  
-     const { error: nodeError } = await supabase
-       .from("rp_story_nodes")
-       .update({
-         title: node.title,
-         content: node.content,
-         node_type: node.node_type,
-         image_url: node.image_url,
-         xp_reward: node.xp_reward
-       })
-       .eq("id", node.id);
+    const { error: nodeError } = await supabase
+        .from("rp_story_nodes")
+        .update({
+          title: node.title,
+          content: node.content,
+          node_type: node.node_type,
+          image_url: node.image_url,
+          xp_reward: node.xp_reward,
+          allows_free_text: node.allows_free_text,
+          free_text_prompt: node.free_text_prompt
+        })
+        .eq("id", node.id);
  
      if (nodeError) {
        toast({ title: "Failed to save node", variant: "destructive" });
@@ -336,7 +343,19 @@ import { CampaignFactionsEditor } from "@/components/lore-chronicles/CampaignFac
                 <Shield className="h-4 w-4" />
                 Factions
               </TabsTrigger>
-            </TabsList>
+               <TabsTrigger value="hints" className="gap-2">
+                 <Lightbulb className="h-4 w-4" />
+                 Hints
+               </TabsTrigger>
+               <TabsTrigger value="world-builder" className="gap-2">
+                  <Globe className="h-4 w-4" />
+                  World Builder
+                </TabsTrigger>
+                <TabsTrigger value="ai-dm" className="gap-2">
+                  <Bot className="h-4 w-4" />
+                  AI DM
+                </TabsTrigger>
+              </TabsList>
 
             <TabsContent value="nodes">
              {/* Add Node Buttons */}
@@ -386,41 +405,55 @@ import { CampaignFactionsEditor } from "@/components/lore-chronicles/CampaignFac
                        transition={{ delay: index * 0.05 }}
                      >
                        <Card 
-                         className={`cursor-pointer hover:border-primary/40 transition-colors ${
-                           isStart ? "ring-2 ring-primary" : ""
-                         }`}
-                         onClick={() => {
-                           setEditingNode(node);
-                           setShowNodeDialog(true);
-                         }}
-                       >
-                         <CardHeader className="pb-2">
-                           <div className="flex items-start justify-between">
-                             <div className="flex items-center gap-2">
-                               <span className={`w-3 h-3 rounded-full ${typeInfo.color}`} />
-                               <Badge variant="outline" className="text-xs">
-                                 {typeInfo.label}
-                               </Badge>
-                             </div>
-                             {isStart && (
-                               <Badge className="bg-primary">Start</Badge>
-                             )}
-                           </div>
-                           <CardTitle className="text-base mt-2">
-                             {node.title || "Untitled Node"}
-                           </CardTitle>
-                         </CardHeader>
-                         <CardContent>
-                           <p className="text-sm text-muted-foreground line-clamp-2">
-                             {node.content.text || "No content"}
-                           </p>
-                           <div className="flex items-center gap-2 mt-3 text-xs text-muted-foreground">
-                             <GitBranch className="h-3 w-3" />
-                             {node.choices.length} choice{node.choices.length !== 1 ? "s" : ""}
-                             <span className="ml-auto">+{node.xp_reward} XP</span>
-                           </div>
-                         </CardContent>
-                       </Card>
+                          className={`cursor-pointer hover:border-primary/40 transition-colors ${
+                            isStart ? "ring-2 ring-primary" : ""
+                          }`}
+                          onClick={() => {
+                            setEditingNode(node);
+                            setShowNodeDialog(true);
+                          }}
+                        >
+                          {/* Node Thumbnail */}
+                          {node.image_url && (
+                            <div className="h-28 overflow-hidden rounded-t-xl">
+                              <img
+                                src={node.image_url}
+                                alt={node.title || "Node"}
+                                className="w-full h-full object-cover"
+                                onError={(e) => (e.currentTarget.style.display = 'none')}
+                              />
+                            </div>
+                          )}
+                          <CardHeader className="pb-2">
+                            <div className="flex items-start justify-between">
+                              <div className="flex items-center gap-2">
+                                <span className={`w-3 h-3 rounded-full ${typeInfo.color}`} />
+                                <Badge variant="outline" className="text-xs">
+                                  {typeInfo.label}
+                                </Badge>
+                              </div>
+                              {isStart && (
+                                <Badge className="bg-primary">Start</Badge>
+                              )}
+                            </div>
+                            <CardTitle className="text-base mt-2">
+                              {node.title || "Untitled Node"}
+                            </CardTitle>
+                          </CardHeader>
+                          <CardContent>
+                            <p className="text-sm text-muted-foreground line-clamp-2">
+                              {node.content.text || "No content"}
+                            </p>
+                            <div className="flex items-center gap-2 mt-3 text-xs text-muted-foreground">
+                              <GitBranch className="h-3 w-3" />
+                              {node.choices.length} choice{node.choices.length !== 1 ? "s" : ""}
+                              {node.image_url && (
+                                <ImageIcon className="h-3 w-3 ml-1" />
+                              )}
+                              <span className="ml-auto">+{node.xp_reward} XP</span>
+                            </div>
+                          </CardContent>
+                        </Card>
                      </motion.div>
                    );
                  })}
@@ -454,25 +487,38 @@ import { CampaignFactionsEditor } from "@/components/lore-chronicles/CampaignFac
               />
             </TabsContent>
 
-            <TabsContent value="factions">
-              <CampaignFactionsEditor campaignId={campaignId!} />
-            </TabsContent>
-          </Tabs>
+             <TabsContent value="factions">
+               <CampaignFactionsEditor campaignId={campaignId!} />
+             </TabsContent>
+
+             <TabsContent value="hints">
+               <HintDesigner campaignId={campaignId!} />
+              </TabsContent>
+
+               <TabsContent value="world-builder">
+                 <WorldBuilder campaignId={campaignId!} />
+               </TabsContent>
+
+               <TabsContent value="ai-dm">
+                 <AIDMConfigPanel campaignId={campaignId!} />
+               </TabsContent>
+           </Tabs>
        </main>
  
        {/* Node Editor Dialog */}
        <Dialog open={showNodeDialog} onOpenChange={setShowNodeDialog}>
          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
            {editingNode && (
-             <NodeEditorForm
-               node={editingNode}
-               allNodes={nodes}
-               isStartNode={campaign.start_node_id === editingNode.id}
-               onSave={saveNode}
-               onDelete={() => deleteNode(editingNode.id)}
-               onSetStart={() => setStartNode(editingNode.id)}
-               saving={saving}
-             />
+            <NodeEditorForm
+                node={editingNode}
+                allNodes={nodes}
+                isStartNode={campaign.start_node_id === editingNode.id}
+                campaignId={campaignId!}
+                onSave={saveNode}
+                onDelete={() => deleteNode(editingNode.id)}
+                onSetStart={() => setStartNode(editingNode.id)}
+                saving={saving}
+              />
            )}
          </DialogContent>
        </Dialog>
@@ -486,59 +532,89 @@ import { CampaignFactionsEditor } from "@/components/lore-chronicles/CampaignFac
                Configure your campaign details
              </DialogDescription>
            </DialogHeader>
-           <div className="space-y-4 py-4">
-             <div className="flex items-center justify-between">
-               <div>
-                 <p className="font-medium">Published</p>
-                 <p className="text-sm text-muted-foreground">
-                   Make this campaign visible to players
-                 </p>
-               </div>
-               <Switch
-                 checked={campaign.is_published}
-                 onCheckedChange={togglePublish}
-               />
-             </div>
-             <div className="pt-4 border-t">
-               <Button
-                 variant="destructive"
-                 className="w-full"
-                 onClick={async () => {
-                   await supabase.from("rp_campaigns").delete().eq("id", campaign.id);
-                   navigate('/lore-chronicles');
-                   toast({ title: "Campaign deleted" });
-                 }}
-               >
-                 <Trash2 className="h-4 w-4 mr-2" />
-                 Delete Campaign
-               </Button>
-             </div>
-           </div>
+            <div className="space-y-4 py-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="font-medium">Published</p>
+                  <p className="text-sm text-muted-foreground">
+                    Make this campaign visible to players
+                  </p>
+                </div>
+                <Switch
+                  checked={campaign.is_published}
+                  onCheckedChange={togglePublish}
+                />
+              </div>
+
+              {/* Permadeath Toggle */}
+              <div className="flex items-center justify-between p-4 rounded-lg border border-destructive/20 bg-destructive/5">
+                <div className="flex items-center gap-3">
+                  <Skull className="h-5 w-5 text-destructive" />
+                  <div>
+                    <p className="font-medium">Permadeath Mode</p>
+                    <p className="text-sm text-muted-foreground">
+                      Characters are permanently deleted on death
+                    </p>
+                  </div>
+                </div>
+                <Switch
+                  checked={campaign.permadeath}
+                  onCheckedChange={async (checked) => {
+                    await supabase
+                      .from("rp_campaigns")
+                      .update({ permadeath: checked })
+                      .eq("id", campaign.id);
+                    setCampaign({ ...campaign, permadeath: checked });
+                    toast({ title: checked ? "Permadeath enabled ☠️" : "Permadeath disabled" });
+                  }}
+                />
+              </div>
+
+              <div className="pt-4 border-t">
+                <Button
+                  variant="destructive"
+                  className="w-full"
+                  onClick={async () => {
+                    await supabase.from("rp_campaigns").delete().eq("id", campaign.id);
+                    navigate('/lore-chronicles');
+                    toast({ title: "Campaign deleted" });
+                  }}
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Delete Campaign
+                </Button>
+              </div>
+            </div>
          </DialogContent>
        </Dialog>
      </div>
    );
  };
  
- // Node Editor Form Component
- const NodeEditorForm = ({
-   node,
-   allNodes,
-   isStartNode,
-   onSave,
-   onDelete,
-   onSetStart,
-   saving
- }: {
-   node: NodeWithChoices;
-   allNodes: NodeWithChoices[];
-   isStartNode: boolean;
-   onSave: (node: NodeWithChoices) => void;
-   onDelete: () => void;
-   onSetStart: () => void;
-   saving: boolean;
- }) => {
-   const [editedNode, setEditedNode] = useState<NodeWithChoices>(node);
+// Node Editor Form Component
+const NodeEditorForm = ({
+  node,
+  allNodes,
+  isStartNode,
+  campaignId,
+  onSave,
+  onDelete,
+  onSetStart,
+  saving
+}: {
+  node: NodeWithChoices;
+  allNodes: NodeWithChoices[];
+  isStartNode: boolean;
+  campaignId: string;
+  onSave: (node: NodeWithChoices) => void;
+  onDelete: () => void;
+  onSetStart: () => void;
+  saving: boolean;
+}) => {
+  const [editedNode, setEditedNode] = useState<NodeWithChoices>(node);
+  const { config, toggleNodeNarration } = useAIConfig(campaignId);
+  
+  const isAINarrated = config?.ai_narration_nodes?.includes(node.id) ?? false;
  
    const updateContent = (key: string, value: string) => {
      setEditedNode({
@@ -629,40 +705,107 @@ import { CampaignFactionsEditor } from "@/components/lore-chronicles/CampaignFac
              rows={5}
              placeholder="The story unfolds..."
            />
-         </div>
- 
-         {/* NPC Info */}
-         <div className="grid grid-cols-2 gap-4">
-           <div className="space-y-2">
-             <Label>NPC Name (optional)</Label>
-             <Input
-               value={editedNode.content.npc_name || ""}
-               onChange={(e) => updateContent("npc_name", e.target.value)}
-               placeholder="Elder Sage"
-             />
-           </div>
-           <div className="space-y-2">
-             <Label>NPC Portrait URL</Label>
-             <Input
-               value={editedNode.content.npc_portrait || ""}
-               onChange={(e) => updateContent("npc_portrait", e.target.value)}
-               placeholder="https://..."
-             />
-           </div>
-         </div>
- 
-         {/* XP Reward */}
+          </div>
+
+         {/* Header Image Upload */}
          <div className="space-y-2">
-           <Label>XP Reward</Label>
-           <Input
-             type="number"
-             value={editedNode.xp_reward}
-             onChange={(e) => setEditedNode({ ...editedNode, xp_reward: parseInt(e.target.value) || 0 })}
-             min={0}
-             max={1000}
+           <Label>Header Image</Label>
+           <CampaignImageUpload
+             campaignId={campaignId}
+             currentUrl={editedNode.image_url}
+             onUpload={(url) => setEditedNode({ ...editedNode, image_url: url })}
+             onRemove={() => setEditedNode({ ...editedNode, image_url: null })}
+             label="Upload scene header image"
+             previewHeight="h-32"
            />
          </div>
+  
+          {/* NPC Info */}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>NPC Name (optional)</Label>
+              <Input
+                value={editedNode.content.npc_name || ""}
+                onChange={(e) => updateContent("npc_name", e.target.value)}
+                placeholder="Elder Sage"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>NPC Portrait URL</Label>
+              <Input
+                value={editedNode.content.npc_portrait || ""}
+                onChange={(e) => updateContent("npc_portrait", e.target.value)}
+                placeholder="https://..."
+              />
+            </div>
+          </div>
  
+        {/* XP Reward */}
+          <div className="space-y-2">
+            <Label>XP Reward</Label>
+            <Input
+              type="number"
+              value={editedNode.xp_reward}
+              onChange={(e) => setEditedNode({ ...editedNode, xp_reward: parseInt(e.target.value) || 0 })}
+              min={0}
+              max={1000}
+            />
+          </div>
+
+          {/* AI Narration Toggle */}
+          {config?.ai_enabled && (
+            <div className="flex items-center justify-between p-4 rounded-lg bg-primary/5 border border-primary/20">
+              <div className="flex items-center gap-3">
+                <Bot className="h-5 w-5 text-primary" />
+                <div>
+                  <Label className="font-medium">AI-Narrated Transition</Label>
+                  <p className="text-sm text-muted-foreground">
+                    AI generates narrative when entering this node
+                  </p>
+                </div>
+              </div>
+              <Switch
+                checked={isAINarrated}
+                onCheckedChange={(checked) => toggleNodeNarration(node.id, checked)}
+              />
+            </div>
+          )}
+
+          {/* Free-Text Input Toggle */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between p-4 rounded-lg bg-muted/50 border">
+              <div className="flex items-center gap-3">
+                <MessageSquarePlus className="h-5 w-5 text-muted-foreground" />
+                <div>
+                  <Label className="font-medium">Enable Free-Text Input</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Allow players to type custom actions at this node
+                  </p>
+                </div>
+              </div>
+              <Switch
+                checked={editedNode.allows_free_text}
+                onCheckedChange={(checked) => 
+                  setEditedNode({ ...editedNode, allows_free_text: checked })
+                }
+              />
+            </div>
+            
+            {editedNode.allows_free_text && (
+              <div className="space-y-2 pl-8">
+                <Label>Free-Text Prompt (optional)</Label>
+                <Textarea
+                  value={editedNode.free_text_prompt || ""}
+                  onChange={(e) => 
+                    setEditedNode({ ...editedNode, free_text_prompt: e.target.value })
+                  }
+                  placeholder="What would you like to do? (e.g., 'How do you approach the situation?')"
+                  rows={2}
+                />
+              </div>
+            )}
+          </div>
+
          {/* Choices */}
          <div className="space-y-3">
            <div className="flex items-center justify-between">

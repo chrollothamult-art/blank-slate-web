@@ -1,24 +1,29 @@
-  import { useState, useEffect } from "react";
-  import { useNavigate, useParams } from "react-router-dom";
-  import { motion, AnimatePresence } from "framer-motion";
-  import { ArrowLeft, BookOpen, Lock, Sparkles, User, CheckCircle, XCircle } from "lucide-react";
-  import { Button } from "@/components/ui/button";
-  import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-  import { Badge } from "@/components/ui/badge";
-  import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-  import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-  import { supabase } from "@/integrations/supabase/client";
-  import { useAuth } from "@/contexts/AuthContext";
-  import { useLoreChronicles, RpCampaign, RpStoryNode, RpNodeChoice, RpCharacter, CharacterStats } from "@/hooks/useLoreChronicles";
-  import { toast } from "@/hooks/use-toast";
-  import { FreeTextInput } from "@/components/lore-chronicles/FreeTextInput";
+import { useState, useEffect, useCallback } from "react";
+   import { useNavigate, useParams } from "react-router-dom";
+   import { motion, AnimatePresence } from "framer-motion";
+   import { ArrowLeft, BookOpen, Lock, Sparkles, User, CheckCircle, XCircle, Skull, Package, AlertTriangle, ShieldAlert } from "lucide-react";
+   import { Button } from "@/components/ui/button";
+   import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+   import { Badge } from "@/components/ui/badge";
+   import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+   import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+   import { supabase } from "@/integrations/supabase/client";
+   import { useAuth } from "@/contexts/AuthContext";
+   import { useLoreChronicles, RpCampaign, RpStoryNode, RpNodeChoice, RpCharacter, CharacterStats } from "@/hooks/useLoreChronicles";
+    import { toast } from "@/hooks/use-toast";
+    import { FreeTextInput } from "@/components/lore-chronicles/FreeTextInput";
+    import { HintDisplay } from "@/components/lore-chronicles/HintDisplay";
+    import { ActionHistoryPanel } from "@/components/lore-chronicles/ActionHistoryPanel";
+    import { useHints, Hint, HintResponse as HintResponseType } from "@/hooks/useHints";
+    import { useRpAchievements } from "@/hooks/useRpAchievements";
+    import { useInventory } from "@/hooks/useInventory";
  
- const StoryPlayer = () => {
+const StoryPlayer = () => {
    const { campaignId } = useParams<{ campaignId: string }>();
    const navigate = useNavigate();
    const { user } = useAuth();
    const { characters } = useLoreChronicles();
- 
+
    const [campaign, setCampaign] = useState<RpCampaign | null>(null);
    const [currentNode, setCurrentNode] = useState<RpStoryNode | null>(null);
    const [choices, setChoices] = useState<RpNodeChoice[]>([]);
@@ -26,9 +31,17 @@
    const [sessionId, setSessionId] = useState<string | null>(null);
    const [characterProgress, setCharacterProgress] = useState<any>(null);
    
-   const [showCharacterSelect, setShowCharacterSelect] = useState(false);
-   const [selectedCharacter, setSelectedCharacter] = useState<RpCharacter | null>(null);
-   const [processing, setProcessing] = useState(false);
+    const [showCharacterSelect, setShowCharacterSelect] = useState(false);
+    const [selectedCharacter, setSelectedCharacter] = useState<RpCharacter | null>(null);
+     const [processing, setProcessing] = useState(false);
+     const [activeHints, setActiveHints] = useState<Hint[]>([]);
+     const [statChecksPassed, setStatChecksPassed] = useState(0);
+     const [statChecksFailed, setStatChecksFailed] = useState(0);
+     const [isFirstCompletion, setIsFirstCompletion] = useState(true);
+     const { checkAchievements } = useRpAchievements();
+
+   // Inventory hook for the selected character
+   const { hasItem, inventory } = useInventory(selectedCharacter?.id);
  
    // Load campaign data
    useEffect(() => {
@@ -110,21 +123,31 @@
        .update({ play_count: (campaign.play_count || 0) + 1 })
        .eq("id", campaign.id);
  
-     setSessionId(session.id);
-     setSelectedCharacter(character);
-     setCharacterProgress({
-       stats_snapshot: character.stats,
-       xp_earned: 0,
-       story_flags: {}
-     });
-     setShowCharacterSelect(false);
- 
-     // Load first node
-     if (campaign.start_node_id) {
-       await loadNode(campaign.start_node_id);
-     }
- 
-     setProcessing(false);
+      setSessionId(session.id);
+      setSelectedCharacter(character);
+      setCharacterProgress({
+        stats_snapshot: character.stats,
+        xp_earned: 0,
+        story_flags: {}
+      });
+      setShowCharacterSelect(false);
+
+      // Check if this is the first time playing this campaign
+      const { data: previousSessions } = await supabase
+        .from("rp_sessions")
+        .select("id")
+        .eq("campaign_id", campaign.id)
+        .eq("created_by", user.id)
+        .eq("status", "completed");
+      
+      setIsFirstCompletion(!previousSessions || previousSessions.length === 0);
+
+      // Load first node
+      if (campaign.start_node_id) {
+        await loadNode(campaign.start_node_id);
+      }
+
+      setProcessing(false);
    };
  
    // Load a story node
@@ -166,21 +189,63 @@
  
      const stats = characterProgress?.stats_snapshot || selectedCharacter.stats;
  
-     // Check stat requirement
-     if (choice.stat_requirement) {
-       const { stat, min_value } = choice.stat_requirement;
-       const currentValue = stats[stat as keyof CharacterStats] || 0;
-       
-       if (currentValue < min_value) {
-         toast({ 
-           title: "Requirement not met", 
-           description: `You need at least ${min_value} ${stat} for this choice.`,
-           variant: "destructive" 
-         });
-         setProcessing(false);
-         return;
+      // Check item requirement
+      if (choice.item_requirement) {
+        const hasRequired = hasItem(choice.item_requirement);
+        if (!hasRequired) {
+          // Look up item name for better messaging
+          const { data: requiredItem } = await supabase
+            .from("rp_items")
+            .select("name, icon_emoji")
+            .eq("id", choice.item_requirement)
+            .single();
+          
+          toast({
+            title: "Missing required item",
+            description: `You need ${requiredItem?.icon_emoji || "📦"} ${requiredItem?.name || "a specific item"} for this choice.`,
+            variant: "destructive"
+          });
+          setProcessing(false);
+          return;
+        }
+      }
+
+       // Check stat requirement & track stat checks
+       if (choice.stat_requirement) {
+         const { stat, min_value } = choice.stat_requirement;
+         const currentValue = stats[stat as keyof CharacterStats] || 0;
+         
+         if (currentValue < min_value) {
+           setStatChecksFailed(prev => prev + 1);
+           toast({ 
+             title: "Requirement not met", 
+             description: `You need at least ${min_value} ${stat} for this choice.`,
+             variant: "destructive" 
+           });
+           setProcessing(false);
+           return;
+         }
+         
+         // Stat check passed — bonus XP and track by type
+         setStatChecksPassed(prev => prev + 1);
+         
+         // Update stat_checks_by_type in progress
+         const { data: progressData } = await supabase
+           .from("rp_character_progress")
+           .select("stat_checks_by_type")
+           .eq("session_id", sessionId)
+           .eq("character_id", selectedCharacter.id)
+           .single();
+         
+         const statChecks = (progressData?.stat_checks_by_type as Record<string, number>) || {};
+         statChecks[stat] = (statChecks[stat] || 0) + 1;
+         
+         await supabase
+           .from("rp_character_progress")
+           .update({ stat_checks_by_type: statChecks })
+           .eq("session_id", sessionId)
+           .eq("character_id", selectedCharacter.id);
        }
-     }
  
      // Apply stat effects
      let newStats = { ...stats };
@@ -232,37 +297,179 @@
        xp_earned: (characterProgress?.xp_earned || 0) + xpGained
      });
  
-     // Load next node or end
-     if (choice.target_node_id) {
-       await loadNode(choice.target_node_id);
-     } else {
-       // End of story
+       // Load next node or end
+       if (choice.target_node_id) {
+         // Check if next node is a death node
+         const { data: nextNode } = await supabase
+           .from("rp_story_nodes")
+           .select("node_type")
+           .eq("id", choice.target_node_id)
+           .single();
+
+         if (nextNode?.node_type === "death") {
+           // Handle character death
+           await handleCharacterDeath(choice.target_node_id, newStats);
+         }
+
+         await loadNode(choice.target_node_id);
+       } else {
+         // End of story — complete session & track ending
+         await handleSessionComplete(newStats, xpGained);
+       }
+  
+      setProcessing(false);
+    };
+
+     // Handle character death
+     const handleCharacterDeath = async (deathNodeId: string, currentStats: CharacterStats) => {
+       if (!sessionId || !selectedCharacter || !campaign) return;
+
+       // Mark session as completed with death
        await supabase
          .from("rp_sessions")
          .update({ status: "completed", completed_at: new Date().toISOString() })
          .eq("id", sessionId);
+
+       // Get death node info
+       const { data: deathNode } = await supabase
+         .from("rp_story_nodes")
+         .select("title, content")
+         .eq("id", deathNodeId)
+         .single();
+
+       const deathCause = (deathNode?.content as any)?.text?.slice(0, 100) || deathNode?.title || "Unknown cause";
+
+       // Check if campaign has permadeath enabled
+       const isPermadeath = (campaign as any).permadeath === true;
+
+       if (isPermadeath) {
+         // PERMADEATH: Permanently delete the character
+         await supabase
+           .from("rp_characters")
+           .delete()
+           .eq("id", selectedCharacter.id);
+
+         toast({
+           title: `${selectedCharacter.name} is gone forever... 💀☠️`,
+           description: "Permadeath mode: This character has been permanently deleted.",
+           variant: "destructive",
+         });
+       } else {
+         // Normal death: Mark character as fallen
+         await supabase
+           .from("rp_characters")
+           .update({
+             is_active: false,
+             fallen_at: new Date().toISOString(),
+             death_context: {
+               campaign_title: campaign.title,
+               campaign_id: campaign.id,
+               node_title: deathNode?.title || "Unknown",
+               cause: deathCause,
+             },
+             stats: currentStats as unknown as Record<string, number>,
+           })
+           .eq("id", selectedCharacter.id);
+
+         // Award partial XP (half of earned)
+         const partialXp = Math.floor((characterProgress?.xp_earned || 0) / 2);
+         if (partialXp > 0) {
+           await supabase
+             .from("rp_characters")
+             .update({ xp: selectedCharacter.xp + partialXp })
+             .eq("id", selectedCharacter.id);
+         }
+
+         // Generate legacy bonus for future characters
+         const legacyBonus: Record<string, unknown> = {
+           from_character: selectedCharacter.name,
+           xp_bonus: Math.floor(selectedCharacter.xp * 0.1),
+           fallen_level: selectedCharacter.level,
+         };
+
+         await supabase
+           .from("rp_characters")
+           .update({ legacy_bonuses: legacyBonus as unknown as Record<string, number> })
+           .eq("id", selectedCharacter.id);
+
+         toast({
+           title: `${selectedCharacter.name} has fallen... 💀`,
+           description: `Earned ${partialXp} XP. Their legacy will aid future heroes.`,
+         });
+       }
+     };
+
+    // Handle successful session completion
+    const handleSessionComplete = async (newStats: CharacterStats, xpGained: number) => {
+      if (!sessionId || !selectedCharacter || !campaign || !currentNode) return;
+
+      await supabase
+        .from("rp_sessions")
+        .update({ status: "completed", completed_at: new Date().toISOString() })
+        .eq("id", sessionId);
+
+      // Record ending seen for Completionist achievement
+      if (user && currentNode.node_type === "ending") {
+        await supabase
+          .from("rp_campaign_endings_seen")
+          .upsert({
+            user_id: user.id,
+            campaign_id: campaign.id,
+            ending_node_id: currentNode.id,
+          }, { onConflict: "user_id,campaign_id,ending_node_id" });
+      }
+
+      // Calculate XP with bonuses
+      let baseXp = (characterProgress?.xp_earned || 0) + xpGained;
+      let completionBonus = 100;
+      let firstTimeBonus = isFirstCompletion ? 50 : 0;
+      let statCheckBonus = statChecksPassed * 20;
+      let perfectRunBonus = statChecksFailed === 0 && statChecksPassed > 0 ? 50 : 0;
+      
+      let difficultyMultiplier = 1;
+      if (campaign?.difficulty === "hard") difficultyMultiplier = 1.5;
+      else if (campaign?.difficulty === "expert") difficultyMultiplier = 2;
+
+      const totalXp = Math.floor(
+        (baseXp + completionBonus + firstTimeBonus + statCheckBonus + perfectRunBonus) * difficultyMultiplier
+      );
+
+      await supabase
+        .from("rp_characters")
+        .update({ 
+          xp: selectedCharacter.xp + totalXp,
+          stats: newStats as unknown as Record<string, number>
+        })
+        .eq("id", selectedCharacter.id);
+
+      const bonusParts: string[] = [];
+      if (firstTimeBonus > 0) bonusParts.push(`First clear +${firstTimeBonus}`);
+      if (statCheckBonus > 0) bonusParts.push(`Stat checks +${statCheckBonus}`);
+      if (perfectRunBonus > 0) bonusParts.push(`Perfect run +${perfectRunBonus}`);
+      if (difficultyMultiplier > 1) bonusParts.push(`Difficulty x${difficultyMultiplier}`);
+
+      toast({ 
+        title: "Adventure Complete! 🎉", 
+        description: `You earned ${totalXp} XP!${bonusParts.length > 0 ? ` (${bonusParts.join(', ')})` : ''}`
+      });
+
+      await checkAchievements();
+    };
  
-       // Award XP to character
-       const totalXp = (characterProgress?.xp_earned || 0) + xpGained + 100; // +100 completion bonus
-       await supabase
-         .from("rp_characters")
-         .update({ 
-           xp: selectedCharacter.xp + totalXp,
-           stats: newStats
-         })
-         .eq("id", selectedCharacter.id);
- 
-       toast({ 
-         title: "Adventure Complete!", 
-         description: `You earned ${totalXp} XP!` 
-       });
-     }
- 
-     setProcessing(false);
-   };
- 
-   // Check if choice is available
+   // Check if choice is available (stat + item requirements)
    const canMakeChoice = (choice: RpNodeChoice): { available: boolean; reason?: string } => {
+     // Check item requirement
+     if (choice.item_requirement) {
+       const hasRequired = hasItem(choice.item_requirement);
+       if (!hasRequired) {
+         return {
+           available: false,
+           reason: `Requires a specific item`
+         };
+       }
+     }
+
+     // Check stat requirement
      if (!choice.stat_requirement) return { available: true };
      
      const stats = characterProgress?.stats_snapshot || selectedCharacter?.stats || {};
@@ -326,14 +533,20 @@
              </div>
            </div>
  
-           {selectedCharacter && characterProgress && (
-             <div className="flex items-center gap-2">
-               <Badge variant="outline" className="gap-1">
-                 <Sparkles className="h-3 w-3" />
-                 +{characterProgress.xp_earned} XP
-               </Badge>
-             </div>
-           )}
+            {selectedCharacter && characterProgress && (
+              <div className="flex items-center gap-2">
+                {(campaign as any)?.permadeath && (
+                  <Badge variant="destructive" className="gap-1">
+                    <Skull className="h-3 w-3" />
+                    Permadeath
+                  </Badge>
+                )}
+                <Badge variant="outline" className="gap-1">
+                  <Sparkles className="h-3 w-3" />
+                  +{characterProgress.xp_earned} XP
+                </Badge>
+              </div>
+            )}
          </div>
        </header>
  
@@ -387,8 +600,23 @@
                      {currentNode.content.text || "The story continues..."}
                    </p>
                  </CardContent>
-               </Card>
- 
+                </Card>
+
+                {/* Hints */}
+                {activeHints.length > 0 && (
+                  <HintDisplay
+                    hints={activeHints}
+                    onRespond={async (hintId, response) => {
+                      // Record response — outcome can be used for random event triggers
+                      toast({
+                        title: response === "followed" ? "You heed the hint..." : 
+                               response === "opposite" ? "You defy the suggestion!" : 
+                               "You ignore the hint...",
+                      });
+                    }}
+                    disabled={processing}
+                  />
+                )}
                 {/* Choices */}
                 {choices.length > 0 ? (
                   <div className="space-y-3">
@@ -417,19 +645,27 @@
                                 {reason && (
                                   <p className="text-xs text-muted-foreground mt-1">{reason}</p>
                                 )}
-                                {choice.stat_effect && available && (
-                                  <div className="flex gap-2 mt-2">
-                                    {Object.entries(choice.stat_effect).map(([stat, value]) => (
-                                      <Badge 
-                                        key={stat} 
-                                        variant="secondary" 
-                                        className="text-xs"
-                                      >
-                                       {stat}: {typeof value === "number" && value > 0 ? "+" : ""}{String(value)}
-                                      </Badge>
-                                    ))}
-                                  </div>
-                                )}
+                                <div className="flex gap-2 mt-2 flex-wrap">
+                                  {choice.item_requirement && (
+                                    <Badge variant={available ? "secondary" : "destructive"} className="text-xs gap-1">
+                                      <Package className="h-3 w-3" />
+                                      Item required
+                                    </Badge>
+                                  )}
+                                  {choice.stat_effect && available && (
+                                    <>
+                                      {Object.entries(choice.stat_effect).map(([stat, value]) => (
+                                        <Badge 
+                                          key={stat} 
+                                          variant="secondary" 
+                                          className="text-xs"
+                                        >
+                                         {stat}: {typeof value === "number" && value > 0 ? "+" : ""}{String(value)}
+                                        </Badge>
+                                      ))}
+                                    </>
+                                  )}
+                                </div>
                               </div>
                             </div>
                           </Button>
@@ -478,6 +714,36 @@
                   />
                 )}
 
+                {/* Action History Panel */}
+                <ActionHistoryPanel
+                  sessionId={sessionId}
+                  characterId={selectedCharacter?.id ?? null}
+                />
+
+                {/* Death Node */}
+                {currentNode.node_type === "death" && (
+                  <Card className="text-center py-8 border-destructive">
+                    <CardContent>
+                      <Skull className="h-16 w-16 text-destructive mx-auto mb-4" />
+                      <h3 className="text-2xl font-bold mb-2">You Have Fallen</h3>
+                      <p className="text-muted-foreground mb-4">
+                        {selectedCharacter?.name} has met their end in this adventure.
+                      </p>
+                      <p className="text-sm text-muted-foreground mb-6">
+                        Their legacy will grant bonuses to your future characters.
+                      </p>
+                      <div className="flex justify-center gap-3">
+                        <Button variant="outline" onClick={() => navigate('/lore-chronicles')}>
+                          Return to Lore Chronicles
+                        </Button>
+                        <Button onClick={() => navigate('/lore-chronicles/create-character')}>
+                          Create New Character
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+
                 {/* Ending */}
                 {currentNode.node_type === "ending" && choices.length === 0 ? (
                   <Card className="text-center py-8 border-primary">
@@ -514,12 +780,20 @@
        {/* Character Selection Dialog */}
        <Dialog open={showCharacterSelect} onOpenChange={setShowCharacterSelect}>
          <DialogContent className="max-w-lg">
-           <DialogHeader>
-             <DialogTitle>Choose Your Character</DialogTitle>
-             <DialogDescription>
-               Select a character to embark on this adventure
-             </DialogDescription>
-           </DialogHeader>
+            <DialogHeader>
+              <DialogTitle>Choose Your Character</DialogTitle>
+              <DialogDescription>
+                Select a character to embark on this adventure
+              </DialogDescription>
+              {(campaign as any)?.permadeath && (
+                <div className="flex items-center gap-2 p-3 mt-2 rounded-lg border border-destructive/30 bg-destructive/5">
+                  <ShieldAlert className="h-5 w-5 text-destructive shrink-0" />
+                  <p className="text-sm text-destructive font-medium">
+                    ☠️ Permadeath Mode — If your character dies, they are <strong>permanently deleted</strong>.
+                  </p>
+                </div>
+              )}
+            </DialogHeader>
  
            {characters.length === 0 ? (
              <div className="text-center py-6">

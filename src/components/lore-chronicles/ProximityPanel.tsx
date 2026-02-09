@@ -2,7 +2,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Users, MapPin, Footprints, ArrowUp, ArrowDown, 
-  Target, Shield, Sword, Eye, EyeOff, Play, X 
+  Target, Shield, Sword, Eye, EyeOff, Play, X, Bell 
 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -11,6 +11,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { PhysicalActionsPanel } from "@/components/lore-chronicles/PhysicalActionsPanel";
+import { PerceptionPanel } from "@/components/lore-chronicles/PerceptionPanel";
 import { 
   Select, 
   SelectContent, 
@@ -140,18 +142,26 @@ export const ProximityPanel = ({ sessionId, campaignId, participants }: Proximit
 
       <CardContent className="space-y-4">
         <Tabs defaultValue="positions">
-          <TabsList className="w-full">
-            <TabsTrigger value="positions" className="flex-1 gap-1">
+          <TabsList className="w-full grid grid-cols-5">
+            <TabsTrigger value="positions" className="gap-1 text-xs">
               <MapPin className="h-3 w-3" />
-              Positions
+              <span className="hidden sm:inline">Positions</span>
             </TabsTrigger>
-            <TabsTrigger value="actions" className="flex-1 gap-1">
+            <TabsTrigger value="physical" className="gap-1 text-xs">
               <Sword className="h-3 w-3" />
-              Actions
+              <span className="hidden sm:inline">Combat</span>
             </TabsTrigger>
-            <TabsTrigger value="log" className="flex-1 gap-1">
+            <TabsTrigger value="actions" className="gap-1 text-xs">
+              <Shield className="h-3 w-3" />
+              <span className="hidden sm:inline">Prepare</span>
+            </TabsTrigger>
+            <TabsTrigger value="perception" className="gap-1 text-xs relative">
+              <Bell className="h-3 w-3" />
+              <span className="hidden sm:inline">Perceive</span>
+            </TabsTrigger>
+            <TabsTrigger value="log" className="gap-1 text-xs">
               <Eye className="h-3 w-3" />
-              Log
+              <span className="hidden sm:inline">Log</span>
             </TabsTrigger>
           </TabsList>
 
@@ -254,7 +264,21 @@ export const ProximityPanel = ({ sessionId, campaignId, participants }: Proximit
             )}
           </TabsContent>
 
-          {/* Actions Tab */}
+          {/* Physical Actions Tab (NEW) */}
+          <TabsContent value="physical" className="mt-4">
+            <PhysicalActionsPanel
+              sessionId={sessionId}
+              campaignId={campaignId}
+              myCharacterId={myCharacterId}
+              positions={positions}
+              pvpSettings={pvpSettings}
+              participants={participants}
+              preparedActions={preparedActions}
+              onExecutePrepared={(id) => executeAction(id)}
+            />
+          </TabsContent>
+
+          {/* Prepare Actions Tab */}
           <TabsContent value="actions" className="mt-4 space-y-4">
             {/* Prepare Action */}
             <div className="space-y-3">
@@ -345,6 +369,17 @@ export const ProximityPanel = ({ sessionId, campaignId, participants }: Proximit
                 </div>
               )}
             </div>
+          </TabsContent>
+
+          {/* Perception Tab (NEW) */}
+          <TabsContent value="perception" className="mt-4">
+            <PerceptionPanel
+              sessionId={sessionId}
+              campaignId={campaignId}
+              myCharacterId={myCharacterId}
+              positions={positions}
+              pvpSettings={pvpSettings}
+            />
           </TabsContent>
 
           {/* Action Log Tab */}

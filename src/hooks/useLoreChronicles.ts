@@ -33,26 +33,27 @@
    };
  }
  
- export interface RpCampaign {
-   id: string;
-   author_id: string;
-   title: string;
-   description: string | null;
-   cover_image_url: string | null;
-   genre: string;
-   difficulty: string;
-   is_published: boolean;
-   is_featured: boolean;
-   start_node_id: string | null;
-   estimated_duration: number | null;
-   play_count: number;
-   created_at: string;
-   updated_at: string;
-   author?: {
-     username: string;
-     avatar_url: string | null;
-   };
- }
+export interface RpCampaign {
+    id: string;
+    author_id: string;
+    title: string;
+    description: string | null;
+    cover_image_url: string | null;
+    genre: string;
+    difficulty: string;
+    is_published: boolean;
+    is_featured: boolean;
+    start_node_id: string | null;
+    estimated_duration: number | null;
+    play_count: number;
+    permadeath: boolean;
+    created_at: string;
+    updated_at: string;
+    author?: {
+      username: string;
+      avatar_url: string | null;
+    };
+  }
  
  export interface RpSession {
    id: string;
@@ -68,24 +69,26 @@
    campaign?: RpCampaign;
  }
  
- export interface RpStoryNode {
-   id: string;
-   campaign_id: string;
-   node_type: string;
-   title: string | null;
-   content: {
-     text?: string;
-     npc_portrait?: string;
-     npc_name?: string;
-   };
-   position_x: number;
-   position_y: number;
-   image_url: string | null;
-   audio_url: string | null;
-   xp_reward: number;
-   created_at: string;
-   updated_at: string;
- }
+export interface RpStoryNode {
+  id: string;
+  campaign_id: string;
+  node_type: string;
+  title: string | null;
+  content: {
+    text?: string;
+    npc_portrait?: string;
+    npc_name?: string;
+  };
+  position_x: number;
+  position_y: number;
+  image_url: string | null;
+  audio_url: string | null;
+  xp_reward: number;
+  allows_free_text: boolean;
+  free_text_prompt: string | null;
+  created_at: string;
+  updated_at: string;
+}
  
  export interface RpNodeChoice {
    id: string;
@@ -171,22 +174,23 @@
        return;
      }
  
-     const mappedCampaigns: RpCampaign[] = (data || []).map((c) => ({
-       id: c.id,
-       author_id: c.author_id,
-       title: c.title,
-       description: c.description,
-       cover_image_url: c.cover_image_url,
-       genre: c.genre,
-       difficulty: c.difficulty,
-       is_published: c.is_published,
-       is_featured: c.is_featured,
-       start_node_id: c.start_node_id,
-       estimated_duration: c.estimated_duration,
-       play_count: c.play_count,
-       created_at: c.created_at,
-       updated_at: c.updated_at
-     }));
+      const mappedCampaigns: RpCampaign[] = (data || []).map((c) => ({
+        id: c.id,
+        author_id: c.author_id,
+        title: c.title,
+        description: c.description,
+        cover_image_url: c.cover_image_url,
+        genre: c.genre,
+        difficulty: c.difficulty,
+        is_published: c.is_published,
+        is_featured: c.is_featured,
+        start_node_id: c.start_node_id,
+        estimated_duration: c.estimated_duration,
+        play_count: c.play_count,
+        permadeath: c.permadeath,
+        created_at: c.created_at,
+        updated_at: c.updated_at
+      }));
  
      setCampaigns(mappedCampaigns);
    }, []);
@@ -270,30 +274,32 @@
      return data;
    };
  
-   const createCampaign = async (campaignData: {
-     title: string;
-     description: string | null;
-     genre: string;
-     difficulty: string;
-     cover_image_url: string | null;
-   }) => {
-     if (!user) {
-       toast({ title: "Please sign in to create a campaign", variant: "destructive" });
-       return null;
-     }
- 
-     const { data, error } = await supabase
-       .from("rp_campaigns")
-       .insert({
-         author_id: user.id,
-         title: campaignData.title,
-         description: campaignData.description,
-         genre: campaignData.genre,
-         difficulty: campaignData.difficulty,
-         cover_image_url: campaignData.cover_image_url
-       })
-       .select()
-       .single();
+    const createCampaign = async (campaignData: {
+      title: string;
+      description: string | null;
+      genre: string;
+      difficulty: string;
+      cover_image_url: string | null;
+      permadeath?: boolean;
+    }) => {
+      if (!user) {
+        toast({ title: "Please sign in to create a campaign", variant: "destructive" });
+        return null;
+      }
+  
+      const { data, error } = await supabase
+        .from("rp_campaigns")
+        .insert({
+          author_id: user.id,
+          title: campaignData.title,
+          description: campaignData.description,
+          genre: campaignData.genre,
+          difficulty: campaignData.difficulty,
+          cover_image_url: campaignData.cover_image_url,
+          permadeath: campaignData.permadeath || false
+        })
+        .select()
+        .single();
  
      if (error) {
        toast({ title: "Failed to create campaign", description: error.message, variant: "destructive" });

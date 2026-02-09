@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { Sword, Users, BookOpen, Sparkles, Plus, Play, Scroll, Crown, Book, Trophy, Shield, Flag } from "lucide-react";
+import { Sword, Users, BookOpen, Sparkles, Plus, Play, Scroll, Crown, Book, Trophy, Shield, Flag, MessageCircle, Skull } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -16,12 +16,15 @@ import { CommunityLoreAlmanac } from "@/components/lore-chronicles/CommunityLore
 import { CharacterLeaderboard } from "@/components/lore-chronicles/CharacterLeaderboard";
 import { LoremasterDashboard } from "@/components/lore-chronicles/LoremasterDashboard";
 import { FactionLeaderboard } from "@/components/lore-chronicles/FactionLeaderboard";
+import { LoreAssistantPanel } from "@/components/lore-chronicles/LoreAssistantPanel";
+import { CharacterGraveyard } from "@/components/lore-chronicles/CharacterGraveyard";
 import { useLoreProposals } from "@/hooks/useLoreProposals";
  
  const LoreChronicles = () => {
    const navigate = useNavigate();
    const { user } = useAuth();
    const [activeTab, setActiveTab] = useState("campaigns");
+   const [isLoreAssistantOpen, setIsLoreAssistantOpen] = useState(false);
  
    return (
      <div className="min-h-screen bg-background">
@@ -161,14 +164,14 @@ import { useLoreProposals } from "@/hooks/useLoreProposals";
        <section className="py-8 px-4">
          <div className="container mx-auto">
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-             <TabsList className="grid w-full max-w-5xl mx-auto grid-cols-8 mb-8">
+             <TabsList className="grid w-full max-w-5xl mx-auto grid-cols-9 mb-8">
                  <TabsTrigger value="campaigns" className="gap-2">
                    <BookOpen className="h-4 w-4" />
                    <span className="hidden sm:inline">Campaigns</span>
                  </TabsTrigger>
                  <TabsTrigger value="characters" className="gap-2">
                    <Sword className="h-4 w-4" />
-                   <span className="hidden sm:inline">My Characters</span>
+                   <span className="hidden sm:inline">Characters</span>
                  </TabsTrigger>
                  <TabsTrigger value="sessions" className="gap-2">
                    <Play className="h-4 w-4" />
@@ -185,6 +188,10 @@ import { useLoreProposals } from "@/hooks/useLoreProposals";
                  <TabsTrigger value="factions" className="gap-2">
                    <Flag className="h-4 w-4" />
                    <span className="hidden sm:inline">Factions</span>
+                 </TabsTrigger>
+                 <TabsTrigger value="graveyard" className="gap-2">
+                   <Skull className="h-4 w-4" />
+                   <span className="hidden sm:inline">Graveyard</span>
                  </TabsTrigger>
                  <TabsTrigger value="lore" className="gap-2">
                    <Book className="h-4 w-4" />
@@ -216,24 +223,43 @@ import { useLoreProposals } from "@/hooks/useLoreProposals";
                  <CharacterLeaderboard />
                </TabsContent>
 
-               <TabsContent value="factions">
-                 <FactionLeaderboard />
-               </TabsContent>
+                <TabsContent value="factions">
+                  <FactionLeaderboard />
+                </TabsContent>
 
-               <TabsContent value="lore">
-                 <CommunityLoreAlmanac />
-               </TabsContent>
+                <TabsContent value="graveyard">
+                  <CharacterGraveyard />
+                </TabsContent>
+
+                <TabsContent value="lore">
+                  <CommunityLoreAlmanac />
+                </TabsContent>
 
                <TabsContent value="loremaster">
                  <LoremasterDashboard />
                </TabsContent>
              </Tabs>
          </div>
-       </section>
- 
-       <Footer />
-     </div>
-   );
- };
- 
- export default LoreChronicles;
+        </section>
+  
+        {/* Floating Lore Assistant Button */}
+        <Button
+          onClick={() => setIsLoreAssistantOpen(true)}
+          className="fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-lg z-30"
+          size="icon"
+        >
+          <MessageCircle className="h-6 w-6" />
+        </Button>
+
+        {/* Lore Assistant Panel */}
+        <LoreAssistantPanel
+          isOpen={isLoreAssistantOpen}
+          onClose={() => setIsLoreAssistantOpen(false)}
+        />
+
+        <Footer />
+      </div>
+    );
+  };
+  
+  export default LoreChronicles;

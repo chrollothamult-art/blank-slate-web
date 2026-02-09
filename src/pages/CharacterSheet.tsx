@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { 
   ArrowLeft, Sword, Shield, Sparkles, Heart, 
   BookOpen, Award, Scroll, User, Edit2, Trash2,
-  Zap, Users, Eye, EyeOff, Globe
+  Zap, Users, Eye, EyeOff, Globe, Package
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -24,6 +24,7 @@ import { toast } from "@/hooks/use-toast";
 import { ProgressionDisplay } from "@/components/lore-chronicles/ProgressionDisplay";
 import { AbilitiesPanel } from "@/components/lore-chronicles/AbilitiesPanel";
 import { FactionsPanel } from "@/components/lore-chronicles/FactionsPanel";
+import { InventoryPanel } from "@/components/lore-chronicles/InventoryPanel";
  
  const statDetails: Record<keyof CharacterStats, { 
    label: string; 
@@ -72,7 +73,7 @@ const CharacterSheet = () => {
   const { deleteCharacter } = useLoreChronicles();
   const { toggleCharacterVisibility } = useCharacterShowcase();
   
-  const [character, setCharacter] = useState<(RpCharacter & { ability_slots?: number; is_public?: boolean }) | null>(null);
+  const [character, setCharacter] = useState<(RpCharacter & { ability_slots?: number; is_public?: boolean; inventory_slots?: number }) | null>(null);
   const [loading, setLoading] = useState(true);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [sessionHistory, setSessionHistory] = useState<any[]>([]);
@@ -321,24 +322,28 @@ const CharacterSheet = () => {
               className="lg:col-span-2 space-y-6"
             >
               <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                <TabsList className="grid w-full grid-cols-4">
-                  <TabsTrigger value="stats" className="gap-1">
-                    <Shield className="h-4 w-4" />
-                    <span className="hidden sm:inline">Stats</span>
-                  </TabsTrigger>
-                  <TabsTrigger value="abilities" className="gap-1">
-                    <Zap className="h-4 w-4" />
-                    <span className="hidden sm:inline">Abilities</span>
-                  </TabsTrigger>
-                  <TabsTrigger value="factions" className="gap-1">
-                    <Users className="h-4 w-4" />
-                    <span className="hidden sm:inline">Factions</span>
-                  </TabsTrigger>
-                  <TabsTrigger value="history" className="gap-1">
-                    <Award className="h-4 w-4" />
-                    <span className="hidden sm:inline">History</span>
-                  </TabsTrigger>
-                </TabsList>
+                <TabsList className="grid w-full grid-cols-5">
+                   <TabsTrigger value="stats" className="gap-1">
+                     <Shield className="h-4 w-4" />
+                     <span className="hidden sm:inline">Stats</span>
+                   </TabsTrigger>
+                   <TabsTrigger value="abilities" className="gap-1">
+                     <Zap className="h-4 w-4" />
+                     <span className="hidden sm:inline">Abilities</span>
+                   </TabsTrigger>
+                   <TabsTrigger value="inventory" className="gap-1">
+                     <Package className="h-4 w-4" />
+                     <span className="hidden sm:inline">Inventory</span>
+                   </TabsTrigger>
+                   <TabsTrigger value="factions" className="gap-1">
+                     <Users className="h-4 w-4" />
+                     <span className="hidden sm:inline">Factions</span>
+                   </TabsTrigger>
+                   <TabsTrigger value="history" className="gap-1">
+                     <Award className="h-4 w-4" />
+                     <span className="hidden sm:inline">History</span>
+                   </TabsTrigger>
+                 </TabsList>
 
                 <TabsContent value="stats" className="space-y-6 mt-6">
                   {/* Progression Display */}
@@ -413,9 +418,17 @@ const CharacterSheet = () => {
                   />
                 </TabsContent>
 
+                <TabsContent value="inventory" className="mt-6">
+                   <InventoryPanel 
+                     characterId={character.id}
+                     inventorySlots={character.inventory_slots || 10}
+                     editable={isOwner}
+                   />
+                 </TabsContent>
+
                 <TabsContent value="factions" className="mt-6">
-                  <FactionsPanel characterId={character.id} />
-                </TabsContent>
+                   <FactionsPanel characterId={character.id} />
+                 </TabsContent>
 
                 <TabsContent value="history" className="mt-6">
                   {/* Session History */}
