@@ -19,11 +19,11 @@ const genreColors: Record<string, string> = {
   political: "bg-amber-500/10 text-amber-600 border-amber-500/20"
 };
 
-const difficultyColors: Record<string, string> = {
-  easy: "text-green-600",
-  normal: "text-yellow-600",
-  hard: "text-orange-600",
-  nightmare: "text-red-600"
+const difficultyConfig: Record<string, { color: string; stars: number; icon: string }> = {
+  easy: { color: "text-green-600", stars: 1, icon: "⭐" },
+  normal: { color: "text-yellow-600", stars: 2, icon: "⭐⭐" },
+  hard: { color: "text-orange-600", stars: 3, icon: "⭐⭐⭐" },
+  nightmare: { color: "text-red-600", stars: 4, icon: "💀" },
 };
 
 export const CampaignBrowser = () => {
@@ -207,14 +207,18 @@ const CampaignCard = ({ campaign, index, featured = false }: { campaign: RpCampa
         </CardHeader>
 
         <CardContent className="flex-1 pb-2">
-          <div className="flex items-center gap-4 text-sm text-muted-foreground">
-            <span className={`font-medium ${difficultyColors[campaign.difficulty] || ""}`}>
+          <div className="flex items-center gap-4 text-sm text-muted-foreground flex-wrap">
+            <Badge
+              variant="outline"
+              className={`text-xs gap-1 ${difficultyConfig[campaign.difficulty]?.color || ""}`}
+            >
+              <span>{difficultyConfig[campaign.difficulty]?.icon || "⭐"}</span>
               {campaign.difficulty.charAt(0).toUpperCase() + campaign.difficulty.slice(1)}
-            </span>
+            </Badge>
             {campaign.estimated_duration && (
               <span className="flex items-center gap-1">
                 <Clock className="h-3 w-3" />
-                {campaign.estimated_duration}m
+                ~{campaign.estimated_duration} min
               </span>
             )}
             <span className="flex items-center gap-1">

@@ -22,6 +22,8 @@ import { useState, useEffect, useCallback } from "react";
      import { NodeAudioPlayer } from "@/components/lore-chronicles/NodeAudioPlayer";
      import { WeatherOverlay, WeatherType } from "@/components/lore-chronicles/WeatherOverlay";
      import { NPCPortraitDisplay } from "@/components/lore-chronicles/NPCPortraitDisplay";
+     import { ShortcutOverlay } from "@/components/lore-chronicles/ShortcutOverlay";
+     import { useStoryPlayerShortcuts } from "@/hooks/useStoryPlayerShortcuts";
  
 const StoryPlayer = () => {
    const { campaignId } = useParams<{ campaignId: string }>();
@@ -45,8 +47,18 @@ const StoryPlayer = () => {
      const [isFirstCompletion, setIsFirstCompletion] = useState(true);
      const { checkAchievements } = useRpAchievements();
 
-   // Inventory hook for the selected character
-   const { hasItem, inventory } = useInventory(selectedCharacter?.id);
+    // Inventory hook for the selected character
+    const { hasItem, inventory } = useInventory(selectedCharacter?.id);
+
+    // Keyboard shortcuts
+    useStoryPlayerShortcuts({
+      choices,
+      onChoiceSelect: (index) => {
+        if (choices[index]) makeChoice(choices[index]);
+      },
+      onMenu: () => navigate('/lore-chronicles'),
+      enabled: !!sessionId && !processing && !showCharacterSelect,
+    });
  
    // Load campaign data
    useEffect(() => {
@@ -931,8 +943,11 @@ const StoryPlayer = () => {
              </div>
            )}
          </DialogContent>
-       </Dialog>
-     </div>
+        </Dialog>
+
+        {/* Keyboard shortcut overlay */}
+        {sessionId && <ShortcutOverlay />}
+      </div>
    );
  };
  

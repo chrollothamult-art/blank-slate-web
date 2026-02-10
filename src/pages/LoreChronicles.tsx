@@ -19,6 +19,7 @@ import { FactionLeaderboard } from "@/components/lore-chronicles/FactionLeaderbo
 import { LoreAssistantPanel } from "@/components/lore-chronicles/LoreAssistantPanel";
 import { CharacterGraveyard } from "@/components/lore-chronicles/CharacterGraveyard";
 import { QuickResumeBanner } from "@/components/lore-chronicles/QuickResumeBanner";
+import { OnboardingTour } from "@/components/lore-chronicles/OnboardingTour";
 
 type TabGroup = "play" | "community" | "govern";
 
@@ -208,6 +209,7 @@ const LoreChronicles = () => {
       </Button>
 
       <LoreAssistantPanel isOpen={isLoreAssistantOpen} onClose={() => setIsLoreAssistantOpen(false)} />
+      <OnboardingTour />
       <Footer />
     </div>
   );
