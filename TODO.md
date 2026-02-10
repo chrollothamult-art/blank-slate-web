@@ -1455,9 +1455,9 @@ Draft v1 → Publish → Draft v2 (edit) → Publish v2
   - Character portrait, campaign name, last-played timestamp
   - "Continue Adventure →" CTA button
   - Auto-hides if no active sessions
-- [ ] **First-Time Onboarding Tour** — Guided tooltip walkthrough for new players
+- [x] **First-Time Onboarding Tour** — Guided tooltip walkthrough for new players
   - Highlights: Create Character → Browse Campaigns → Join Session → Expand Lore
-  - Dismissible, remembers completion via `user_preferences`
+  - Dismissible, remembers completion via `localStorage`
 
 #### Phase B: Retention & Engagement Loops
 
@@ -1562,7 +1562,7 @@ Draft v1 → Publish → Draft v2 (edit) → Publish v2
 
 #### Phase H: Accessibility & Quality of Life
 
-- [ ] **Campaign Difficulty Indicators** — Clear visual badges on campaign cards
+- [x] **Campaign Difficulty Indicators** — Clear visual badges on campaign cards
   - ⭐ Beginner, ⭐⭐ Intermediate, ⭐⭐⭐ Advanced, 💀 Nightmare
   - Estimated playtime shown (e.g., "~30 min", "~2 hours")
   - Content warnings for mature themes (toggle in settings)
@@ -1570,7 +1570,7 @@ Draft v1 → Publish → Draft v2 (edit) → Publish v2
   - Auto-save at key points + manual save slots (3-5 per campaign)
   - "Load Save" menu with timestamps and node previews
   - Prevents losing progress on long campaigns
-- [ ] **Keyboard Shortcuts in Story Player** — Quick navigation
+- [x] **Keyboard Shortcuts in Story Player** — Quick navigation
   - 1/2/3/4 for choice selection, Space for "Continue", Esc for menu
   - Shortcut overlay (?) for reference
 - [ ] **Text Size & Reading Preferences** — Customizable story player
