@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { 
   ArrowLeft, Plus, Save, Play, Trash2, Link2, 
   BookOpen, MessageSquare, GitBranch, CheckCircle,
-  Settings, Eye, EyeOff, Flag, Zap, Dice1, Users, GitMerge, Shield, Lightbulb, Globe, Bot, MessageSquarePlus, Skull, Image as ImageIcon
+  Settings, Eye, EyeOff, Flag, Zap, Dice1, Users, GitMerge, Shield, Lightbulb, Globe, Bot, MessageSquarePlus, Skull, Image as ImageIcon, Activity, User, Music
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -31,6 +31,11 @@ import { HintDesigner } from "@/components/lore-chronicles/HintDesigner";
 import { WorldBuilder } from "@/components/lore-chronicles/WorldBuilder";
 import { AIDMConfigPanel } from "@/components/lore-chronicles/AIDMConfigPanel";
 import { CampaignImageUpload } from "@/components/lore-chronicles/CampaignImageUpload";
+import { CampaignAudioUpload } from "@/components/lore-chronicles/CampaignAudioUpload";
+import { AIUsageAnalytics } from "@/components/lore-chronicles/AIUsageAnalytics";
+import { NPCPortraitManager } from "@/components/lore-chronicles/NPCPortraitManager";
+import { StockArtLibrary } from "@/components/lore-chronicles/StockArtLibrary";
+import { AudioLibrary } from "@/components/lore-chronicles/AudioLibrary";
  
  interface NodeWithChoices extends RpStoryNode {
    choices: RpNodeChoice[];
@@ -168,10 +173,11 @@ import { CampaignImageUpload } from "@/components/lore-chronicles/CampaignImageU
     const { error: nodeError } = await supabase
         .from("rp_story_nodes")
         .update({
-          title: node.title,
+         title: node.title,
           content: node.content,
           node_type: node.node_type,
           image_url: node.image_url,
+          audio_url: node.audio_url,
           xp_reward: node.xp_reward,
           allows_free_text: node.allows_free_text,
           free_text_prompt: node.free_text_prompt
@@ -351,11 +357,19 @@ import { CampaignImageUpload } from "@/components/lore-chronicles/CampaignImageU
                   <Globe className="h-4 w-4" />
                   World Builder
                 </TabsTrigger>
-                <TabsTrigger value="ai-dm" className="gap-2">
-                  <Bot className="h-4 w-4" />
-                  AI DM
-                </TabsTrigger>
-              </TabsList>
+                 <TabsTrigger value="ai-dm" className="gap-2">
+                   <Bot className="h-4 w-4" />
+                   AI DM
+                 </TabsTrigger>
+                 <TabsTrigger value="npc-portraits" className="gap-2">
+                   <User className="h-4 w-4" />
+                   NPCs
+                 </TabsTrigger>
+                 <TabsTrigger value="ai-analytics" className="gap-2">
+                   <Activity className="h-4 w-4" />
+                   AI Usage
+                 </TabsTrigger>
+               </TabsList>
 
             <TabsContent value="nodes">
              {/* Add Node Buttons */}
@@ -448,8 +462,11 @@ import { CampaignImageUpload } from "@/components/lore-chronicles/CampaignImageU
                               <GitBranch className="h-3 w-3" />
                               {node.choices.length} choice{node.choices.length !== 1 ? "s" : ""}
                               {node.image_url && (
-                                <ImageIcon className="h-3 w-3 ml-1" />
-                              )}
+                                 <ImageIcon className="h-3 w-3 ml-1" />
+                               )}
+                               {node.audio_url && (
+                                 <Music className="h-3 w-3 ml-1" />
+                               )}
                               <span className="ml-auto">+{node.xp_reward} XP</span>
                             </div>
                           </CardContent>
@@ -499,9 +516,17 @@ import { CampaignImageUpload } from "@/components/lore-chronicles/CampaignImageU
                  <WorldBuilder campaignId={campaignId!} />
                </TabsContent>
 
-               <TabsContent value="ai-dm">
-                 <AIDMConfigPanel campaignId={campaignId!} />
-               </TabsContent>
+                <TabsContent value="ai-dm">
+                  <AIDMConfigPanel campaignId={campaignId!} />
+                </TabsContent>
+
+                <TabsContent value="npc-portraits">
+                  <NPCPortraitManager campaignId={campaignId!} />
+                </TabsContent>
+
+                <TabsContent value="ai-analytics">
+                  <AIUsageAnalytics campaignId={campaignId!} />
+                </TabsContent>
            </Tabs>
        </main>
  
@@ -612,6 +637,8 @@ const NodeEditorForm = ({
   saving: boolean;
 }) => {
   const [editedNode, setEditedNode] = useState<NodeWithChoices>(node);
+  const [showStockArt, setShowStockArt] = useState(false);
+  const [showAudioLibrary, setShowAudioLibrary] = useState(false);
   const { config, toggleNodeNarration } = useAIConfig(campaignId);
   
   const isAINarrated = config?.ai_narration_nodes?.includes(node.id) ?? false;
@@ -710,6 +737,12 @@ const NodeEditorForm = ({
          {/* Header Image Upload */}
          <div className="space-y-2">
            <Label>Header Image</Label>
+           <div className="flex gap-2 mb-2">
+             <Button variant="outline" size="sm" onClick={() => setShowStockArt(true)}>
+               <ImageIcon className="h-4 w-4 mr-2" />
+               Stock Art
+             </Button>
+           </div>
            <CampaignImageUpload
              campaignId={campaignId}
              currentUrl={editedNode.image_url}
@@ -718,7 +751,49 @@ const NodeEditorForm = ({
              label="Upload scene header image"
              previewHeight="h-32"
            />
-         </div>
+           <StockArtLibrary
+             open={showStockArt}
+             onOpenChange={setShowStockArt}
+             onSelect={(url) => setEditedNode({ ...editedNode, image_url: url })}
+           />
+          </div>
+
+          {/* Background Audio Upload */}
+          <div className="space-y-2">
+            <Label>Background Audio</Label>
+            <div className="flex gap-2 mb-2">
+              <Button variant="outline" size="sm" onClick={() => setShowAudioLibrary(true)}>
+                <Music className="h-4 w-4 mr-2" />
+                Audio Library
+              </Button>
+            </div>
+            <CampaignAudioUpload
+              campaignId={campaignId}
+              currentUrl={editedNode.audio_url}
+              onUpload={(url) => setEditedNode({ ...editedNode, audio_url: url })}
+              onRemove={() => setEditedNode({ ...editedNode, audio_url: null })}
+              label="Upload ambient audio for this node"
+            />
+            <AudioLibrary
+              open={showAudioLibrary}
+              onOpenChange={setShowAudioLibrary}
+              onSelect={(url) => setEditedNode({ ...editedNode, audio_url: url })}
+            />
+          </div>
+
+          {/* Location Backdrop */}
+          <div className="space-y-2">
+            <Label>Location Backdrop (optional)</Label>
+            <p className="text-xs text-muted-foreground">Full-width scene art displayed behind the narrative</p>
+            <CampaignImageUpload
+              campaignId={campaignId}
+              currentUrl={editedNode.content.backdrop_url || null}
+              onUpload={(url) => updateContent("backdrop_url", url)}
+              onRemove={() => updateContent("backdrop_url", "")}
+              label="Upload scene backdrop"
+              previewHeight="h-24"
+            />
+          </div>
   
           {/* NPC Info */}
           <div className="grid grid-cols-2 gap-4">
@@ -739,7 +814,38 @@ const NodeEditorForm = ({
               />
             </div>
           </div>
- 
+
+          {/* NPC Voice Line */}
+          <div className="space-y-2">
+            <Label>NPC Voice Line (optional audio clip)</Label>
+            <CampaignAudioUpload
+              campaignId={campaignId}
+              currentUrl={editedNode.content.npc_voice_url || null}
+              onUpload={(url) => updateContent("npc_voice_url", url)}
+              onRemove={() => updateContent("npc_voice_url", "")}
+              label="Upload NPC voice clip"
+            />
+          </div>
+
+          {/* Weather Effect */}
+          <div className="space-y-2">
+            <Label>Weather Effect</Label>
+            <Select
+              value={editedNode.content.weather || "none"}
+              onValueChange={(v) => updateContent("weather", v)}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">None</SelectItem>
+                <SelectItem value="rain">🌧️ Rain</SelectItem>
+                <SelectItem value="snow">🌨️ Snow</SelectItem>
+                <SelectItem value="fog">🌫️ Fog</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
         {/* XP Reward */}
           <div className="space-y-2">
             <Label>XP Reward</Label>

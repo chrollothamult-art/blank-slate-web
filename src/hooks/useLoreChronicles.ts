@@ -78,6 +78,9 @@ export interface RpStoryNode {
     text?: string;
     npc_portrait?: string;
     npc_name?: string;
+    backdrop_url?: string;
+    npc_voice_url?: string;
+    weather?: "rain" | "snow" | "fog" | "none";
   };
   position_x: number;
   position_y: number;

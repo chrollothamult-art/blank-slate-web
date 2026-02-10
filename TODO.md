@@ -675,7 +675,7 @@ A chat-based assistant that answers player questions about the ThouArt universe 
 - [x] **Almanac Search** — Full-text search across `almanac_characters`, `almanac_locations`, `almanac_races`, `almanac_relics` for relevant context
 - [x] **Source Citations** — AI references which almanac entry each fact comes from, with links
 - [x] **Conversation Memory** — Store conversation per user (last N messages) for context continuity
-- [ ] **Spoiler Guard** — If player is mid-campaign, AI avoids spoiling unreached story content
+- [x] **Spoiler Guard** — If player is mid-campaign, AI avoids spoiling unreached story content
 
 ##### Database Addition
 | Table | Purpose | Key Columns |
@@ -684,7 +684,7 @@ A chat-based assistant that answers player questions about the ThouArt universe 
 
 ##### UI Components
 - [x] **LoreAssistant Panel** — Slide-out sidebar with chat interface, available from Lore Chronicles and Almanac pages
-- [ ] **Inline Lore Tooltips** — During gameplay, highlighted lore terms open a quick AI-powered explanation popup
+- [x] **Inline Lore Tooltips** — During gameplay, highlighted lore terms open a quick AI-powered explanation popup
 - [x] **"Ask the Keeper" Button** — Floating action button on relevant pages
 
 ---
@@ -734,20 +734,20 @@ Generate rich, lore-consistent character backstories based on the player's chose
 - [x] Create `ai-lore-assistant` edge function with almanac context injection
 - [x] Build LoreAssistant chat panel component
 - [x] Create `rp_lore_conversations` table
-- [ ] Test with existing almanac data
+- [x] Test with existing almanac data
 
 **Phase AI-2: Character Backstory**
 - [x] Create `ai-generate-backstory` edge function
 - [x] Add "Generate Backstory" button to CharacterCreator
 - [x] Build generation modal with regenerate/edit flow
-- [ ] Test with all existing races
+- [x] Test with all existing races
 
 **Phase AI-3: Free-Text Interpreter**
 - [x] Create `ai-interpret-action` edge function with stat check logic
 - [x] Enhance `FreeTextInput` component with AI integration
 - [x] Build outcome display with stat check visualization
 - [x] Add creator toggle for free-text nodes in campaign editor
-- [ ] Test in solo sessions
+- [x] Test in solo sessions
 
 **Phase AI-4: AI Dungeon Master**
 - [x] Create `rp_campaign_ai_config` table
@@ -756,7 +756,7 @@ Generate rich, lore-consistent character backstories based on the player's chose
 - [x] Build narration panel with typewriter effect in StoryPlayer
 - [x] Implement lore context retrieval and injection
 - [x] Create `rp_ai_narration_log` table for tracking
-- [ ] Test with a sample campaign using AI transitions
+- [x] Test with a sample campaign using AI transitions
 - [x] Implement context window management (history summarization)
 
 **Phase AI-5: Polish & Integration**
@@ -764,7 +764,7 @@ Generate rich, lore-consistent character backstories based on the player's chose
 - [x] Response caching for repeated narrations
 - [x] Spoiler guard for lore assistant during active campaigns
 - [x] Inline lore tooltips during gameplay
-- [ ] Usage analytics and cost monitoring
+- [x] Usage analytics and cost monitoring
 - [ ] A/B test AI narration quality across models
 
 ---
@@ -985,9 +985,9 @@ Interaction Points (IP) between players accumulate from all interactions and **d
 
 #### Node Illustrations
 - [x] **Header Images** — Optional banner image per story node
-- [ ] **Inline Images** — Embed images within narrative text
+- [x] **Inline Images** — Embed images within narrative text
 - [x] **Image Library** — Campaign creators upload to dedicated bucket
-- [ ] **Stock Art Integration** — Curated fantasy art for common scenes
+- [x] **Stock Art Integration** — Curated fantasy art for common scenes
 - [x] **Node Preview Thumbnails** — Thumbnails in campaign editor
 
 **Storage:**
@@ -996,11 +996,11 @@ Interaction Points (IP) between players accumulate from all interactions and **d
 - Supported formats: JPG, PNG, WebP
 
 #### Audio & Ambiance
-- [ ] **Background Music** — Loop ambient tracks per node/chapter
-- [ ] **Sound Effects** — Trigger sounds on choice selection
-- [ ] **Audio Library** — Pre-approved royalty-free tracks
-- [ ] **Custom Audio Upload** — Authors upload their own (with moderation)
-- [ ] **Volume Controls** — User-adjustable music/SFX volume
+- [x] **Background Music** — Loop ambient tracks per node/chapter
+- [x] **Sound Effects** — Trigger sounds on choice selection
+- [x] **Audio Library** — Pre-approved royalty-free tracks
+- [x] **Custom Audio Upload** — Authors upload their own (with moderation)
+- [x] **Volume Controls** — User-adjustable music/SFX volume
 
 **Audio Categories:**
 - Ambient (forest, tavern, dungeon, storm)
@@ -1008,11 +1008,11 @@ Interaction Points (IP) between players accumulate from all interactions and **d
 - Emotional (sad, triumphant, mysterious)
 
 #### NPC Portraits
-- [ ] **Portrait Slots** — Nodes can display speaking NPC portraits
-- [ ] **Expression Variants** — Happy, angry, sad, neutral per NPC
-- [ ] **Portrait Position** — Left, right, or center of narrative text
-- [ ] **Animated Portraits** — Subtle idle animations (future)
-- [ ] **NPC Voice Lines** — Optional text-to-speech or audio clips
+- [x] **Portrait Slots** — Nodes can display speaking NPC portraits
+- [x] **Expression Variants** — Happy, angry, sad, neutral per NPC
+- [x] **Portrait Position** — Left, right, or center of narrative text
+- [x] **Animated Portraits** — Subtle idle animations (future)
+- [x] **NPC Voice Lines** — Optional text-to-speech or audio clips
 
 **Database Addition:**
 | Table | Purpose | Key Columns |
@@ -1021,10 +1021,10 @@ Interaction Points (IP) between players accumulate from all interactions and **d
 | `rp_node_media` | Media attached to nodes | `node_id`, `type` (image/audio), `url`, `position`, `loop` |
 
 #### Location Illustrations
-- [ ] **Location Backdrops** — Full-width scene art behind narrative
-- [ ] **Parallax Scrolling** — Subtle depth effect on scene layers
+- [x] **Location Backdrops** — Full-width scene art behind narrative
+- [x] **Parallax Scrolling** — Subtle depth effect on scene layers
 - [ ] **Day/Night Variants** — Different art based on story time
-- [ ] **Weather Overlays** — Rain, snow, fog effects on scenes
+- [x] **Weather Overlays** — Rain, snow, fog effects on scenes
 
 ---
 
@@ -1105,14 +1105,14 @@ Draft v1 → Publish → Draft v2 (edit) → Publish v2
 | `community_lore_concepts` | Approved community concepts | `proposal_id`, `name`, `description`, `concept_type`, `created_by` |
 
 #### Features
-- [ ] **Community Lore Page** — Browse all approved community lore entries
-- [ ] **Category Tabs** — Filter by races, locations, items, factions, abilities, concepts
-- [ ] **Contributor Attribution** — Show "Created by @username" on each entry
-- [ ] **Search & Filter** — Search community lore by name, creator, or keywords
-- [ ] **Link to Original Proposal** — View the original proposal with Loremaster notes
+- [x] **Community Lore Page** — Browse all approved community lore entries
+- [x] **Category Tabs** — Filter by races, locations, items, factions, abilities, concepts
+- [x] **Contributor Attribution** — Show "Created by @username" on each entry
+- [x] **Search & Filter** — Search community lore by name, creator, or keywords
+- [x] **Link to Original Proposal** — View the original proposal with Loremaster notes
 - [ ] **Use in Campaigns** — Campaign creators can reference community lore in nodes
-- [ ] **Community Lore Stats** — Total entries, top contributors, recent additions
-- [ ] **Featured Community Lore** — Loremaster-highlighted exceptional entries
+- [x] **Community Lore Stats** — Total entries, top contributors, recent additions
+- [x] **Featured Community Lore** — Loremaster-highlighted exceptional entries
 
 ---
 
@@ -1446,12 +1446,12 @@ Draft v1 → Publish → Draft v2 (edit) → Publish v2
 
 #### Phase A: Navigation & Onboarding (Quick Wins)
 
-- [ ] **Grouped Tab Navigation** — Consolidate 9 flat tabs into 3 grouped sections:
+- [x] **Grouped Tab Navigation** — Consolidate 9 flat tabs into 3 grouped sections:
   - **Play** → Campaigns, Characters, Sessions
   - **Community** → Showcase, Leaderboard, Factions, Graveyard
   - **Govern** → Lore, Loremaster
   - Use a segmented control for groups, sub-tabs within each
-- [ ] **Quick-Resume Banner** — Sticky banner at top of Lore Chronicles showing active sessions
+- [x] **Quick-Resume Banner** — Sticky banner at top of Lore Chronicles showing active sessions
   - Character portrait, campaign name, last-played timestamp
   - "Continue Adventure →" CTA button
   - Auto-hides if no active sessions

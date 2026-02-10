@@ -17,6 +17,7 @@ interface AlmanacMatch {
   name: string;
   slug: string;
   category: string;
+  description?: string;
   start: number;
   end: number;
 }
@@ -117,7 +118,7 @@ export const LoreTooltipText = ({ text, className }: LoreTooltipTextProps) => {
     // Build segments
     const result: Array<
       | { type: "text"; content: string }
-      | { type: "lore"; content: string; category: string; slug: string }
+      | { type: "lore"; content: string; category: string; slug: string; description?: string }
     > = [];
     let lastEnd = 0;
 
@@ -130,6 +131,7 @@ export const LoreTooltipText = ({ text, className }: LoreTooltipTextProps) => {
         content: processedText.slice(m.start, m.end),
         category: m.category,
         slug: m.slug,
+        description: m.description,
       });
       lastEnd = m.end;
     }
@@ -159,19 +161,26 @@ export const LoreTooltipText = ({ text, className }: LoreTooltipTextProps) => {
                   {seg.content}
                 </span>
               </TooltipTrigger>
-              <TooltipContent side="top" className="max-w-xs">
-                <div className="flex items-center gap-2">
-                  <span>{icon}</span>
-                  <div>
-                    <p className="font-medium text-sm">{seg.content}</p>
-                    <Badge variant="outline" className="text-[10px] mt-0.5">
-                      {label}
-                    </Badge>
+              <TooltipContent side="top" className="max-w-sm p-3">
+                <div className="flex items-start gap-2">
+                  <span className="text-lg mt-0.5">{icon}</span>
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <p className="font-semibold text-sm">{seg.content}</p>
+                      <Badge variant="outline" className="text-[10px]">
+                        {label}
+                      </Badge>
+                    </div>
+                    {seg.description && (
+                      <p className="text-xs text-muted-foreground leading-relaxed line-clamp-3">
+                        {seg.description}
+                      </p>
+                    )}
+                    <p className="text-[10px] text-muted-foreground/70 mt-1">
+                      Click to view full entry
+                    </p>
                   </div>
                 </div>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Click to view in the Almanac
-                </p>
               </TooltipContent>
             </Tooltip>
           );

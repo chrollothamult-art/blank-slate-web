@@ -12,6 +12,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Switch } from "@/components/ui/switch";
  import { useAuth } from "@/contexts/AuthContext";
  import { useLoreChronicles } from "@/hooks/useLoreChronicles";
+ import { supabase } from "@/integrations/supabase/client";
 
 const genres = [
   { value: "adventure", label: "Adventure", description: "Epic quests and exploration" },
@@ -75,8 +76,7 @@ const CampaignCreator = () => {
  
      if (result && universeMode === "original") {
        // Create universe settings for original mode
-       const { supabase } = await import("@/integrations/supabase/client");
-       await supabase.from("rp_campaign_universe").insert([{
+       await (supabase as any).from("rp_campaign_universe").insert([{
          campaign_id: result.id,
          mode: "original",
          world_name: worldName.trim() || null,

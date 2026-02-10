@@ -6,6 +6,7 @@ interface AlmanacEntry {
   name: string;
   slug: string;
   category: string;
+  description?: string;
 }
 
 const categoryTableMap: Record<string, string> = {
@@ -34,7 +35,7 @@ export const useAlmanacEntries = () => {
       for (const [category, tableName] of Object.entries(categoryTableMap)) {
         const { data, error } = await supabase
           .from(tableName as any)
-          .select("id, name, slug");
+          .select("id, name, slug, description");
 
         if (!error && data) {
           const entriesWithCategory = (data as any[]).map((entry) => ({

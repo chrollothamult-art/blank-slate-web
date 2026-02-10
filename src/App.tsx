@@ -43,6 +43,7 @@ import PrivacyPolicy from "./pages/PrivacyPolicy";
  import CampaignCreator from "./pages/CampaignCreator";
  import CampaignEditor from "./pages/CampaignEditor";
  import LoreExpansion from "./pages/LoreExpansion";
+ import { CommunityLorePage } from "./components/lore-chronicles/CommunityLorePage";
 
 const queryClient = new QueryClient();
 
@@ -81,6 +82,7 @@ const AnimatedRoutes = () => {
        <Route path="/lore-chronicles/create-campaign" element={<PageTransition><CampaignCreator /></PageTransition>} />
        <Route path="/lore-chronicles/edit-campaign/:campaignId" element={<PageTransition><CampaignEditor /></PageTransition>} />
        <Route path="/lore-chronicles/lore-expansion" element={<PageTransition><LoreExpansion /></PageTransition>} />
+       <Route path="/lore-chronicles/community-lore" element={<PageTransition><CommunityLorePage /></PageTransition>} />
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
         <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
       </Routes>

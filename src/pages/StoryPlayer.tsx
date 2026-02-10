@@ -17,6 +17,11 @@ import { useState, useEffect, useCallback } from "react";
     import { useHints, Hint, HintResponse as HintResponseType } from "@/hooks/useHints";
     import { useRpAchievements } from "@/hooks/useRpAchievements";
     import { useInventory } from "@/hooks/useInventory";
+    import { LoreTooltipText } from "@/components/lore-chronicles/LoreTooltipText";
+     import { NarrationPanel } from "@/components/lore-chronicles/NarrationPanel";
+     import { NodeAudioPlayer } from "@/components/lore-chronicles/NodeAudioPlayer";
+     import { WeatherOverlay, WeatherType } from "@/components/lore-chronicles/WeatherOverlay";
+     import { NPCPortraitDisplay } from "@/components/lore-chronicles/NPCPortraitDisplay";
  
 const StoryPlayer = () => {
    const { campaignId } = useParams<{ campaignId: string }>();
@@ -486,6 +491,52 @@ const StoryPlayer = () => {
      return { available: true };
    };
  
+    // Render story content with inline images and lore tooltips
+    const renderStoryContent = (text: string) => {
+      // Split on inline image syntax: ![alt](url)
+      const imageRegex = /!\[([^\]]*)\]\(([^)]+)\)/g;
+      const parts: Array<{ type: "text" | "image"; content: string; alt?: string }> = [];
+      let lastIndex = 0;
+      let match;
+
+      while ((match = imageRegex.exec(text)) !== null) {
+        if (match.index > lastIndex) {
+          parts.push({ type: "text", content: text.slice(lastIndex, match.index) });
+        }
+        parts.push({ type: "image", content: match[2], alt: match[1] });
+        lastIndex = match.index + match[0].length;
+      }
+
+      if (lastIndex < text.length) {
+        parts.push({ type: "text", content: text.slice(lastIndex) });
+      }
+
+      return parts.map((part, i) => {
+        if (part.type === "image") {
+          return (
+            <div key={i} className="rounded-xl overflow-hidden my-4">
+              <img
+                src={part.content}
+                alt={part.alt || "Story illustration"}
+                className="w-full max-h-96 object-cover"
+                loading="lazy"
+              />
+              {part.alt && (
+                <p className="text-xs text-muted-foreground text-center mt-1 italic">{part.alt}</p>
+              )}
+            </div>
+          );
+        }
+        return (
+          <LoreTooltipText
+            key={i}
+            text={part.content}
+            className="text-lg leading-relaxed whitespace-pre-wrap"
+          />
+        );
+      });
+    };
+
    if (!user) {
      return (
        <div className="min-h-screen bg-background flex items-center justify-center p-4">
@@ -562,45 +613,90 @@ const StoryPlayer = () => {
                transition={{ duration: 0.3 }}
                className="space-y-8"
              >
-               {/* Node Image */}
-               {currentNode.image_url && (
-                 <div className="rounded-2xl overflow-hidden">
-                   <img
-                     src={currentNode.image_url}
-                     alt={currentNode.title || "Scene"}
-                     className="w-full h-64 object-cover"
-                   />
-                 </div>
-               )}
- 
+                {/* Location Backdrop with Parallax */}
+                {currentNode.content.backdrop_url && (
+                  <div className="rounded-2xl overflow-hidden relative -mx-4 md:-mx-8">
+                    <motion.div
+                      style={{ willChange: "transform" }}
+                      animate={{ y: [0, -8, 0] }}
+                      transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+                    >
+                      <img
+                        src={currentNode.content.backdrop_url}
+                        alt="Scene backdrop"
+                        className="w-full h-48 md:h-72 object-cover scale-105"
+                      />
+                    </motion.div>
+                    <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent" />
+                    {/* Weather Overlay on backdrop */}
+                    <WeatherOverlay weather={(currentNode.content.weather as WeatherType) || "none"} />
+                  </div>
+                )}
+
+                {/* Weather overlay without backdrop */}
+                {!currentNode.content.backdrop_url && currentNode.content.weather && currentNode.content.weather !== "none" && (
+                  <div className="relative rounded-2xl overflow-hidden -mx-4 md:-mx-8 h-32 bg-muted/30">
+                    <WeatherOverlay weather={currentNode.content.weather as WeatherType} />
+                  </div>
+                )}
+
+                {/* Node Image */}
+                {currentNode.image_url && (
+                  <div className="rounded-2xl overflow-hidden">
+                    <img
+                      src={currentNode.image_url}
+                      alt={currentNode.title || "Scene"}
+                      className="w-full h-64 object-cover"
+                    />
+                  </div>
+                )}
+
+                {/* Background Audio */}
+                {currentNode.audio_url && (
+                  <NodeAudioPlayer
+                    audioUrl={currentNode.audio_url}
+                    nodeId={currentNode.id}
+                  />
+                )}
+  
                {/* Node Title */}
                {currentNode.title && (
                  <h2 className="text-2xl font-bold text-center">{currentNode.title}</h2>
                )}
+
+                {/* NPC Portrait with Animated Idle & Voice Line */}
+                {currentNode.content.npc_name && (
+                  <div className="flex flex-col items-center gap-2">
+                    <NPCPortraitDisplay
+                      name={currentNode.content.npc_name}
+                      portraitUrl={currentNode.content.npc_portrait}
+                      speaking={!!currentNode.content.npc_voice_url}
+                      size="lg"
+                      position="center"
+                    />
+                    {currentNode.content.npc_voice_url && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-xs gap-1"
+                        onClick={() => {
+                          const audio = new Audio(currentNode.content.npc_voice_url);
+                          audio.volume = 0.7;
+                          audio.play().catch(() => {});
+                        }}
+                      >
+                        🔊 Play Voice Line
+                      </Button>
+                    )}
+                  </div>
+                )}
  
-               {/* NPC Portrait & Name */}
-               {currentNode.content.npc_name && (
-                 <div className="flex items-center gap-3 justify-center">
-                   {currentNode.content.npc_portrait && (
-                     <Avatar className="h-12 w-12 border-2 border-primary/20">
-                       <AvatarImage src={currentNode.content.npc_portrait} />
-                       <AvatarFallback>
-                         {currentNode.content.npc_name.slice(0, 2).toUpperCase()}
-                       </AvatarFallback>
-                     </Avatar>
-                   )}
-                   <span className="font-semibold text-lg">{currentNode.content.npc_name}</span>
-                 </div>
-               )}
- 
-               {/* Story Text */}
-               <Card>
-                 <CardContent className="pt-6">
-                   <p className="text-lg leading-relaxed whitespace-pre-wrap">
-                     {currentNode.content.text || "The story continues..."}
-                   </p>
-                 </CardContent>
-                </Card>
+                {/* Story Text with Inline Lore Tooltips & Images */}
+                <Card>
+                  <CardContent className="pt-6 space-y-4">
+                    {renderStoryContent(currentNode.content.text || "The story continues...")}
+                  </CardContent>
+                 </Card>
 
                 {/* Hints */}
                 {activeHints.length > 0 && (
