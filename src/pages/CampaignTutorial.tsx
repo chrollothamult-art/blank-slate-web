@@ -1,16 +1,17 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowLeft, ArrowRight, Check, BookOpen, Sparkles, Globe, Scroll,
   GitBranch, MessageSquare, Zap, Shield, Bot, Users, ChevronRight,
-  Lightbulb, Target, Flame, Play, Compass
+  Lightbulb, Target, Flame, Play, Compass, Trophy
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { useAuth } from "@/contexts/AuthContext";
+import TutorialCompletionBadge from "@/components/lore-chronicles/TutorialCompletionBadge";
 
 interface TutorialStep {
   id: string;
@@ -19,6 +20,7 @@ interface TutorialStep {
   description: string;
   details: string[];
   tip?: string;
+  demoType?: "creator" | "editor";
 }
 
 const tutorialSteps: TutorialStep[] = [
@@ -34,7 +36,8 @@ const tutorialSteps: TutorialStep[] = [
       "Write a description that hooks players without spoiling the story",
       "Optionally add a cover image to make your campaign stand out"
     ],
-    tip: "Start with 'Normal' difficulty for your first campaign — you can always adjust later."
+    tip: "Start with 'Normal' difficulty for your first campaign — you can always adjust later.",
+    demoType: "creator",
   },
   {
     id: "universe",
@@ -48,7 +51,8 @@ const tutorialSteps: TutorialStep[] = [
       "Original mode gives you the Custom World Builder for full creative freedom",
       "You can define custom stats, beliefs, weapons, and titles in Original mode"
     ],
-    tip: "If this is your first campaign, try ThouArt mode — you'll have ready-made lore to work with."
+    tip: "If this is your first campaign, try ThouArt mode — you'll have ready-made lore to work with.",
+    demoType: "creator",
   },
   {
     id: "nodes",
@@ -63,7 +67,8 @@ const tutorialSteps: TutorialStep[] = [
       "Each node can have header images, audio, and NPC portraits",
       "Connect nodes by setting target_node_id on each choice"
     ],
-    tip: "Start with a simple linear story (5-6 nodes), then add branches once you're comfortable."
+    tip: "Start with a simple linear story (5-6 nodes), then add branches once you're comfortable.",
+    demoType: "editor",
   },
   {
     id: "choices",
@@ -77,7 +82,8 @@ const tutorialSteps: TutorialStep[] = [
       "Item rewards — grant items upon choosing a path",
       "XP rewards per node — ending nodes typically give more XP"
     ],
-    tip: "Always provide at least one ungated option so players never get stuck."
+    tip: "Always provide at least one ungated option so players never get stuck.",
+    demoType: "editor",
   },
   {
     id: "keypoints",
@@ -91,7 +97,8 @@ const tutorialSteps: TutorialStep[] = [
       "Players navigate dynamically between key points via authored choices",
       "Key Point branching — which milestones occur depends on prior actions"
     ],
-    tip: "Think of Key Points as 'checkpoints' — the journey between them is where player freedom lives."
+    tip: "Think of Key Points as 'checkpoints' — the journey between them is where player freedom lives.",
+    demoType: "editor",
   },
   {
     id: "triggers",
@@ -105,7 +112,8 @@ const tutorialSteps: TutorialStep[] = [
       "Random events add replayability — ambushes, discoveries, weather changes",
       "Cooldowns prevent the same random event from firing too frequently"
     ],
-    tip: "Use random events sparingly — 2-3 per campaign section keeps things exciting without feeling chaotic."
+    tip: "Use random events sparingly — 2-3 per campaign section keeps things exciting without feeling chaotic.",
+    demoType: "editor",
   },
   {
     id: "ai",
@@ -119,7 +127,8 @@ const tutorialSteps: TutorialStep[] = [
       "Enable free-text input on select nodes — AI interprets player actions",
       "Set guardrails: PG-13 only, no romance, no real-world references, etc."
     ],
-    tip: "Give the AI specific DM instructions like 'dark and foreboding tone, never kill the player outright.'"
+    tip: "Give the AI specific DM instructions like 'dark and foreboding tone, never kill the player outright.'",
+    demoType: "editor",
   },
   {
     id: "multiplayer",
@@ -133,7 +142,7 @@ const tutorialSteps: TutorialStep[] = [
       "Post-convergence branching continues differently for allied vs enemy groups",
       "Session codes let players join the same campaign together"
     ],
-    tip: "Multiplayer convergence is advanced — master single-player campaigns first."
+    tip: "Multiplayer convergence is advanced — master single-player campaigns first.",
   },
   {
     id: "publish",
@@ -148,21 +157,42 @@ const tutorialSteps: TutorialStep[] = [
       "Once published, players can discover and play your campaign",
       "You can unpublish anytime to make edits without affecting new players"
     ],
-    tip: "Play through your campaign yourself at least twice — once following hints, once ignoring them."
+    tip: "Play through your campaign yourself at least twice — once following hints, once ignoring them.",
   }
 ];
+
+const TUTORIAL_STORAGE_KEY = "campaign-tutorial-completed";
 
 const CampaignTutorial = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [currentStep, setCurrentStep] = useState(0);
   const [completedSteps, setCompletedSteps] = useState<Set<number>>(new Set());
+  const [showCompletionBadge, setShowCompletionBadge] = useState(false);
+  const [alreadyCompleted, setAlreadyCompleted] = useState(false);
+
+  useEffect(() => {
+    const saved = localStorage.getItem(TUTORIAL_STORAGE_KEY);
+    if (saved) {
+      setAlreadyCompleted(true);
+      setCompletedSteps(new Set(tutorialSteps.map((_, i) => i)));
+    }
+  }, []);
 
   const step = tutorialSteps[currentStep];
   const progress = ((completedSteps.size) / tutorialSteps.length) * 100;
 
   const markComplete = () => {
-    setCompletedSteps(prev => new Set([...prev, currentStep]));
+    const newCompleted = new Set([...completedSteps, currentStep]);
+    setCompletedSteps(newCompleted);
+
+    // Check if all steps are now completed
+    if (newCompleted.size === tutorialSteps.length && !alreadyCompleted) {
+      localStorage.setItem(TUTORIAL_STORAGE_KEY, "true");
+      setAlreadyCompleted(true);
+      setTimeout(() => setShowCompletionBadge(true), 500);
+    }
+
     if (currentStep < tutorialSteps.length - 1) {
       setCurrentStep(currentStep + 1);
     }
@@ -170,6 +200,22 @@ const CampaignTutorial = () => {
 
   const goToStep = (index: number) => {
     setCurrentStep(index);
+  };
+
+  const getDemoUrl = () => {
+    if (step.demoType === "creator") {
+      return "/lore-chronicles/create-campaign?tour=true";
+    }
+    // For editor demos, we just go to the creator with tour
+    // since the editor requires an existing campaign
+    return "/lore-chronicles/create-campaign?tour=true";
+  };
+
+  const getDemoDescription = () => {
+    if (step.demoType === "creator") {
+      return "Open the campaign creator with an interactive guided walkthrough";
+    }
+    return "Create a campaign first, then the editor tour will guide you through nodes, choices, and branching";
   };
 
   return (
@@ -186,15 +232,23 @@ const CampaignTutorial = () => {
             </h1>
             <p className="text-muted-foreground">A step-by-step guide to creating your adventure</p>
           </div>
-          {user && (
-            <Button
-              onClick={() => navigate('/lore-chronicles/create-campaign')}
-              className="rpg-btn-primary text-primary-foreground border-0 gap-2"
-            >
-              <Sparkles className="h-4 w-4" />
-              Start Creating
-            </Button>
-          )}
+          <div className="flex items-center gap-2">
+            {alreadyCompleted && (
+              <Badge className="bg-accent/20 text-accent border-accent/30 gap-1">
+                <Trophy className="h-3 w-3" />
+                Scholar
+              </Badge>
+            )}
+            {user && (
+              <Button
+                onClick={() => navigate('/lore-chronicles/create-campaign')}
+                className="rpg-btn-primary text-primary-foreground border-0 gap-2"
+              >
+                <Sparkles className="h-4 w-4" />
+                Start Creating
+              </Button>
+            )}
+          </div>
         </div>
 
         {/* Progress Bar */}
@@ -291,22 +345,22 @@ const CampaignTutorial = () => {
                   )}
 
                   {/* Interactive Demo Button */}
-                  {(step.id === "basics" || step.id === "universe" || step.id === "nodes") && (
+                  {step.demoType && (
                     <div className="flex items-center gap-3 p-4 rounded-lg bg-primary/5 border border-primary/20">
                       <Compass className="h-5 w-5 text-primary flex-shrink-0" />
                       <div className="flex-1">
                         <span className="text-sm font-medium">Try it yourself!</span>
                         <p className="text-xs text-muted-foreground mt-0.5">
-                          Open the campaign creator with an interactive guided walkthrough
+                          {getDemoDescription()}
                         </p>
                       </div>
                       <Button
                         size="sm"
-                        onClick={() => navigate('/lore-chronicles/create-campaign?tour=true')}
+                        onClick={() => navigate(getDemoUrl())}
                         className="rpg-btn-primary text-primary-foreground border-0 gap-1.5"
                       >
                         <Play className="h-3 w-3" />
-                        Demo
+                        {step.demoType === "creator" ? "Demo" : "Try It"}
                       </Button>
                     </div>
                   )}
@@ -336,11 +390,18 @@ const CampaignTutorial = () => {
                         </Button>
                       ) : (
                         <Button
-                          onClick={() => navigate('/lore-chronicles/create-campaign')}
+                          onClick={() => {
+                            markComplete();
+                            if (completedSteps.size === tutorialSteps.length - 1) {
+                              // This was the last step
+                            } else {
+                              navigate('/lore-chronicles/create-campaign');
+                            }
+                          }}
                           className="rpg-btn-primary text-primary-foreground border-0 gap-2"
                         >
                           <Sparkles className="h-4 w-4" />
-                          Create Your Campaign
+                          {completedSteps.size >= tutorialSteps.length - 1 ? "Complete Tutorial" : "Create Your Campaign"}
                         </Button>
                       )}
                     </div>
@@ -350,6 +411,15 @@ const CampaignTutorial = () => {
             </motion.div>
           </AnimatePresence>
         </div>
+
+        <TutorialCompletionBadge
+          show={showCompletionBadge}
+          onDismiss={() => setShowCompletionBadge(false)}
+          onStartCreating={() => {
+            setShowCompletionBadge(false);
+            navigate('/lore-chronicles/create-campaign');
+          }}
+        />
       </div>
     </div>
   );

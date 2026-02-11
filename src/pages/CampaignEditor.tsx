@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { 
   ArrowLeft, Plus, Save, Play, Trash2, Link2, 
@@ -36,6 +36,7 @@ import { AIUsageAnalytics } from "@/components/lore-chronicles/AIUsageAnalytics"
 import { NPCPortraitManager } from "@/components/lore-chronicles/NPCPortraitManager";
 import { StockArtLibrary } from "@/components/lore-chronicles/StockArtLibrary";
 import { AudioLibrary } from "@/components/lore-chronicles/AudioLibrary";
+import CampaignEditorTour from "@/components/lore-chronicles/CampaignEditorTour";
  
  interface NodeWithChoices extends RpStoryNode {
    choices: RpNodeChoice[];
@@ -50,8 +51,9 @@ import { AudioLibrary } from "@/components/lore-chronicles/AudioLibrary";
  
  const CampaignEditor = () => {
    const { campaignId } = useParams<{ campaignId: string }>();
-   const navigate = useNavigate();
-   const { user } = useAuth();
+    const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
+    const { user } = useAuth();
    
    const [campaign, setCampaign] = useState<RpCampaign | null>(null);
    const [nodes, setNodes] = useState<NodeWithChoices[]>([]);
@@ -60,8 +62,15 @@ import { AudioLibrary } from "@/components/lore-chronicles/AudioLibrary";
    
    const [editingNode, setEditingNode] = useState<NodeWithChoices | null>(null);
    const [showNodeDialog, setShowNodeDialog] = useState(false);
-   const [showSettingsDialog, setShowSettingsDialog] = useState(false);
- 
+    const [showSettingsDialog, setShowSettingsDialog] = useState(false);
+    const [editorTourActive, setEditorTourActive] = useState(false);
+
+    useEffect(() => {
+      if (searchParams.get("tour") === "true" && !loading) {
+        const timer = setTimeout(() => setEditorTourActive(true), 800);
+        return () => clearTimeout(timer);
+      }
+    }, [searchParams, loading]);
    // Fetch campaign and nodes
    const fetchData = useCallback(async () => {
      if (!campaignId) return;
@@ -301,12 +310,13 @@ import { AudioLibrary } from "@/components/lore-chronicles/AudioLibrary";
                <Settings className="h-4 w-4 mr-2" />
                Settings
              </Button>
-             <Button 
-               variant={campaign.is_published ? "secondary" : "default"}
-               size="sm"
-               onClick={togglePublish}
-               className={!campaign.is_published ? "rpg-btn-primary text-primary-foreground border-0" : ""}
-             >
+              <Button 
+                variant={campaign.is_published ? "secondary" : "default"}
+                size="sm"
+                onClick={togglePublish}
+                className={!campaign.is_published ? "rpg-btn-primary text-primary-foreground border-0" : ""}
+                data-tour="publish-btn"
+              >
                {campaign.is_published ? (
                  <>
                    <EyeOff className="h-4 w-4 mr-2" />
@@ -379,7 +389,7 @@ import { AudioLibrary } from "@/components/lore-chronicles/AudioLibrary";
 
             <TabsContent value="nodes">
              {/* Add Node Buttons */}
-             <div className="flex flex-wrap gap-2 mb-8">
+             <div className="flex flex-wrap gap-2 mb-8" data-tour="add-nodes">
                <span className="text-sm text-muted-foreground self-center mr-2">Add Node:</span>
                {Object.entries(nodeTypeLabels).map(([type, { label, icon, color }]) => (
                  <Button
@@ -424,15 +434,16 @@ import { AudioLibrary } from "@/components/lore-chronicles/AudioLibrary";
                        animate={{ opacity: 1, y: 0 }}
                        transition={{ delay: index * 0.05 }}
                      >
-                       <Card 
-                          className={`cursor-pointer hover:border-primary/40 transition-colors ${
-                            isStart ? "ring-2 ring-primary" : ""
-                          }`}
-                          onClick={() => {
-                            setEditingNode(node);
-                            setShowNodeDialog(true);
-                          }}
-                        >
+                        <Card 
+                           className={`cursor-pointer hover:border-primary/40 transition-colors ${
+                             isStart ? "ring-2 ring-primary" : ""
+                           }`}
+                           onClick={() => {
+                             setEditingNode(node);
+                             setShowNodeDialog(true);
+                           }}
+                           data-tour={index === 0 ? "node-card" : undefined}
+                         >
                           {/* Node Thumbnail */}
                           {node.image_url && (
                             <div className="h-28 overflow-hidden rounded-t-xl">
@@ -617,10 +628,15 @@ import { AudioLibrary } from "@/components/lore-chronicles/AudioLibrary";
               </div>
             </div>
          </DialogContent>
-       </Dialog>
-     </div>
-   );
- };
+        </Dialog>
+
+        <CampaignEditorTour
+          active={editorTourActive}
+          onClose={() => setEditorTourActive(false)}
+        />
+      </div>
+    );
+  };
  
 // Node Editor Form Component
 const NodeEditorForm = ({
