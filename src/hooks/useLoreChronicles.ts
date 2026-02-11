@@ -115,10 +115,11 @@ export interface RpStoryNode {
  
  export const useLoreChronicles = () => {
    const { user } = useAuth();
-   const [characters, setCharacters] = useState<RpCharacter[]>([]);
-   const [campaigns, setCampaigns] = useState<RpCampaign[]>([]);
-   const [sessions, setSessions] = useState<RpSession[]>([]);
-   const [loading, setLoading] = useState(true);
+  const [characters, setCharacters] = useState<RpCharacter[]>([]);
+    const [campaigns, setCampaigns] = useState<RpCampaign[]>([]);
+    const [draftCampaigns, setDraftCampaigns] = useState<RpCampaign[]>([]);
+    const [sessions, setSessions] = useState<RpSession[]>([]);
+    const [loading, setLoading] = useState(true);
  
    const fetchCharacters = useCallback(async () => {
      if (!user) return;
@@ -165,19 +166,55 @@ export interface RpStoryNode {
      setCharacters(mappedCharacters);
    }, [user]);
  
-   const fetchCampaigns = useCallback(async () => {
-     const { data, error } = await supabase
-       .from("rp_campaigns")
-       .select("*")
-       .eq("is_published", true)
-       .order("play_count", { ascending: false });
- 
-     if (error) {
-       console.error("Error fetching campaigns:", error);
-       return;
-     }
- 
-      const mappedCampaigns: RpCampaign[] = (data || []).map((c) => ({
+    const fetchCampaigns = useCallback(async () => {
+      const { data, error } = await supabase
+        .from("rp_campaigns")
+        .select("*")
+        .eq("is_published", true)
+        .order("play_count", { ascending: false });
+  
+      if (error) {
+        console.error("Error fetching campaigns:", error);
+        return;
+      }
+  
+       const mapCampaign = (c: any): RpCampaign => ({
+         id: c.id,
+         author_id: c.author_id,
+         title: c.title,
+         description: c.description,
+         cover_image_url: c.cover_image_url,
+         genre: c.genre,
+         difficulty: c.difficulty,
+         is_published: c.is_published,
+         is_featured: c.is_featured,
+         start_node_id: c.start_node_id,
+         estimated_duration: c.estimated_duration,
+         play_count: c.play_count,
+         permadeath: c.permadeath,
+         created_at: c.created_at,
+         updated_at: c.updated_at
+       });
+
+       setCampaigns((data || []).map(mapCampaign));
+    }, []);
+
+    const fetchDraftCampaigns = useCallback(async () => {
+      if (!user) return;
+
+      const { data, error } = await supabase
+        .from("rp_campaigns")
+        .select("*")
+        .eq("author_id", user.id)
+        .eq("is_published", false)
+        .order("updated_at", { ascending: false });
+
+      if (error) {
+        console.error("Error fetching draft campaigns:", error);
+        return;
+      }
+
+      const mapCampaign = (c: any): RpCampaign => ({
         id: c.id,
         author_id: c.author_id,
         title: c.title,
@@ -193,10 +230,10 @@ export interface RpStoryNode {
         permadeath: c.permadeath,
         created_at: c.created_at,
         updated_at: c.updated_at
-      }));
- 
-     setCampaigns(mappedCampaigns);
-   }, []);
+      });
+
+      setDraftCampaigns((data || []).map(mapCampaign));
+    }, [user]);
  
    const fetchSessions = useCallback(async () => {
      if (!user) return;
@@ -505,32 +542,35 @@ export interface RpStoryNode {
   };
  
    useEffect(() => {
-     const loadData = async () => {
-       setLoading(true);
-       await Promise.all([
-         fetchCharacters(),
-         fetchCampaigns(),
-         fetchSessions()
-       ]);
-       setLoading(false);
-     };
- 
-     loadData();
-   }, [fetchCharacters, fetchCampaigns, fetchSessions]);
- 
-  return {
-    characters,
-    campaigns,
-    sessions,
-    loading,
-    createCharacter,
-    createCampaign,
-    startSession,
-    deleteCharacter,
-    awardXp,
-    updateCharacterStats,
-    refetchCharacters: fetchCharacters,
-    refetchCampaigns: fetchCampaigns,
-    refetchSessions: fetchSessions
+      const loadData = async () => {
+        setLoading(true);
+        await Promise.all([
+          fetchCharacters(),
+          fetchCampaigns(),
+          fetchDraftCampaigns(),
+          fetchSessions()
+        ]);
+        setLoading(false);
+      };
+  
+      loadData();
+    }, [fetchCharacters, fetchCampaigns, fetchDraftCampaigns, fetchSessions]);
+  
+   return {
+     characters,
+     campaigns,
+     draftCampaigns,
+     sessions,
+     loading,
+     createCharacter,
+     createCampaign,
+     startSession,
+     deleteCharacter,
+     awardXp,
+     updateCharacterStats,
+     refetchCharacters: fetchCharacters,
+     refetchCampaigns: fetchCampaigns,
+     refetchDraftCampaigns: fetchDraftCampaigns,
+     refetchSessions: fetchSessions
+   };
   };
- };

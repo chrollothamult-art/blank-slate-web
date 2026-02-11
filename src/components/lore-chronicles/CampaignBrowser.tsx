@@ -1,13 +1,14 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { BookOpen, Clock, Play, Star, Search, MessageSquare } from "lucide-react";
+import { BookOpen, Clock, Play, Star, Search, MessageSquare, FileEdit, Trash2, PenTool } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useAuth } from "@/contexts/AuthContext";
 import { useLoreChronicles, RpCampaign } from "@/hooks/useLoreChronicles";
 
 const genreColors: Record<string, string> = {
@@ -28,7 +29,8 @@ const difficultyConfig: Record<string, { color: string; stars: number; icon: str
 
 export const CampaignBrowser = () => {
   const navigate = useNavigate();
-  const { campaigns, loading } = useLoreChronicles();
+  const { user } = useAuth();
+  const { campaigns, draftCampaigns, loading } = useLoreChronicles();
   const [search, setSearch] = useState("");
   const [genreFilter, setGenreFilter] = useState<string>("all");
   const [difficultyFilter, setDifficultyFilter] = useState<string>("all");
@@ -61,6 +63,61 @@ export const CampaignBrowser = () => {
 
   return (
     <div className="space-y-8">
+      {/* My Drafts Section */}
+      {user && draftCampaigns.length > 0 && !search && genreFilter === "all" && difficultyFilter === "all" && (
+        <div>
+          <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
+            <FileEdit className="h-5 w-5 text-amber-500" />
+            My Drafts
+            <Badge variant="secondary" className="ml-1">{draftCampaigns.length}</Badge>
+          </h2>
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {draftCampaigns.map((campaign, index) => (
+              <motion.div
+                key={campaign.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.05 }}
+              >
+                <Card className="h-full flex flex-col overflow-hidden group hover:border-amber-500/40 transition-colors border-amber-500/20 bg-amber-500/5">
+                  <div className="relative h-32 bg-gradient-to-br from-amber-500/20 to-accent/20 overflow-hidden">
+                    {campaign.cover_image_url ? (
+                      <img src={campaign.cover_image_url} alt={campaign.title} className="w-full h-full object-cover opacity-70" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <PenTool className="h-12 w-12 text-amber-500/30" />
+                      </div>
+                    )}
+                    <Badge className="absolute top-2 right-2 bg-amber-500/90 text-white">Draft</Badge>
+                  </div>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-lg line-clamp-1">{campaign.title}</CardTitle>
+                    <CardDescription className="line-clamp-2 text-xs">
+                      {campaign.description || "No description yet..."}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="flex-1 pb-2">
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <Badge variant="outline" className={genreColors[campaign.genre] || ""}>
+                        {campaign.genre}
+                      </Badge>
+                      <span>{campaign.difficulty}</span>
+                      <span>·</span>
+                      <span>Updated {new Date(campaign.updated_at).toLocaleDateString()}</span>
+                    </div>
+                  </CardContent>
+                  <CardFooter className="pt-0 flex items-center justify-end gap-2">
+                    <Button size="sm" variant="outline" onClick={() => navigate(`/lore-chronicles/edit-campaign/${campaign.id}`)}>
+                      <FileEdit className="h-4 w-4 mr-1" />
+                      Edit
+                    </Button>
+                  </CardFooter>
+                </Card>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      )}
       {/* Featured Campaigns Section */}
       {featuredCampaigns.length > 0 && genreFilter === "all" && difficultyFilter === "all" && !search && (
         <div>

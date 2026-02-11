@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
    import { useNavigate, useParams } from "react-router-dom";
    import { motion, AnimatePresence } from "framer-motion";
-   import { ArrowLeft, BookOpen, Lock, Sparkles, User, CheckCircle, XCircle, Skull, Package, AlertTriangle, ShieldAlert } from "lucide-react";
+   import { ArrowLeft, BookOpen, Lock, Sparkles, User, CheckCircle, XCircle, Skull, Package, AlertTriangle, ShieldAlert, Zap, Backpack } from "lucide-react";
    import { Button } from "@/components/ui/button";
    import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
    import { Badge } from "@/components/ui/badge";
@@ -22,8 +22,10 @@ import { useState, useEffect, useCallback } from "react";
      import { NodeAudioPlayer } from "@/components/lore-chronicles/NodeAudioPlayer";
      import { WeatherOverlay, WeatherType } from "@/components/lore-chronicles/WeatherOverlay";
      import { NPCPortraitDisplay } from "@/components/lore-chronicles/NPCPortraitDisplay";
-     import { ShortcutOverlay } from "@/components/lore-chronicles/ShortcutOverlay";
+import { ShortcutOverlay } from "@/components/lore-chronicles/ShortcutOverlay";
      import { useStoryPlayerShortcuts } from "@/hooks/useStoryPlayerShortcuts";
+     import { PlayerInteractionsMenu, PlayerAction } from "@/components/lore-chronicles/PlayerInteractionsMenu";
+     import { PlayerInventoryMenu, ItemAction } from "@/components/lore-chronicles/PlayerInventoryMenu";
  
 const StoryPlayer = () => {
    const { campaignId } = useParams<{ campaignId: string }>();
@@ -49,6 +51,10 @@ const StoryPlayer = () => {
 
     // Inventory hook for the selected character
     const { hasItem, inventory } = useInventory(selectedCharacter?.id);
+
+    // Player menus state
+    const [interactionsOpen, setInteractionsOpen] = useState(false);
+    const [inventoryMenuOpen, setInventoryMenuOpen] = useState(false);
 
     // Keyboard shortcuts
     useStoryPlayerShortcuts({
@@ -551,65 +557,73 @@ const StoryPlayer = () => {
 
    if (!user) {
      return (
-       <div className="min-h-screen bg-background flex items-center justify-center p-4">
-         <Card className="max-w-md w-full text-center">
-           <CardHeader>
-             <User className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-             <CardTitle>Sign In Required</CardTitle>
-             <CardDescription>You need to sign in to play</CardDescription>
-           </CardHeader>
-           <CardContent>
-             <Button onClick={() => navigate('/auth')}>Sign In</Button>
-           </CardContent>
-         </Card>
+       <div className="min-h-screen rpg-page flex items-center justify-center p-4">
+         <div className="rpg-card rounded-lg max-w-md w-full text-center p-8">
+           <User className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+           <h2 className="text-xl font-semibold mb-2">Sign In Required</h2>
+           <p className="text-muted-foreground mb-4">You need to sign in to play</p>
+           <Button onClick={() => navigate('/auth')} className="rpg-btn-primary text-primary-foreground border-0">
+             Sign In
+           </Button>
+         </div>
        </div>
      );
    }
  
    if (loading) {
      return (
-       <div className="min-h-screen bg-background flex items-center justify-center">
-         <div className="animate-pulse text-center">
-           <BookOpen className="h-16 w-16 text-primary mx-auto mb-4" />
+       <div className="min-h-screen rpg-page flex items-center justify-center">
+         <motion.div 
+           className="text-center"
+           animate={{ opacity: [0.5, 1, 0.5] }}
+           transition={{ duration: 2, repeat: Infinity }}
+         >
+           <BookOpen className="h-16 w-16 text-accent mx-auto mb-4 rpg-float" />
            <p className="text-muted-foreground">Loading adventure...</p>
-         </div>
+         </motion.div>
        </div>
      );
    }
  
    return (
-     <div className="min-h-screen bg-background">
+     <div className="min-h-screen rpg-page">
        {/* Header */}
-       <header className="border-b bg-background/95 backdrop-blur sticky top-0 z-50">
+       <header className="border-b border-border/50 bg-card/80 backdrop-blur-md sticky top-0 z-50">
          <div className="container mx-auto px-4 py-3 flex items-center justify-between">
            <div className="flex items-center gap-4">
-             <Button variant="ghost" size="icon" onClick={() => navigate('/lore-chronicles')}>
+             <Button variant="ghost" size="icon" onClick={() => navigate('/lore-chronicles')} className="hover:bg-accent/10">
                <ArrowLeft className="h-5 w-5" />
              </Button>
              <div>
                <h1 className="font-semibold">{campaign?.title}</h1>
                {selectedCharacter && (
                  <p className="text-sm text-muted-foreground">
-                   Playing as {selectedCharacter.name}
+                   Playing as <span className="text-accent">{selectedCharacter.name}</span>
                  </p>
                )}
              </div>
            </div>
  
-            {selectedCharacter && characterProgress && (
-              <div className="flex items-center gap-2">
-                {(campaign as any)?.permadeath && (
-                  <Badge variant="destructive" className="gap-1">
-                    <Skull className="h-3 w-3" />
-                    Permadeath
-                  </Badge>
-                )}
-                <Badge variant="outline" className="gap-1">
-                  <Sparkles className="h-3 w-3" />
-                  +{characterProgress.xp_earned} XP
-                </Badge>
-              </div>
-            )}
+             {selectedCharacter && characterProgress && (
+               <div className="flex items-center gap-2">
+                 {(campaign as any)?.permadeath && (
+                   <Badge variant="destructive" className="gap-1">
+                     <Skull className="h-3 w-3" />
+                     Permadeath
+                   </Badge>
+                 )}
+                 <Button variant="ghost" size="icon" onClick={() => setInteractionsOpen(true)} title="Actions">
+                   <Zap className="h-5 w-5" />
+                 </Button>
+                 <Button variant="ghost" size="icon" onClick={() => setInventoryMenuOpen(true)} title="Inventory">
+                   <Backpack className="h-5 w-5" />
+                 </Button>
+                 <Badge variant="outline" className="gap-1 border-accent/30 text-accent">
+                   <Sparkles className="h-3 w-3" />
+                   +{characterProgress.xp_earned} XP
+                 </Badge>
+               </div>
+             )}
          </div>
        </header>
  
@@ -704,11 +718,9 @@ const StoryPlayer = () => {
                 )}
  
                 {/* Story Text with Inline Lore Tooltips & Images */}
-                <Card>
-                  <CardContent className="pt-6 space-y-4">
+                <div className="rpg-card rounded-lg p-6 space-y-4">
                     {renderStoryContent(currentNode.content.text || "The story continues...")}
-                  </CardContent>
-                 </Card>
+                </div>
 
                 {/* Hints */}
                 {activeHints.length > 0 && (
@@ -741,7 +753,7 @@ const StoryPlayer = () => {
                           <Button
                             variant={available ? "outline" : "ghost"}
                             className={`w-full justify-start text-left h-auto py-4 px-6 ${
-                              !available ? "opacity-50" : "hover:bg-primary/10 hover:border-primary"
+                              !available ? "opacity-50" : "hover:bg-accent/10 hover:border-accent/40 border-border/50"
                             }`}
                             onClick={() => available && makeChoice(choice)}
                             disabled={processing || !available}
@@ -885,7 +897,46 @@ const StoryPlayer = () => {
          </AnimatePresence>
        </main>
  
-       {/* Character Selection Dialog */}
+        {/* Player Interactions Menu */}
+        {selectedCharacter && characterProgress && (
+          <>
+            <PlayerInteractionsMenu
+              characterStats={characterProgress.stats_snapshot || selectedCharacter.stats}
+              inventory={inventory}
+              onAction={async (action: PlayerAction) => {
+                setInteractionsOpen(false);
+                // Submit as free-text action for AI interpretation
+                if (!sessionId || !selectedCharacter || !currentNode) return;
+                setProcessing(true);
+                await supabase.from("rp_free_text_responses").insert({
+                  session_id: sessionId,
+                  character_id: selectedCharacter.id,
+                  node_id: currentNode.id,
+                  response_text: `I ${action.name.toLowerCase()}: ${action.description}`,
+                });
+                toast({ title: `${action.icon} ${action.name}`, description: action.description });
+                setProcessing(false);
+              }}
+              disabled={processing}
+              open={interactionsOpen}
+              onOpenChange={setInteractionsOpen}
+            />
+            <PlayerInventoryMenu
+              characterId={selectedCharacter.id}
+              open={inventoryMenuOpen}
+              onOpenChange={setInventoryMenuOpen}
+              onItemAction={(itemAction: ItemAction) => {
+                setInventoryMenuOpen(false);
+                toast({
+                  title: `Item Action: ${itemAction.actionType}`,
+                  description: `Used ${itemAction.actionType} on ${itemAction.itemName}`,
+                });
+              }}
+            />
+          </>
+        )}
+
+        {/* Character Selection Dialog */}
        <Dialog open={showCharacterSelect} onOpenChange={setShowCharacterSelect}>
          <DialogContent className="max-w-lg">
             <DialogHeader>

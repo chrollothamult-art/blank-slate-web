@@ -949,6 +949,19 @@ Interaction Points (IP) between players accumulate from all interactions and **d
 - [x] **Item Effects** — Consumables, stat boosters, quest items
 - [x] **Item Trading** — Trade items between characters
 - [x] **Item Requirements** — Nodes can require specific items to proceed
+- [x] **Player Inventory Menu** — Slide-out menu where players can view, equip, and use items with item-specific actions (stab, throw, hide, etc.)
+- [x] **Player Interactions Menu** — Slide-out menu with all possible context-aware actions (combat, stealth, social, exploration, survival, magic) gated by stats and inventory
+
+#### Remaining Inventory & Interaction Features (TODO)
+- [ ] **Cross-Campaign Inventory Persistence** — Items remain with character across campaigns, increasing character value
+- [ ] **Item Trading UI** — In-session trading interface between players with offer/accept flow
+- [ ] **Equipment Slots** — Dedicated head/chest/hands/feet/weapon slots with equip/unequip mechanics
+- [ ] **Equipped Item Stat Bonuses** — Active stat bonuses only apply when item is equipped in slot
+- [ ] **Item Durability** — Weapons and armor degrade with use, requiring repair
+- [ ] **Item Crafting System** — Combine materials to create new items
+- [ ] **Item Enchanting** — Apply magical effects to equipment using magic skill
+- [ ] **Loot Tables** — Campaign creators define randomized loot drops per node
+- [ ] **Item Set Bonuses** — Wearing a complete set of related items grants bonus effects
 
 **Database Addition:**
 | Table | Purpose | Key Columns |
@@ -1033,7 +1046,7 @@ Interaction Points (IP) between players accumulate from all interactions and **d
 #### Campaign Versioning
 - [ ] **Version History** — Track changes to published campaigns
 - [ ] **Rollback** — Revert to previous version
-- [ ] **Draft Mode** — Edit without affecting live players
+- [x] **Draft Mode** — Edit without affecting live players
 - [ ] **Changelog** — Authors document changes per version
 
 **Version Flow:**
@@ -1059,7 +1072,7 @@ Draft v1 → Publish → Draft v2 (edit) → Publish v2
 #### Starter Templates
 - [ ] **Template Library** — Pre-built campaign structures
 - [ ] **Genre Templates** — Mystery, Adventure, Horror, Romance
-- [ ] **Tutorial Template** — Step-by-step guide for new creators
+- [x] **Tutorial Template** — Step-by-step guide for new creators
 - [ ] **Fork Existing** — Clone a published campaign as starting point
 
 **Template Examples:**

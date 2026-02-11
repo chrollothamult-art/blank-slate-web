@@ -259,11 +259,15 @@ import { AudioLibrary } from "@/components/lore-chronicles/AudioLibrary";
  
    if (loading) {
      return (
-       <div className="min-h-screen bg-background flex items-center justify-center">
-         <div className="animate-pulse text-center">
-           <BookOpen className="h-16 w-16 text-primary mx-auto mb-4" />
+       <div className="min-h-screen rpg-page flex items-center justify-center">
+         <motion.div 
+           className="text-center"
+           animate={{ opacity: [0.5, 1, 0.5] }}
+           transition={{ duration: 2, repeat: Infinity }}
+         >
+           <BookOpen className="h-16 w-16 text-accent mx-auto mb-4 rpg-float" />
            <p className="text-muted-foreground">Loading campaign editor...</p>
-         </div>
+         </motion.div>
        </div>
      );
    }
@@ -271,12 +275,12 @@ import { AudioLibrary } from "@/components/lore-chronicles/AudioLibrary";
    if (!campaign) return null;
  
    return (
-     <div className="min-h-screen bg-background">
+     <div className="min-h-screen rpg-page">
        {/* Header */}
-       <header className="border-b bg-background/95 backdrop-blur sticky top-0 z-50">
+       <header className="border-b border-border/50 bg-card/80 backdrop-blur-md sticky top-0 z-50">
          <div className="container mx-auto px-4 py-3 flex items-center justify-between">
            <div className="flex items-center gap-4">
-             <Button variant="ghost" size="icon" onClick={() => navigate('/lore-chronicles')}>
+             <Button variant="ghost" size="icon" onClick={() => navigate('/lore-chronicles')} className="hover:bg-accent/10">
                <ArrowLeft className="h-5 w-5" />
              </Button>
              <div>
@@ -292,6 +296,7 @@ import { AudioLibrary } from "@/components/lore-chronicles/AudioLibrary";
                variant="outline" 
                size="sm"
                onClick={() => setShowSettingsDialog(true)}
+               className="border-border/50 hover:bg-accent/10"
              >
                <Settings className="h-4 w-4 mr-2" />
                Settings
@@ -300,6 +305,7 @@ import { AudioLibrary } from "@/components/lore-chronicles/AudioLibrary";
                variant={campaign.is_published ? "secondary" : "default"}
                size="sm"
                onClick={togglePublish}
+               className={!campaign.is_published ? "rpg-btn-primary text-primary-foreground border-0" : ""}
              >
                {campaign.is_published ? (
                  <>
@@ -320,7 +326,7 @@ import { AudioLibrary } from "@/components/lore-chronicles/AudioLibrary";
        {/* Main Content */}
        <main className="container mx-auto px-4 py-8">
         <Tabs defaultValue="nodes" className="w-full">
-            <TabsList className="mb-6 flex-wrap h-auto gap-1">
+            <TabsList className="mb-6 flex-wrap h-auto gap-1 bg-card/60 backdrop-blur-sm border border-border/50">
               <TabsTrigger value="nodes" className="gap-2">
                 <GitBranch className="h-4 w-4" />
                 Nodes

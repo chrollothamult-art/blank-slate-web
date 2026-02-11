@@ -24,15 +24,15 @@ const LoreExpansion = () => {
   const [activeTab, setActiveTab] = useState("submit");
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen rpg-page">
       {/* Hero Section */}
       <section className="relative py-12 md:py-16 px-4 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-accent/5" />
+        <div className="absolute inset-0 rpg-hero-gradient" />
         
         <div className="container mx-auto relative z-10">
           <Button 
             variant="ghost" 
-            className="mb-6 gap-2"
+            className="mb-6 gap-2 hover:bg-accent/10"
             onClick={() => navigate("/lore-chronicles")}
           >
             <ArrowLeft className="h-4 w-4" />
@@ -46,9 +46,11 @@ const LoreExpansion = () => {
             className="text-center max-w-3xl mx-auto"
           >
             <div className="flex items-center justify-center gap-3 mb-4">
-              <Scroll className="h-8 w-8 text-primary" />
-              <h1 className="text-3xl md:text-4xl font-bold">Lore Expansion</h1>
-              <Scroll className="h-8 w-8 text-primary" />
+              <Scroll className="h-8 w-8 text-accent rpg-pulse" />
+              <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-accent via-amber-300 to-accent bg-clip-text text-transparent">
+                Lore Expansion
+              </h1>
+              <Scroll className="h-8 w-8 text-accent rpg-pulse" />
             </div>
             
             <p className="text-lg text-muted-foreground">
