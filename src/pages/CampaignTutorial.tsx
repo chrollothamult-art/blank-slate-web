@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowLeft, ArrowRight, Check, BookOpen, Sparkles, Globe, Scroll,
   GitBranch, MessageSquare, Zap, Shield, Bot, Users, ChevronRight,
-  Lightbulb, Target, Flame, Play
+  Lightbulb, Target, Flame, Play, Compass
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -287,6 +287,27 @@ const CampaignTutorial = () => {
                         <span className="text-sm font-medium text-accent">Pro Tip</span>
                         <p className="text-sm text-muted-foreground mt-1">{step.tip}</p>
                       </div>
+                    </div>
+                  )}
+
+                  {/* Interactive Demo Button */}
+                  {(step.id === "basics" || step.id === "universe" || step.id === "nodes") && (
+                    <div className="flex items-center gap-3 p-4 rounded-lg bg-primary/5 border border-primary/20">
+                      <Compass className="h-5 w-5 text-primary flex-shrink-0" />
+                      <div className="flex-1">
+                        <span className="text-sm font-medium">Try it yourself!</span>
+                        <p className="text-xs text-muted-foreground mt-0.5">
+                          Open the campaign creator with an interactive guided walkthrough
+                        </p>
+                      </div>
+                      <Button
+                        size="sm"
+                        onClick={() => navigate('/lore-chronicles/create-campaign?tour=true')}
+                        className="rpg-btn-primary text-primary-foreground border-0 gap-1.5"
+                      >
+                        <Play className="h-3 w-3" />
+                        Demo
+                      </Button>
                     </div>
                   )}
 
