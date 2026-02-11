@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowLeft, BookOpen, Save, Sparkles, User, Globe, Scroll, Skull } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -13,6 +13,7 @@ import { Switch } from "@/components/ui/switch";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLoreChronicles } from "@/hooks/useLoreChronicles";
 import { supabase } from "@/integrations/supabase/client";
+import CampaignCreatorTour from "@/components/lore-chronicles/CampaignCreatorTour";
 
 const genres = [
   { value: "adventure", label: "Adventure", description: "Epic quests and exploration" },
@@ -47,6 +48,7 @@ const universeOptions = [
 
 const CampaignCreator = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { user } = useAuth();
   const { createCampaign } = useLoreChronicles();
   
@@ -60,6 +62,21 @@ const CampaignCreator = () => {
   const [worldRules, setWorldRules] = useState("");
   const [permadeath, setPermadeath] = useState(false);
   const [creating, setCreating] = useState(false);
+  const [tourActive, setTourActive] = useState(false);
+
+  useEffect(() => {
+    if (searchParams.get("tour") === "true") {
+      const timer = setTimeout(() => setTourActive(true), 600);
+      return () => clearTimeout(timer);
+    }
+  }, [searchParams]);
+
+  const handleTourFill = (field: string, value: string) => {
+    switch (field) {
+      case "title": setTitle(value); break;
+      case "description": setDescription(value); break;
+    }
+  };
 
   const handleCreate = async () => {
     if (!title.trim() || !genre || !difficulty) return;
@@ -168,7 +185,7 @@ const CampaignCreator = () => {
               </div>
 
               {/* Universe Mode */}
-              <div className="space-y-4">
+              <div className="space-y-4" data-tour="universe-mode">
                 <Label>Universe Mode *</Label>
                 <RadioGroup 
                   value={universeMode} 
@@ -238,7 +255,7 @@ const CampaignCreator = () => {
               )}
 
               {/* Genre */}
-              <div className="space-y-2">
+              <div className="space-y-2" data-tour="genre-select">
                 <Label>Genre *</Label>
                 <Select value={genre} onValueChange={setGenre}>
                   <SelectTrigger className="bg-muted/30 border-border/50">
@@ -258,7 +275,7 @@ const CampaignCreator = () => {
               </div>
 
               {/* Difficulty */}
-              <div className="space-y-2">
+              <div className="space-y-2" data-tour="difficulty-select">
                 <Label>Difficulty *</Label>
                 <Select value={difficulty} onValueChange={setDifficulty}>
                   <SelectTrigger className="bg-muted/30 border-border/50">
@@ -278,7 +295,7 @@ const CampaignCreator = () => {
               </div>
 
               {/* Permadeath Mode */}
-              <div className="flex items-center justify-between p-4 rounded-lg border border-destructive/20 bg-destructive/5">
+              <div className="flex items-center justify-between p-4 rounded-lg border border-destructive/20 bg-destructive/5" data-tour="permadeath">
                 <div className="flex items-center gap-3">
                   <Skull className="h-5 w-5 text-destructive" />
                   <div>
@@ -329,6 +346,7 @@ const CampaignCreator = () => {
                   onClick={handleCreate} 
                   disabled={!isValid || creating}
                   className="rpg-btn-primary text-primary-foreground border-0"
+                  data-tour="create-btn"
                 >
                   {creating ? (
                     "Creating..."
@@ -343,6 +361,12 @@ const CampaignCreator = () => {
             </div>
           </div>
         </motion.div>
+
+        <CampaignCreatorTour
+          active={tourActive}
+          onClose={() => setTourActive(false)}
+          onFillField={handleTourFill}
+        />
       </div>
     </div>
   );
