@@ -639,7 +639,7 @@ const StoryPlayer = () => {
                transition={{ duration: 0.3 }}
                className="space-y-8"
              >
-                {/* Location Backdrop with Parallax */}
+                {/* Location Backdrop with Parallax + Day/Night Tint */}
                 {currentNode.content.backdrop_url && (
                   <div className="rounded-2xl overflow-hidden relative -mx-4 md:-mx-8">
                     <motion.div
@@ -653,6 +653,18 @@ const StoryPlayer = () => {
                         className="w-full h-48 md:h-72 object-cover scale-105"
                       />
                     </motion.div>
+                    {/* Day/Night color tint overlay */}
+                    {currentNode.content.time_of_day && currentNode.content.time_of_day !== "day" && (
+                      <div className={`absolute inset-0 pointer-events-none transition-colors duration-700 ${
+                        currentNode.content.time_of_day === "night"
+                          ? "bg-blue-950/50"
+                          : currentNode.content.time_of_day === "dawn"
+                          ? "bg-orange-400/20"
+                          : currentNode.content.time_of_day === "dusk"
+                          ? "bg-amber-700/30"
+                          : ""
+                      }`} />
+                    )}
                     <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent" />
                     {/* Weather Overlay on backdrop */}
                     <WeatherOverlay weather={(currentNode.content.weather as WeatherType) || "none"} />

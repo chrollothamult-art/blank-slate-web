@@ -25,6 +25,7 @@ import { ProgressionDisplay } from "@/components/lore-chronicles/ProgressionDisp
 import { AbilitiesPanel } from "@/components/lore-chronicles/AbilitiesPanel";
 import { FactionsPanel } from "@/components/lore-chronicles/FactionsPanel";
 import { InventoryPanel } from "@/components/lore-chronicles/InventoryPanel";
+import { EquipmentPanel } from "@/components/lore-chronicles/EquipmentPanel";
  
  const statDetails: Record<keyof CharacterStats, { 
    label: string; 
@@ -418,7 +419,8 @@ const CharacterSheet = () => {
                   />
                 </TabsContent>
 
-                <TabsContent value="inventory" className="mt-6">
+                <TabsContent value="inventory" className="mt-6 space-y-6">
+                   <EquipmentPanel characterId={character.id} />
                    <InventoryPanel 
                      characterId={character.id}
                      inventorySlots={character.inventory_slots || 10}

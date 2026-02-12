@@ -16,6 +16,8 @@ export interface RpItem {
   is_consumable: boolean;
   is_quest_item: boolean;
   stat_bonus: Record<string, number> | null;
+  max_durability: number | null;
+  equipment_slot: string | null;
   created_at: string;
 }
 
@@ -27,6 +29,8 @@ export interface InventoryEntry {
   acquired_at: string;
   source_node_id: string | null;
   source_session_id: string | null;
+  equipped_slot: string | null;
+  current_durability: number | null;
   item?: RpItem;
 }
 
@@ -76,6 +80,8 @@ export const useInventory = (characterId?: string) => {
           icon_emoji: i.icon_emoji || "📦",
           is_consumable: i.is_consumable || false,
           is_quest_item: i.is_quest_item || false,
+          max_durability: i.max_durability || null,
+          equipment_slot: i.equipment_slot || null,
         } as RpItem,
       ])
     );
@@ -84,6 +90,8 @@ export const useInventory = (characterId?: string) => {
       (data || []).map((entry) => ({
         ...entry,
         source_session_id: entry.source_session_id || null,
+        equipped_slot: entry.equipped_slot || null,
+        current_durability: entry.current_durability || null,
         item: itemMap.get(entry.item_id),
       }))
     );
@@ -202,6 +210,114 @@ export const useInventory = (characterId?: string) => {
     [inventory]
   );
 
+  const equipItem = useCallback(
+    async (inventoryEntryId: string, slot: string): Promise<boolean> => {
+      if (!characterId || !user) return false;
+
+      // Unequip any item currently in that slot
+      const currentlyEquipped = inventory.find((e) => e.equipped_slot === slot);
+      if (currentlyEquipped) {
+        await supabase
+          .from("rp_character_inventory")
+          .update({ equipped_slot: null })
+          .eq("id", currentlyEquipped.id);
+      }
+
+      const { error } = await supabase
+        .from("rp_character_inventory")
+        .update({ equipped_slot: slot })
+        .eq("id", inventoryEntryId);
+
+      if (error) {
+        console.error("Error equipping item:", error);
+        return false;
+      }
+
+      const entry = inventory.find((e) => e.id === inventoryEntryId);
+      if (entry?.item) {
+        toast({
+          title: `${entry.item.icon_emoji} Equipped ${entry.item.name}`,
+          description: `Placed in ${slot} slot`,
+        });
+      }
+
+      await fetchInventory();
+      return true;
+    },
+    [characterId, user, inventory, fetchInventory]
+  );
+
+  const unequipItem = useCallback(
+    async (inventoryEntryId: string): Promise<boolean> => {
+      if (!characterId || !user) return false;
+
+      const { error } = await supabase
+        .from("rp_character_inventory")
+        .update({ equipped_slot: null })
+        .eq("id", inventoryEntryId);
+
+      if (error) {
+        console.error("Error unequipping item:", error);
+        return false;
+      }
+
+      await fetchInventory();
+      return true;
+    },
+    [characterId, user, fetchInventory]
+  );
+
+  const degradeDurability = useCallback(
+    async (inventoryEntryId: string, amount: number = 1): Promise<boolean> => {
+      if (!characterId || !user) return false;
+
+      const entry = inventory.find((e) => e.id === inventoryEntryId);
+      if (!entry || entry.current_durability === null) return false;
+
+      const newDurability = Math.max(0, entry.current_durability - amount);
+
+      const { error } = await supabase
+        .from("rp_character_inventory")
+        .update({ current_durability: newDurability })
+        .eq("id", inventoryEntryId);
+
+      if (error) {
+        console.error("Error degrading durability:", error);
+        return false;
+      }
+
+      if (newDurability === 0 && entry.item) {
+        toast({
+          title: `${entry.item.icon_emoji} ${entry.item.name} broke!`,
+          description: "This item needs repair.",
+          variant: "destructive",
+        });
+      }
+
+      await fetchInventory();
+      return true;
+    },
+    [characterId, user, inventory, fetchInventory]
+  );
+
+  const getEquippedItems = useCallback((): InventoryEntry[] => {
+    return inventory.filter((e) => e.equipped_slot !== null);
+  }, [inventory]);
+
+  const getEquippedStatBonuses = useCallback((): Record<string, number> => {
+    const bonuses: Record<string, number> = {};
+    for (const entry of inventory) {
+      if (entry.equipped_slot && entry.item?.stat_bonus) {
+        // Don't apply bonuses from broken items
+        if (entry.current_durability !== null && entry.current_durability <= 0) continue;
+        for (const [stat, value] of Object.entries(entry.item.stat_bonus)) {
+          bonuses[stat] = (bonuses[stat] || 0) + value;
+        }
+      }
+    }
+    return bonuses;
+  }, [inventory]);
+
   return {
     inventory,
     loading,
@@ -209,6 +325,11 @@ export const useInventory = (characterId?: string) => {
     removeItem,
     hasItem,
     getItemCount,
+    equipItem,
+    unequipItem,
+    degradeDurability,
+    getEquippedItems,
+    getEquippedStatBonuses,
     refetch: fetchInventory,
   };
 };

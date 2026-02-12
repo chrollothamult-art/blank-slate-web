@@ -953,14 +953,14 @@ Interaction Points (IP) between players accumulate from all interactions and **d
 - [x] **Player Interactions Menu** — Slide-out menu with all possible context-aware actions (combat, stealth, social, exploration, survival, magic) gated by stats and inventory
 
 #### Remaining Inventory & Interaction Features (TODO)
-- [ ] **Cross-Campaign Inventory Persistence** — Items remain with character across campaigns, increasing character value
-- [ ] **Item Trading UI** — In-session trading interface between players with offer/accept flow
-- [ ] **Equipment Slots** — Dedicated head/chest/hands/feet/weapon slots with equip/unequip mechanics
-- [ ] **Equipped Item Stat Bonuses** — Active stat bonuses only apply when item is equipped in slot
-- [ ] **Item Durability** — Weapons and armor degrade with use, requiring repair
-- [ ] **Item Crafting System** — Combine materials to create new items
+- [x] **Cross-Campaign Inventory Persistence** — Items remain with character across campaigns, increasing character value
+- [x] **Item Trading UI** — In-session trading interface between players with offer/accept flow
+- [x] **Equipment Slots** — Dedicated head/chest/hands/feet/weapon slots with equip/unequip mechanics
+- [x] **Equipped Item Stat Bonuses** — Active stat bonuses only apply when item is equipped in slot
+- [x] **Item Durability** — Weapons and armor degrade with use, requiring repair
+- [x] **Item Crafting System** — Combine materials to create new items
 - [ ] **Item Enchanting** — Apply magical effects to equipment using magic skill
-- [ ] **Loot Tables** — Campaign creators define randomized loot drops per node
+- [x] **Loot Tables** — Campaign creators define randomized loot drops per node
 - [ ] **Item Set Bonuses** — Wearing a complete set of related items grants bonus effects
 
 **Database Addition:**
@@ -1036,7 +1036,7 @@ Interaction Points (IP) between players accumulate from all interactions and **d
 #### Location Illustrations
 - [x] **Location Backdrops** — Full-width scene art behind narrative
 - [x] **Parallax Scrolling** — Subtle depth effect on scene layers
-- [ ] **Day/Night Variants** — Different art based on story time
+- [x] **Day/Night Variants** — Different art tint based on story time
 - [x] **Weather Overlays** — Rain, snow, fog effects on scenes
 
 ---

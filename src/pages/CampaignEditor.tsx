@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { 
   ArrowLeft, Plus, Save, Play, Trash2, Link2, 
   BookOpen, MessageSquare, GitBranch, CheckCircle,
-  Settings, Eye, EyeOff, Flag, Zap, Dice1, Users, GitMerge, Shield, Lightbulb, Globe, Bot, MessageSquarePlus, Skull, Image as ImageIcon, Activity, User, Music
+  Settings, Eye, EyeOff, Flag, Zap, Dice1, Dice6, Users, GitMerge, Shield, Lightbulb, Globe, Bot, MessageSquarePlus, Skull, Image as ImageIcon, Activity, User, Music, Hammer
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -37,6 +37,8 @@ import { NPCPortraitManager } from "@/components/lore-chronicles/NPCPortraitMana
 import { StockArtLibrary } from "@/components/lore-chronicles/StockArtLibrary";
 import { AudioLibrary } from "@/components/lore-chronicles/AudioLibrary";
 import CampaignEditorTour from "@/components/lore-chronicles/CampaignEditorTour";
+import { CraftingRecipeEditor } from "@/components/lore-chronicles/CraftingRecipeEditor";
+import { LootTableEditor } from "@/components/lore-chronicles/LootTableEditor";
  
  interface NodeWithChoices extends RpStoryNode {
    choices: RpNodeChoice[];
@@ -382,10 +384,18 @@ import CampaignEditorTour from "@/components/lore-chronicles/CampaignEditorTour"
                    NPCs
                  </TabsTrigger>
                  <TabsTrigger value="ai-analytics" className="gap-2">
-                   <Activity className="h-4 w-4" />
-                   AI Usage
-                 </TabsTrigger>
-               </TabsList>
+                    <Activity className="h-4 w-4" />
+                    AI Usage
+                  </TabsTrigger>
+                  <TabsTrigger value="crafting" className="gap-2">
+                    <Hammer className="h-4 w-4" />
+                    Crafting
+                  </TabsTrigger>
+                  <TabsTrigger value="loot-tables" className="gap-2">
+                    <Dice6 className="h-4 w-4" />
+                    Loot Tables
+                  </TabsTrigger>
+                </TabsList>
 
             <TabsContent value="nodes">
              {/* Add Node Buttons */}
@@ -541,9 +551,17 @@ import CampaignEditorTour from "@/components/lore-chronicles/CampaignEditorTour"
                   <NPCPortraitManager campaignId={campaignId!} />
                 </TabsContent>
 
-                <TabsContent value="ai-analytics">
-                  <AIUsageAnalytics campaignId={campaignId!} />
-                </TabsContent>
+                 <TabsContent value="ai-analytics">
+                   <AIUsageAnalytics campaignId={campaignId!} />
+                 </TabsContent>
+
+                 <TabsContent value="crafting">
+                   <CraftingRecipeEditor campaignId={campaignId!} />
+                 </TabsContent>
+
+                 <TabsContent value="loot-tables">
+                   <LootTableEditor campaignId={campaignId!} />
+                 </TabsContent>
            </Tabs>
        </main>
  
@@ -864,6 +882,26 @@ const NodeEditorForm = ({
                 <SelectItem value="rain">🌧️ Rain</SelectItem>
                 <SelectItem value="snow">🌨️ Snow</SelectItem>
                 <SelectItem value="fog">🌫️ Fog</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Time of Day */}
+          <div className="space-y-2">
+            <Label>Time of Day</Label>
+            <p className="text-xs text-muted-foreground">Applies a color tint to the scene backdrop</p>
+            <Select
+              value={editedNode.content.time_of_day || "day"}
+              onValueChange={(v) => updateContent("time_of_day", v)}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="day">☀️ Day</SelectItem>
+                <SelectItem value="dawn">🌅 Dawn</SelectItem>
+                <SelectItem value="dusk">🌇 Dusk</SelectItem>
+                <SelectItem value="night">🌙 Night</SelectItem>
               </SelectContent>
             </Select>
           </div>

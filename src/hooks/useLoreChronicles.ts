@@ -81,6 +81,7 @@ export interface RpStoryNode {
     backdrop_url?: string;
     npc_voice_url?: string;
     weather?: "rain" | "snow" | "fog" | "none";
+    time_of_day?: "dawn" | "day" | "dusk" | "night";
   };
   position_x: number;
   position_y: number;
