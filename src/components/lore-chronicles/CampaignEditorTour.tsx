@@ -103,9 +103,11 @@ const CampaignEditorTour = ({ active, onClose }: CampaignEditorTourProps) => {
     if (!active) return;
     const timer = setTimeout(updateHighlight, 300);
     window.addEventListener("resize", updateHighlight);
+    window.addEventListener("scroll", updateHighlight, true);
     return () => {
       clearTimeout(timer);
       window.removeEventListener("resize", updateHighlight);
+      window.removeEventListener("scroll", updateHighlight, true);
     };
   }, [active, currentStep, updateHighlight]);
 

@@ -103,12 +103,13 @@ const CampaignCreatorTour = ({ active, onClose, onFillField }: CampaignCreatorTo
 
   useEffect(() => {
     if (!active) return;
-    // Small delay to let DOM settle
     const timer = setTimeout(updateHighlight, 300);
     window.addEventListener("resize", updateHighlight);
+    window.addEventListener("scroll", updateHighlight, true);
     return () => {
       clearTimeout(timer);
       window.removeEventListener("resize", updateHighlight);
+      window.removeEventListener("scroll", updateHighlight, true);
     };
   }, [active, currentStep, updateHighlight]);
 
